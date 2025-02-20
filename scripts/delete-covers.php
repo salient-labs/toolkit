@@ -2,7 +2,6 @@
 <?php declare(strict_types=1);
 
 use Salient\Cli\CliApplication;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
@@ -54,7 +53,7 @@ foreach ($files as $file) {
     $replaced++;
 
     if ($check) {
-        Console::count(Level::ERROR);
+        Console::count(Console::LEVEL_ERROR);
         $status |= 1;
         if (!class_exists(Differ::class)) {
             Console::log('Install sebastian/diff to show changes');
@@ -76,7 +75,7 @@ foreach ($files as $file) {
 }
 
 if ($replaced) {
-    Console::printOut('', Level::INFO);
+    Console::printOut('', Console::LEVEL_INFO);
 }
 
 Console::summary(Inflect::format(

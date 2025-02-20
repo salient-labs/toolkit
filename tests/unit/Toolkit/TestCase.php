@@ -3,7 +3,7 @@
 namespace Salient\Tests;
 
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Facade\Facade;
 use Salient\Utility\Regex;
@@ -61,8 +61,8 @@ abstract class TestCase extends PHPUnitTestCase
      * Assert that the given console messages are written, converting line
      * endings if necessary
      *
-     * @param array<array{Level::*,string,2?:array<string,mixed>}> $expected
-     * @param array<array{Level::*,string,2?:array<string,mixed>}> $actual
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $expected
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $actual
      */
     public static function assertSameConsoleMessages(
         array $expected,

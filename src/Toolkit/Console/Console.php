@@ -6,7 +6,6 @@ use Psr\Log\LoggerInterface;
 use Salient\Console\Support\ConsoleState;
 use Salient\Console\Target\StreamTarget;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface;
@@ -327,7 +326,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getWidth(int $level = Level::INFO): ?int
+    public function getWidth(int $level = Console::LEVEL_INFO): ?int
     {
         return $this->maybeGetTtyTarget($level)->getWidth();
     }
@@ -335,13 +334,13 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getFormatter(int $level = Level::INFO): FormatterInterface
+    public function getFormatter(int $level = Console::LEVEL_INFO): FormatterInterface
     {
         return $this->maybeGetTtyTarget($level)->getFormatter();
     }
 
     /**
-     * @param Level::* $level
+     * @param self::LEVEL_* $level
      */
     private function maybeGetTtyTarget(int $level): TargetStream
     {
@@ -432,7 +431,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             || ($withoutErrorCount && $successText === '')
         ) {
             return $this->write(
-                Level::INFO,
+                self::LEVEL_INFO,
                 Arr::implode(' ', [$msg1, $successText, $usage ?? null], ''),
                 null,
                 $withStandardMessageType
@@ -450,8 +449,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
 
         return $this->write(
             $withoutErrorCount || $withStandardMessageType
-                ? Level::INFO
-                : ($errors ? Level::ERROR : Level::WARNING),
+                ? self::LEVEL_INFO
+                : ($errors ? self::LEVEL_ERROR : self::LEVEL_WARNING),
             Arr::implode(' ', [$msg1, $msg2 ?? null, $usage ?? null], ''),
             null,
             $withoutErrorCount || $withStandardMessageType
@@ -465,7 +464,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function print(
         string $msg,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     ) {
         return $this->_write($level, $msg, null, $type, null, $this->State->TargetsByLevel);
@@ -476,7 +475,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function printOut(
         string $msg,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     ) {
         return $this->_write($level, $msg, null, $type, null, $this->State->StdioTargetsByLevel);
@@ -487,7 +486,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function printTty(
         string $msg,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     ) {
         return $this->_write($level, $msg, null, $type, null, $this->State->TtyTargetsByLevel);
@@ -498,7 +497,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function printStdout(
         string $msg,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     ) {
         $targets = [$level => [$this->getStdoutTarget()]];
@@ -510,7 +509,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function printStderr(
         string $msg,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     ) {
         $targets = [$level => [$this->getStderrTarget()]];
@@ -523,7 +522,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     public function message(
         string $msg1,
         ?string $msg2 = null,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
@@ -531,7 +530,6 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         if ($count) {
             $this->count($level);
         }
-        /** @var int&Level::* $level */
         return $this->write($level, $msg1, $msg2, $type, $ex);
     }
 
@@ -541,7 +539,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     public function messageOnce(
         string $msg1,
         ?string $msg2 = null,
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
@@ -549,7 +547,6 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         if ($count) {
             $this->count($level);
         }
-        /** @var int&Level::* $level */
         return $this->writeOnce($level, $msg1, $msg2, $type, $ex);
     }
 
@@ -559,14 +556,14 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     public function count($level)
     {
         switch ($level) {
-            case Level::EMERGENCY:
-            case Level::ALERT:
-            case Level::CRITICAL:
-            case Level::ERROR:
+            case self::LEVEL_EMERGENCY:
+            case self::LEVEL_ALERT:
+            case self::LEVEL_CRITICAL:
+            case self::LEVEL_ERROR:
                 $this->State->ErrorCount++;
                 break;
 
-            case Level::WARNING:
+            case self::LEVEL_WARNING:
                 $this->State->WarningCount++;
                 break;
         }
@@ -585,7 +582,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     ) {
         !$count || $this->State->ErrorCount++;
 
-        return $this->write(Level::ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
+        return $this->write(self::LEVEL_ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -599,7 +596,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     ) {
         !$count || $this->State->ErrorCount++;
 
-        return $this->writeOnce(Level::ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
+        return $this->writeOnce(self::LEVEL_ERROR, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -613,7 +610,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     ) {
         !$count || $this->State->WarningCount++;
 
-        return $this->write(Level::WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
+        return $this->write(self::LEVEL_WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -627,7 +624,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     ) {
         !$count || $this->State->WarningCount++;
 
-        return $this->writeOnce(Level::WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
+        return $this->writeOnce(self::LEVEL_WARNING, $msg1, $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -637,7 +634,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2 = null
     ) {
-        return $this->write(Level::NOTICE, $msg1, $msg2);
+        return $this->write(self::LEVEL_NOTICE, $msg1, $msg2);
     }
 
     /**
@@ -647,7 +644,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2 = null
     ) {
-        return $this->writeOnce(Level::NOTICE, $msg1, $msg2);
+        return $this->writeOnce(self::LEVEL_NOTICE, $msg1, $msg2);
     }
 
     /**
@@ -657,7 +654,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2 = null
     ) {
-        return $this->write(Level::INFO, $msg1, $msg2);
+        return $this->write(self::LEVEL_INFO, $msg1, $msg2);
     }
 
     /**
@@ -667,7 +664,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2 = null
     ) {
-        return $this->writeOnce(Level::INFO, $msg1, $msg2);
+        return $this->writeOnce(self::LEVEL_INFO, $msg1, $msg2);
     }
 
     /**
@@ -677,7 +674,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2 = null
     ) {
-        if (!($this->State->TtyTargetsByLevel[Level::INFO] ?? null)) {
+        if (!($this->State->TtyTargetsByLevel[self::LEVEL_INFO] ?? null)) {
             return $this;
         }
 
@@ -687,7 +684,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             $msg2 = rtrim($msg2, "\r") . "\r";
         }
 
-        return $this->writeTty(Level::INFO, $msg1, $msg2, MessageType::PROGRESS);
+        return $this->writeTty(self::LEVEL_INFO, $msg1, $msg2, MessageType::PROGRESS);
     }
 
     /**
@@ -695,11 +692,11 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function clearProgress()
     {
-        if (!($this->State->TtyTargetsByLevel[Level::INFO] ?? null)) {
+        if (!($this->State->TtyTargetsByLevel[self::LEVEL_INFO] ?? null)) {
             return $this;
         }
 
-        return $this->writeTty(Level::INFO, "\r", null, MessageType::UNFORMATTED);
+        return $this->writeTty(self::LEVEL_INFO, "\r", null, MessageType::UNFORMATTED);
     }
 
     /**
@@ -718,7 +715,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         $caller = implode('', Debug::getCaller($depth));
         $msg1 = $msg1 ? ' __' . $msg1 . '__' : '';
 
-        return $this->write(Level::DEBUG, "{{$caller}}{$msg1}", $msg2, MessageType::STANDARD, $ex);
+        return $this->write(self::LEVEL_DEBUG, "{{$caller}}{$msg1}", $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -736,7 +733,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
 
         $caller = implode('', Debug::getCaller($depth));
 
-        return $this->writeOnce(Level::DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, MessageType::STANDARD, $ex);
+        return $this->writeOnce(self::LEVEL_DEBUG, "{{$caller}} __" . $msg1 . '__', $msg2, MessageType::STANDARD, $ex);
     }
 
     /**
@@ -750,7 +747,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     ) {
         $this->State->GroupLevel++;
         $this->State->GroupMessageStack[] = [$endMsg1, $endMsg1 === null ? null : $endMsg2];
-        return $this->write(Level::NOTICE, $msg1, $msg2, MessageType::GROUP_START);
+        return $this->write(self::LEVEL_NOTICE, $msg1, $msg2, MessageType::GROUP_START);
     }
 
     /**
@@ -760,10 +757,10 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     {
         [$msg1, $msg2] = array_pop($this->State->GroupMessageStack) ?? [null, null];
         if ($msg1 !== null) {
-            $this->write(Level::NOTICE, $msg1, $msg2, MessageType::GROUP_END);
+            $this->write(self::LEVEL_NOTICE, $msg1, $msg2, MessageType::GROUP_END);
         }
         if ($this->State->LastWritten !== [__METHOD__, '']) {
-            $this->printOut('', Level::NOTICE);
+            $this->printOut('', self::LEVEL_NOTICE);
             $this->State->LastWritten = [__METHOD__, ''];
         }
         if ($this->State->GroupLevel > -1) {
@@ -777,8 +774,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function exception(
         Throwable $exception,
-        int $level = Level::ERROR,
-        ?int $traceLevel = Level::DEBUG
+        int $level = Console::LEVEL_ERROR,
+        ?int $traceLevel = Console::LEVEL_DEBUG
     ) {
         $ex = $exception;
         $msg2 = '';
@@ -798,7 +795,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
                 $message = $this->escape($ex->getMessage());
             }
 
-            if ($level <= Level::ERROR || ($debug ??= Env::getDebug())) {
+            if ($level <= self::LEVEL_ERROR || ($debug ??= Env::getDebug())) {
                 $file = $this->escape($ex->getFile());
                 $line = $ex->getLine();
                 $msg2 .= sprintf('%s ~~in %s:%d~~', $message, $file, $line);
@@ -835,7 +832,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     }
 
     /**
-     * @param array<Level::*,Target[]> $targets
+     * @param array<self::LEVEL_*,Target[]> $targets
      * @return Target[]
      */
     private function reduceTargets(array $targets): array
@@ -852,7 +849,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * Send a message to registered targets
      *
-     * @param int&Level::* $level
+     * @param self::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
@@ -870,7 +867,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * Send a message to registered targets once per run
      *
-     * @param int&Level::* $level
+     * @param self::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
@@ -893,7 +890,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * Send a message to registered TTY targets
      *
-     * @param int&Level::* $level
+     * @param self::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
@@ -911,9 +908,9 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @template T of Target
      *
-     * @param Level::* $level
+     * @param self::LEVEL_* $level
      * @param MessageType::* $type
-     * @param array<Level::*,T[]> $targets
+     * @param array<self::LEVEL_*,T[]> $targets
      * @return $this
      */
     private function _write(

@@ -3,18 +3,18 @@
 namespace Salient\Console\Support;
 
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 
 /**
  * Maps message levels and types to formats
  *
- * If multiple formats are assigned to the same {@see Level} and
- * {@see MessageType}, the format assigned last takes precedence.
+ * If multiple formats are assigned to the same level and type, the format
+ * assigned last takes precedence.
  */
 final class ConsoleMessageFormats
 {
-    /** @var array<Level::*,array<MessageType::*,MessageFormat>> */
+    /** @var array<Console::LEVEL_*,array<MessageType::*,MessageFormat>> */
     private array $Formats = [];
     private MessageFormat $FallbackFormat;
 
@@ -27,7 +27,7 @@ final class ConsoleMessageFormats
     /**
      * Assign a format to one or more message levels and types
      *
-     * @param array<Level::*>|Level::* $level
+     * @param array<Console::LEVEL_*>|Console::LEVEL_* $level
      * @param array<MessageType::*>|MessageType::* $type
      * @return $this
      */
@@ -45,10 +45,10 @@ final class ConsoleMessageFormats
     /**
      * Get the format assigned to a message level and type
      *
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param MessageType::* $type
      */
-    public function get($level, $type): MessageFormat
+    public function get(int $level, $type): MessageFormat
     {
         return $this->Formats[$level][$type] ?? $this->FallbackFormat;
     }

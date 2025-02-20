@@ -3,7 +3,6 @@
 namespace Salient\Tests;
 
 use Salient\Cli\CliApplication;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
@@ -19,7 +18,7 @@ abstract class CommandTestCase extends TestCase
      * @param class-string<CliCommandInterface> $command
      * @param string[] $args
      * @param string[] $name
-     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null $consoleMessages
      * @param (callable(CliApplicationInterface, CliCommandInterface): mixed)|null $callback
      */
     public function assertCommandProduces(

@@ -3,8 +3,8 @@
 namespace Salient\Testing\Console;
 
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Utility\File;
 use LogicException;
@@ -21,7 +21,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /** @var resource|null */
     private $Stream;
     private FormatterInterface $Formatter;
-    /** @var array<array{Level::*,string,2?:array<string,mixed>}> */
+    /** @var array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> */
     private array $Messages = [];
     private bool $IsValid = true;
 
@@ -124,7 +124,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * @inheritDoc
      */
-    public function write($level, string $message, array $context = []): void
+    public function write(int $level, string $message, array $context = []): void
     {
         $this->assertIsValid();
 
@@ -145,7 +145,7 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * Get messages written to the target and flush its message cache
      *
-     * @return array<array{Level::*,string,2?:array<string,mixed>}>
+     * @return array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>
      */
     public function getMessages(): array
     {

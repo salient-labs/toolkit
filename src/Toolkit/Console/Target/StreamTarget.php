@@ -3,7 +3,7 @@
 namespace Salient\Console\Target;
 
 use Salient\Console\Concept\ConsoleStreamTarget;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Facade\Err;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
@@ -213,7 +213,7 @@ final class StreamTarget extends ConsoleStreamTarget
     /**
      * @inheritDoc
      */
-    protected function writeToTarget($level, string $message, array $context): void
+    protected function writeToTarget(int $level, string $message, array $context): void
     {
         $this->assertIsValid();
 
@@ -226,7 +226,7 @@ final class StreamTarget extends ConsoleStreamTarget
         // and write a "clear to end of line" sequence before the next message
         if ($this->IsTty) {
             if (self::$HasPendingClearLine) {
-                $this->clearLine($level < Level::WARNING);
+                $this->clearLine($level < Console::LEVEL_WARNING);
             }
             if ($message === "\r") {
                 return;

@@ -5,8 +5,7 @@ namespace Salient\Console;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Utility\Format;
 use Throwable;
@@ -17,19 +16,19 @@ use Throwable;
 final class ConsoleLogger implements LoggerInterface
 {
     private const LOG_LEVEL_MAP = [
-        LogLevel::EMERGENCY => Level::EMERGENCY,
-        LogLevel::ALERT => Level::ALERT,
-        LogLevel::CRITICAL => Level::CRITICAL,
-        LogLevel::ERROR => Level::ERROR,
-        LogLevel::WARNING => Level::WARNING,
-        LogLevel::NOTICE => Level::NOTICE,
-        LogLevel::INFO => Level::INFO,
-        LogLevel::DEBUG => Level::DEBUG,
+        LogLevel::EMERGENCY => Console::LEVEL_EMERGENCY,
+        LogLevel::ALERT => Console::LEVEL_ALERT,
+        LogLevel::CRITICAL => Console::LEVEL_CRITICAL,
+        LogLevel::ERROR => Console::LEVEL_ERROR,
+        LogLevel::WARNING => Console::LEVEL_WARNING,
+        LogLevel::NOTICE => Console::LEVEL_NOTICE,
+        LogLevel::INFO => Console::LEVEL_INFO,
+        LogLevel::DEBUG => Console::LEVEL_DEBUG,
     ];
 
-    private ConsoleInterface $Writer;
+    private Console $Writer;
 
-    public function __construct(ConsoleInterface $writer)
+    public function __construct(Console $writer)
     {
         $this->Writer = $writer;
     }

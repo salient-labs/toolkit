@@ -5,7 +5,6 @@ namespace Salient\Sli\Command\Generate;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Core\Facade\Console;
 use Salient\Core\Reflection\ClassReflection;
@@ -1213,14 +1212,14 @@ abstract class AbstractGenerateCommand extends AbstractCommand
                         return;
                     }
                     Console::info('Would replace', $file);
-                    Console::count(Level::ERROR);
+                    Console::count(Console::LEVEL_ERROR);
                     $this->setExitStatus(1);
                     return;
                 }
                 $verb = 'Replacing';
             } elseif ($this->Check) {
                 Console::info('Would create', $file);
-                Console::count(Level::ERROR);
+                Console::count(Console::LEVEL_ERROR);
                 $this->setExitStatus(1);
                 return;
             }

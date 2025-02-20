@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Catalog;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Catalog\HasMessageLevel as Level;
 
 /**
  * @api
@@ -13,71 +13,71 @@ interface MessageLevelGroup
      * @var list<Level::*>
      */
     public const ALL = [
-        Level::EMERGENCY,
-        Level::ALERT,
-        Level::CRITICAL,
-        Level::ERROR,
-        Level::WARNING,
-        Level::NOTICE,
-        Level::INFO,
-        Level::DEBUG,
+        Level::LEVEL_EMERGENCY,
+        Level::LEVEL_ALERT,
+        Level::LEVEL_CRITICAL,
+        Level::LEVEL_ERROR,
+        Level::LEVEL_WARNING,
+        Level::LEVEL_NOTICE,
+        Level::LEVEL_INFO,
+        Level::LEVEL_DEBUG,
     ];
 
     /**
      * @var list<Level::*>
      */
     public const ALL_EXCEPT_DEBUG = [
-        Level::EMERGENCY,
-        Level::ALERT,
-        Level::CRITICAL,
-        Level::ERROR,
-        Level::WARNING,
-        Level::NOTICE,
-        Level::INFO,
+        Level::LEVEL_EMERGENCY,
+        Level::LEVEL_ALERT,
+        Level::LEVEL_CRITICAL,
+        Level::LEVEL_ERROR,
+        Level::LEVEL_WARNING,
+        Level::LEVEL_NOTICE,
+        Level::LEVEL_INFO,
     ];
 
     /**
      * @var list<Level::*>
      */
     public const ERRORS_AND_WARNINGS = [
-        Level::EMERGENCY,
-        Level::ALERT,
-        Level::CRITICAL,
-        Level::ERROR,
-        Level::WARNING,
+        Level::LEVEL_EMERGENCY,
+        Level::LEVEL_ALERT,
+        Level::LEVEL_CRITICAL,
+        Level::LEVEL_ERROR,
+        Level::LEVEL_WARNING,
     ];
 
     /**
      * @var list<Level::*>
      */
     public const ERRORS = [
-        Level::EMERGENCY,
-        Level::ALERT,
-        Level::CRITICAL,
-        Level::ERROR,
+        Level::LEVEL_EMERGENCY,
+        Level::LEVEL_ALERT,
+        Level::LEVEL_CRITICAL,
+        Level::LEVEL_ERROR,
     ];
 
     /**
      * @var list<Level::*>
      */
     public const INFO = [
-        Level::NOTICE,
-        Level::INFO,
-        Level::DEBUG,
+        Level::LEVEL_NOTICE,
+        Level::LEVEL_INFO,
+        Level::LEVEL_DEBUG,
     ];
 
     /**
      * @var list<Level::*>
      */
     public const INFO_EXCEPT_DEBUG = [
-        Level::NOTICE,
-        Level::INFO,
+        Level::LEVEL_NOTICE,
+        Level::LEVEL_INFO,
     ];
 
     /**
      * @var list<Level::*>
      */
     public const INFO_QUIET = [
-        Level::NOTICE,
+        Level::LEVEL_NOTICE,
     ];
 }

@@ -7,7 +7,6 @@ use Salient\Console\Support\ConsoleManPageFormat;
 use Salient\Console\Support\ConsoleMarkdownFormat;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Container\Application;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
@@ -324,7 +323,7 @@ class CliApplication extends Application implements CliApplicationInterface
 
             // or version info if it's "--version"
             if ($arg === '--version' && !$args) {
-                return $this->reportVersion(Level::INFO, true);
+                return $this->reportVersion(Console::LEVEL_INFO, true);
             }
 
             // - If $args was empty before this iteration, print terse usage
@@ -455,7 +454,7 @@ class CliApplication extends Application implements CliApplicationInterface
     /**
      * @inheritDoc
      */
-    public function reportVersion(int $level = Level::INFO, bool $stdout = false)
+    public function reportVersion(int $level = Console::LEVEL_INFO, bool $stdout = false)
     {
         $version = $this->getVersionString();
 

@@ -5,7 +5,6 @@ namespace Salient\Cli;
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
@@ -190,7 +189,7 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         if ($this->HasVersionArgument) {
-            $this->App->reportVersion(Level::INFO, true);
+            $this->App->reportVersion(Console::LEVEL_INFO, true);
             return 0;
         }
 

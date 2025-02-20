@@ -7,8 +7,8 @@ use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Catalog\HasAnsiEscapeSequence;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Salient\Contract\Console\ConsoleTag as Tag;
@@ -101,10 +101,10 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
 
         return (new MessageFormats())
             ->set(LevelGroup::ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
-            ->set(Level::WARNING, MessageTypeGroup::ALL, new MessageFormat($yellow, $default, $boldYellow))
-            ->set(Level::NOTICE, MessageTypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
-            ->set(Level::INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $yellow))
-            ->set(Level::DEBUG, MessageTypeGroup::ALL, new MessageFormat($dim, $dim, $dim))
+            ->set(Console::LEVEL_WARNING, MessageTypeGroup::ALL, new MessageFormat($yellow, $default, $boldYellow))
+            ->set(Console::LEVEL_NOTICE, MessageTypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
+            ->set(Console::LEVEL_INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $yellow))
+            ->set(Console::LEVEL_DEBUG, MessageTypeGroup::ALL, new MessageFormat($dim, $dim, $dim))
             ->set(LevelGroup::INFO, MessageType::PROGRESS, new MessageFormat($default, $yellow, $yellow))
             ->set(LevelGroup::INFO, MessageTypeGroup::GROUP, new MessageFormat($boldMagenta, $default, $boldMagenta))
             ->set(LevelGroup::INFO, MessageType::SUMMARY, new MessageFormat($default, $default, $bold))

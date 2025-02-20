@@ -4,7 +4,6 @@ namespace Salient\Tests\Console;
 
 use Salient\Console\Support\ConsoleState;
 use Salient\Console\Console as ConsoleService;
-use Salient\Contract\Catalog\MessageLevel;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
@@ -44,17 +43,17 @@ final class ConsoleTest extends TestCase
         }
 
         $this->assertSameConsoleMessages([
-            [MessageLevel::INFO, "⠋ Complete: 9%\r"],
-            [MessageLevel::INFO, "⠙ Complete: 18%\r"],
-            [MessageLevel::INFO, "⠹ Complete: 27%\r"],
-            [MessageLevel::INFO, "⠸ Complete: 36%\r"],
-            [MessageLevel::INFO, "⠼ Complete: 45%\r"],
-            [MessageLevel::INFO, "⠴ Complete: 54%\r"],
-            [MessageLevel::INFO, "⠦ Complete: 63%\r"],
-            [MessageLevel::INFO, "⠧ Complete: 72%\r"],
-            [MessageLevel::INFO, "⠇ Complete: 81%\r"],
-            [MessageLevel::INFO, "⠏ Complete: 90%\r"],
-            [MessageLevel::INFO, "⠋ Complete: 100%\r"],
+            [Console::LEVEL_INFO, "⠋ Complete: 9%\r"],
+            [Console::LEVEL_INFO, "⠙ Complete: 18%\r"],
+            [Console::LEVEL_INFO, "⠹ Complete: 27%\r"],
+            [Console::LEVEL_INFO, "⠸ Complete: 36%\r"],
+            [Console::LEVEL_INFO, "⠼ Complete: 45%\r"],
+            [Console::LEVEL_INFO, "⠴ Complete: 54%\r"],
+            [Console::LEVEL_INFO, "⠦ Complete: 63%\r"],
+            [Console::LEVEL_INFO, "⠧ Complete: 72%\r"],
+            [Console::LEVEL_INFO, "⠇ Complete: 81%\r"],
+            [Console::LEVEL_INFO, "⠏ Complete: 90%\r"],
+            [Console::LEVEL_INFO, "⠋ Complete: 100%\r"],
         ], $this->Target->getMessages());
     }
 

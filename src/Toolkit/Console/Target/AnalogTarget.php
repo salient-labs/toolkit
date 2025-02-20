@@ -13,7 +13,7 @@ final class AnalogTarget extends ConsoleTarget
     /**
      * @inheritDoc
      */
-    public function write($level, string $message, array $context = []): void
+    public function write(int $level, string $message, array $context = []): void
     {
         Analog::log($message, $level);
     }

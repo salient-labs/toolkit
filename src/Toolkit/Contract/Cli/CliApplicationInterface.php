@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Container\ApplicationInterface;
 use LogicException;
 
@@ -116,10 +116,10 @@ interface CliApplicationInterface extends ApplicationInterface
      * Print the application's name, version and commit reference, followed by
      * the PHP version
      *
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @return $this
      */
-    public function reportVersion(int $level = Level::INFO, bool $stdout = false);
+    public function reportVersion(int $level = Console::LEVEL_INFO, bool $stdout = false);
 
     /**
      * Get the application's name, version and commit reference, followed by the

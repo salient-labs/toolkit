@@ -6,7 +6,7 @@ use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Salient\Console\Concept\ConsoleTarget;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * Writes console output to a PSR-3 logger
@@ -14,17 +14,17 @@ use Salient\Contract\Catalog\MessageLevel as Level;
 final class LoggerTarget extends ConsoleTarget implements LoggerAwareInterface
 {
     /**
-     * @var array<Level::*,LogLevel::*>
+     * @var array<Console::LEVEL_*,LogLevel::*>
      */
     private const LOG_LEVEL_MAP = [
-        Level::EMERGENCY => LogLevel::EMERGENCY,
-        Level::ALERT => LogLevel::ALERT,
-        Level::CRITICAL => LogLevel::CRITICAL,
-        Level::ERROR => LogLevel::ERROR,
-        Level::WARNING => LogLevel::WARNING,
-        Level::NOTICE => LogLevel::NOTICE,
-        Level::INFO => LogLevel::INFO,
-        Level::DEBUG => LogLevel::DEBUG,
+        Console::LEVEL_EMERGENCY => LogLevel::EMERGENCY,
+        Console::LEVEL_ALERT => LogLevel::ALERT,
+        Console::LEVEL_CRITICAL => LogLevel::CRITICAL,
+        Console::LEVEL_ERROR => LogLevel::ERROR,
+        Console::LEVEL_WARNING => LogLevel::WARNING,
+        Console::LEVEL_NOTICE => LogLevel::NOTICE,
+        Console::LEVEL_INFO => LogLevel::INFO,
+        Console::LEVEL_DEBUG => LogLevel::DEBUG,
     ];
 
     private LoggerInterface $Logger;
@@ -45,7 +45,7 @@ final class LoggerTarget extends ConsoleTarget implements LoggerAwareInterface
     /**
      * @inheritDoc
      */
-    public function write($level, string $message, array $context = []): void
+    public function write(int $level, string $message, array $context = []): void
     {
         $this->Logger->log(self::LOG_LEVEL_MAP[$level], $message, $context);
     }

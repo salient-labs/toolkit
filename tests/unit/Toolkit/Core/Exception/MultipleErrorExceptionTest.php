@@ -2,7 +2,6 @@
 
 namespace Salient\Tests\Core;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Core\Exception\MultipleErrorException;
 use Salient\Core\Facade\Console;
@@ -52,8 +51,8 @@ final class MultipleErrorExceptionTest extends TestCase
         $exception->reportErrors(Console::getInstance());
         $this->assertFalse($exception->hasUnreportedErrors());
         $this->assertSameConsoleMessages([
-            [Level::ERROR, 'Error: error1'],
-            [Level::ERROR, "Error:\n  error2\n  error2, line2"],
+            [Console::LEVEL_ERROR, 'Error: error1'],
+            [Console::LEVEL_ERROR, "Error:\n  error2\n  error2, line2"],
         ], $this->ConsoleTarget->getMessages());
     }
 }

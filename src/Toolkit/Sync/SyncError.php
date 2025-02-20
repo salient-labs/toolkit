@@ -2,7 +2,7 @@
 
 namespace Salient\Sync;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncEntityInterface;
@@ -28,7 +28,7 @@ final class SyncError implements SyncErrorInterface, Buildable
     private string $Message;
     /** @var list<mixed[]|object|int|float|string|bool|null> */
     private array $Values;
-    /** @var Level::* */
+    /** @var Console::LEVEL_* */
     private int $Level;
     private ?SyncEntityInterface $Entity;
     private ?string $EntityName;
@@ -41,7 +41,7 @@ final class SyncError implements SyncErrorInterface, Buildable
      * @param ErrorType::* $errorType Error type.
      * @param string $message `sprintf()` format string that explains the error.
      * @param list<mixed[]|object|int|float|string|bool|null>|null $values Values applied to the message format string. Default: `[$entityName]`
-     * @param Level::* $level Error severity/message level.
+     * @param Console::LEVEL_* $level Error severity/message level.
      * @param SyncEntityInterface|null $entity Entity associated with the error.
      * @param string|null $entityName Display name of the entity associated with the error. Default: `$entity->getUri()`
      * @param SyncProviderInterface|null $provider Sync provider associated with the error. Default: `$entity->getProvider()`
@@ -50,7 +50,7 @@ final class SyncError implements SyncErrorInterface, Buildable
         int $errorType,
         string $message,
         ?array $values = null,
-        int $level = Level::ERROR,
+        int $level = Console::LEVEL_ERROR,
         ?SyncEntityInterface $entity = null,
         ?string $entityName = null,
         ?SyncProviderInterface $provider = null

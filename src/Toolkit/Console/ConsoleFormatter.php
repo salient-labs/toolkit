@@ -8,9 +8,9 @@ use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleFormatInterface as Format;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Core\Concern\ImmutableTrait;
@@ -27,14 +27,14 @@ final class ConsoleFormatter implements FormatterInterface
     use ImmutableTrait;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
-        Level::EMERGENCY => '! ',  // U+0021
-        Level::ALERT => '! ',  // U+0021
-        Level::CRITICAL => '! ',  // U+0021
-        Level::ERROR => '! ',  // U+0021
-        Level::WARNING => '^ ',  // U+005E
-        Level::NOTICE => '➤ ',  // U+27A4
-        Level::INFO => '- ',  // U+002D
-        Level::DEBUG => ': ',  // U+003A
+        Console::LEVEL_EMERGENCY => '! ',  // U+0021
+        Console::LEVEL_ALERT => '! ',  // U+0021
+        Console::LEVEL_CRITICAL => '! ',  // U+0021
+        Console::LEVEL_ERROR => '! ',  // U+0021
+        Console::LEVEL_WARNING => '^ ',  // U+005E
+        Console::LEVEL_NOTICE => '➤ ',  // U+27A4
+        Console::LEVEL_INFO => '- ',  // U+002D
+        Console::LEVEL_DEBUG => ': ',  // U+003A
     ];
 
     public const DEFAULT_TYPE_PREFIX_MAP = [
@@ -145,7 +145,7 @@ REGEX;
     private MessageFormats $MessageFormats;
     /** @var callable(): (int|null) */
     private $WidthCallback;
-    /** @var array<Level::*,string> */
+    /** @var array<Console::LEVEL_*,string> */
     private array $LevelPrefixMap;
     /** @var array<MessageType::*,string> */
     private array $TypePrefixMap;
@@ -154,7 +154,7 @@ REGEX;
 
     /**
      * @param (callable(): (int|null))|null $widthCallback
-     * @param array<Level::*,string> $levelPrefixMap
+     * @param array<Console::LEVEL_*,string> $levelPrefixMap
      * @param array<MessageType::*,string> $typePrefixMap
      */
     public function __construct(
@@ -203,7 +203,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getTagFormat($tag): Format
+    public function getTagFormat(int $tag): Format
     {
         return $this->TagFormats->getFormat($tag);
     }
@@ -211,8 +211,10 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getMessageFormat($level, $type = MessageType::STANDARD): MessageFormat
-    {
+    public function getMessageFormat(
+        int $level,
+        int $type = MessageType::STANDARD
+    ): MessageFormat {
         return $this->MessageFormats->get($level, $type);
     }
 
@@ -236,8 +238,8 @@ REGEX;
      * @inheritDoc
      */
     public function getMessagePrefix(
-        $level,
-        $type = MessageType::STANDARD
+        int $level,
+        int $type = MessageType::STANDARD
     ): string {
         if ($type === MessageType::UNFORMATTED || $type === MessageType::UNDECORATED) {
             return '';
@@ -559,8 +561,8 @@ REGEX;
     public function formatMessage(
         string $msg1,
         ?string $msg2 = null,
-        $level = Level::INFO,
-        $type = MessageType::STANDARD
+        int $level = Console::LEVEL_INFO,
+        int $type = MessageType::STANDARD
     ): string {
         $attributes = new MessageAttributes($level, $type);
 

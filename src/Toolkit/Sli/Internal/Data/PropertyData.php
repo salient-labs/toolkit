@@ -2,8 +2,7 @@
 
 namespace Salient\Sli\Internal\Data;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\PHPDoc\Tag\PropertyTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
@@ -66,14 +65,14 @@ class PropertyData implements JsonSerializable
         array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
-        ?ConsoleInterface $console = null
+        ?Console $console = null
     ): self {
         $propertyName = $property->getName();
         try {
             $phpDoc = PHPDoc::forProperty($property, $class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
-            !$console || $console->exception($ex, Level::WARNING, null);
+            !$console || $console->exception($ex, Console::LEVEL_WARNING, null);
             $phpDoc = new PHPDoc();
         }
 
