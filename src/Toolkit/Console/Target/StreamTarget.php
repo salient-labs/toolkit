@@ -232,7 +232,7 @@ final class StreamTarget extends ConsoleStreamTarget
                 return;
             }
             if ($message !== '' && $message[-1] === "\r") {
-                File::write($this->Stream, self::WRAP_OFF . rtrim($message, "\r"));
+                File::write($this->Stream, self::NO_AUTO_WRAP . rtrim($message, "\r"));
                 self::$HasPendingClearLine = true;
                 return;
             }
@@ -266,8 +266,8 @@ final class StreamTarget extends ConsoleStreamTarget
         $data = $preserveOutputOnError
             && Err::isLoaded()
             && Err::isShuttingDownOnError()
-                ? self::WRAP_ON . "\n"
-                : "\r" . self::CLEAR_LINE . self::WRAP_ON;
+                ? self::AUTO_WRAP . "\n"
+                : "\r" . self::CLEAR_LINE . self::AUTO_WRAP;
         File::write($this->Stream, $data);
         self::$HasPendingClearLine = false;
     }

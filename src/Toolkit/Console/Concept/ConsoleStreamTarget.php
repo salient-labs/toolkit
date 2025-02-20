@@ -60,12 +60,12 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
 
         $bold = Format::ttyBold();
         $dim = Format::ttyDim();
-        $boldCyan = Format::ttyBold(self::CYAN);
-        $red = Format::ttyColour(self::RED);
-        $green = Format::ttyColour(self::GREEN);
-        $yellow = Format::ttyColour(self::YELLOW);
-        $cyan = Format::ttyColour(self::CYAN);
-        $yellowUnderline = Format::ttyUnderline(self::YELLOW);
+        $boldCyan = Format::ttyBold(self::CYAN_FG);
+        $red = Format::ttyColour(self::RED_FG);
+        $green = Format::ttyColour(self::GREEN_FG);
+        $yellow = Format::ttyColour(self::YELLOW_FG);
+        $cyan = Format::ttyColour(self::CYAN_FG);
+        $yellowUnderline = Format::ttyUnderline(self::YELLOW_FG);
 
         return (new TagFormats())
             ->withFormat(Tag::HEADING, $boldCyan)
@@ -89,14 +89,14 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
         $default = Format::getDefaultFormat();
         $bold = Format::ttyBold();
         $dim = Format::ttyDim();
-        $boldRed = Format::ttyBold(self::RED);
-        $boldGreen = Format::ttyBold(self::GREEN);
-        $boldYellow = Format::ttyBold(self::YELLOW);
-        $boldMagenta = Format::ttyBold(self::MAGENTA);
-        $boldCyan = Format::ttyBold(self::CYAN);
-        $green = Format::ttyColour(self::GREEN);
-        $yellow = Format::ttyColour(self::YELLOW);
-        $cyan = Format::ttyColour(self::CYAN);
+        $boldRed = Format::ttyBold(self::RED_FG);
+        $boldGreen = Format::ttyBold(self::GREEN_FG);
+        $boldYellow = Format::ttyBold(self::YELLOW_FG);
+        $boldMagenta = Format::ttyBold(self::MAGENTA_FG);
+        $boldCyan = Format::ttyBold(self::CYAN_FG);
+        $green = Format::ttyColour(self::GREEN_FG);
+        $yellow = Format::ttyColour(self::YELLOW_FG);
+        $cyan = Format::ttyColour(self::CYAN_FG);
 
         return (new MessageFormats())
             ->set(Console::LEVELS_ERRORS, MessageTypeGroup::ALL, new MessageFormat($boldRed, $default, $boldRed))
