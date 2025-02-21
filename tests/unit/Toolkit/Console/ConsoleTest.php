@@ -14,16 +14,16 @@ use Salient\Tests\TestCase;
  */
 final class ConsoleTest extends TestCase
 {
-    private ConsoleService $Writer;
+    private ConsoleService $Console;
     private MockTarget $Target;
 
     protected function setUp(): void
     {
-        $this->Writer = new ConsoleService();
+        $this->Console = new ConsoleService();
         $this->Target = new MockTarget();
-        $this->Writer->registerTarget($this->Target);
+        $this->Console->registerTarget($this->Target);
 
-        Console::load($this->Writer);
+        Console::load($this->Console);
     }
 
     protected function tearDown(): void
@@ -63,6 +63,6 @@ final class ConsoleTest extends TestCase
             /** @var ConsoleService $this */
             // @phpstan-ignore property.private, varTag.nativeType
             return $this->State;
-        })->bindTo($this->Writer, $this->Writer)();
+        })->bindTo($this->Console, $this->Console)();
     }
 }

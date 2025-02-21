@@ -26,13 +26,13 @@ use Throwable;
  * @method static ConsoleInterface errorOnce(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "! $msg1 $msg2" with level ERROR once per run
  * @method static string escape(string $string) Escape a string so it can be safely used in a console message
  * @method static ConsoleInterface exception(Throwable $exception, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_ERROR, ConsoleInterface::LEVEL_*|null $traceLevel = ConsoleInterface::LEVEL_DEBUG) Print an exception's name and message with a given level, optionally followed by its stack trace with a different level (see {@see ConsoleInterface::exception()})
- * @method static int getErrorCount() Get the number of error messages recorded by the writer so far
+ * @method static int getErrorCount() Get the number of error messages recorded so far
  * @method static FormatterInterface getFormatter(ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO) Get an output formatter for a registered target (see {@see ConsoleInterface::getFormatter()})
- * @method static LoggerInterface getLogger() Get a PSR-3 logger backed by the writer
+ * @method static LoggerInterface getLogger() Get a PSR-3 logger
  * @method static ConsoleTargetStreamInterface getStderrTarget() Get a target for STDERR, creating an unregistered one if necessary
  * @method static ConsoleTargetStreamInterface getStdoutTarget() Get a target for STDOUT, creating an unregistered one if necessary
  * @method static ConsoleTargetInterface[] getTargets(ConsoleInterface::LEVEL_*|null $level = null, int-mask-of<ConsoleTargetTypeFlag::*> $flags = 0) Get a list of registered targets, optionally filtered by level and type
- * @method static int getWarningCount() Get the number of warning messages recorded by the writer so far
+ * @method static int getWarningCount() Get the number of warning messages recorded so far
  * @method static int|null getWidth(ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO) Get the width of a registered target in columns (see {@see ConsoleInterface::getWidth()})
  * @method static ConsoleInterface group(string $msg1, string|null $msg2 = null, string|null $endMsg1 = null, string|null $endMsg2 = null) Increase the indentation level of messages and print "» $msg1 $msg2" with level NOTICE (see {@see ConsoleInterface::group()})
  * @method static ConsoleInterface groupEnd() Close the nested message group most recently opened with group()

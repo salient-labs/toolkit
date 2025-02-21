@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Core\Exception;
 
-use Salient\Contract\Console\ConsoleInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * @api
@@ -25,7 +25,7 @@ interface MultipleErrorException extends Exception
      * Report the exception's errors as console messages with level ERROR or
      * higher
      */
-    public function reportErrors(ConsoleInterface $writer): void;
+    public function reportErrors(Console $console): void;
 
     /**
      * Check if the exception has unreported errors

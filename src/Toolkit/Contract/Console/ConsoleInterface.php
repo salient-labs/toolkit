@@ -48,9 +48,9 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
     /**
      * Deregister and close a registered target
      *
-     * If `$target` is registered with the writer, it is deregistered and closed
-     * via {@see ConsoleTargetInterface::close()}, otherwise calling this method
-     * has no effect.
+     * If `$target` is a registered target, it is deregistered and closed via
+     * {@see ConsoleTargetInterface::close()}, otherwise calling this method has
+     * no effect.
      *
      * @return $this
      */
@@ -101,7 +101,7 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
     public function getFormatter(int $level = ConsoleInterface::LEVEL_INFO): FormatterInterface;
 
     /**
-     * Get a PSR-3 logger backed by the writer
+     * Get a PSR-3 logger
      */
     public function getLogger(): LoggerInterface;
 
@@ -116,12 +116,12 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
     public function getStderrTarget(): ConsoleTargetStreamInterface;
 
     /**
-     * Get the number of error messages recorded by the writer so far
+     * Get the number of error messages recorded so far
      */
     public function getErrorCount(): int;
 
     /**
-     * Get the number of warning messages recorded by the writer so far
+     * Get the number of warning messages recorded so far
      */
     public function getWarningCount(): int;
 
@@ -322,8 +322,8 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
      * followed by its stack trace with a different level
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param ConsoleInterface::LEVEL_*|null $traceLevel If `null`, the exception's
-     * stack trace is not printed.
+     * @param ConsoleInterface::LEVEL_*|null $traceLevel If `null`, the
+     * exception's stack trace is not printed.
      * @return $this
      */
     public function exception(

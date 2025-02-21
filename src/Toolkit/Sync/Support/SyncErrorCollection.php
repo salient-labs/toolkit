@@ -110,13 +110,13 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
      * @inheritDoc
      */
     public function reportErrors(
-        ?ConsoleInterface $writer = null,
+        ?ConsoleInterface $console = null,
         string $successText = 'No sync errors recorded'
     ): void {
-        $writer ??= Console::getInstance();
+        $console ??= Console::getInstance();
 
         if (!$this->ErrorCount && !$this->WarningCount) {
-            $writer->info($successText);
+            $console->info($successText);
             return;
         }
 
@@ -124,7 +124,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
             ? Console::LEVEL_ERROR
             : Console::LEVEL_WARNING;
 
-        $writer->message(
+        $console->message(
             Inflect::format(
                 $this->ErrorCount,
                 '{{#}} sync {{#:error}}%s recorded:',
@@ -137,7 +137,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
             MessageType::STANDARD,
         );
 
-        $writer->print(
+        $console->print(
             $this->doGetSummaryText(true),
             $level,
             MessageType::UNFORMATTED,
