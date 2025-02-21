@@ -3,11 +3,11 @@
 namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Contract\Catalog\HasMessageLevel;
-use Salient\Contract\Catalog\HasMessageLevels;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Instantiable;
+use Salient\Contract\HasMessageLevel;
+use Salient\Contract\HasMessageLevels;
 use Throwable;
 
 interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLevels

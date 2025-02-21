@@ -2,13 +2,13 @@
 
 namespace Salient\Contract\Core\Entity;
 
-use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Container\ServiceAwareInterface;
 use Salient\Contract\Core\Exception\InvalidDataException;
 use Salient\Contract\Core\Provider\ProviderAwareInterface;
 use Salient\Contract\Core\Provider\ProviderContextAwareInterface;
 use Salient\Contract\Core\Provider\ProviderContextInterface;
 use Salient\Contract\Core\Provider\ProviderInterface;
+use Salient\Contract\HasConformity;
 
 /**
  * @api

@@ -7,7 +7,7 @@ use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Salient\Console\Console;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\HasMessageLevel;
+use Salient\Contract\HasMessageLevel;
 use Salient\Testing\Console\MockTarget;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;

@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Core\Entity;
 
-use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Exception\InvalidDataException;
+use Salient\Contract\HasConformity;
 
 /**
  * @api

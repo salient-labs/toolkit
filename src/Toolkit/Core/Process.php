@@ -2,7 +2,7 @@
 
 namespace Salient\Core;
 
-use Salient\Contract\Catalog\HasFileDescriptor;
+use Salient\Contract\HasFileDescriptor;
 use Salient\Core\Exception\ProcessDidNotTerminateException;
 use Salient\Core\Exception\ProcessException;
 use Salient\Core\Exception\ProcessFailedException;

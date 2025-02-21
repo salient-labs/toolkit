@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Catalog\HasTextComparisonFlag;
+use Salient\Contract\HasTextComparisonFlag;
 
 /**
  * Resolves a name to an entity

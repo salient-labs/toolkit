@@ -3,9 +3,9 @@
 namespace Salient\Console\Support;
 
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Catalog\HasEscapeSequence;
 use Salient\Contract\Console\ConsoleFormatInterface;
 use Salient\Contract\Console\ConsoleTag as Tag;
+use Salient\Contract\HasEscapeSequence;
 
 /**
  * Applies inline character sequences to console output

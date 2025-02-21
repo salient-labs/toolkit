@@ -6,12 +6,12 @@ use Salient\Console\Support\ConsoleFormat as Format;
 use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Catalog\HasEscapeSequence;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
+use Salient\Contract\HasEscapeSequence;
 
 /**
  * Base class for console output targets with an underlying PHP stream

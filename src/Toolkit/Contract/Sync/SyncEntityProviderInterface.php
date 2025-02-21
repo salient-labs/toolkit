@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Catalog\HasTextComparisonFlag;
 use Salient\Contract\Core\Provider\HasProvider;
 use Salient\Contract\Iterator\FluentIteratorInterface;
+use Salient\Contract\HasTextComparisonFlag;
 use Closure;
 
 /**

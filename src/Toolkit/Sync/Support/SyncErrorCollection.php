@@ -4,12 +4,12 @@ namespace Salient\Sync\Support;
 
 use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\HasMessageLevel;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
+use Salient\Contract\HasMessageLevel;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Inflect;

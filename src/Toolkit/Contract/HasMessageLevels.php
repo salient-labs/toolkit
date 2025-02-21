@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Catalog;
+namespace Salient\Contract;
 
-use Salient\Contract\Catalog\HasMessageLevel as Level;
+use Salient\Contract\HasMessageLevel as Level;
 
 /**
  * @api

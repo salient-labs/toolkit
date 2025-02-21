@@ -4,14 +4,14 @@ namespace Salient\Core\Facade;
 
 use Psr\Log\LoggerInterface;
 use Salient\Console\Console as ConsoleService;
-use Salient\Contract\Catalog\HasMessageLevel;
-use Salient\Contract\Catalog\HasMessageLevels;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Console\ConsoleTargetTypeFlag;
+use Salient\Contract\HasMessageLevel;
+use Salient\Contract\HasMessageLevels;
 use Throwable;
 
 /**
