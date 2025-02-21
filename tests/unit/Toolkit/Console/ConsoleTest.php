@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Console;
 
-use Salient\Console\Support\ConsoleState;
 use Salient\Console\Console as ConsoleService;
+use Salient\Console\ConsoleState;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
