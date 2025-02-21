@@ -8,16 +8,21 @@ namespace Salient\Tests\Reflection;
 trait MyReusedTrait
 {
     /**
-     * MyReusedTrait::$MyDocumentedProperty PHPDoc
+     * MyReusedTrait::$MyDocumentedProperty
      *
      * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyReusedTrait::MyDocumentedMethod() PHPDoc
+     * MyReusedTrait::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod() {}
+
+    /**
+     * MyReusedTrait::MyPrivateMethod()
+     */
+    private function MyPrivateMethod(): void {}
 }

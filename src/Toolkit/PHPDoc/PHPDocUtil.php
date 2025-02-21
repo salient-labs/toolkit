@@ -31,41 +31,70 @@ final class PHPDocUtil extends AbstractUtility
     /**
      * Get an array of doc comments for a class and its parents
      *
-     * Returns an empty array if no doc comments are found for the class or any
-     * extended classes or interfaces.
-     *
      * @param ReflectionClass<*> $class
-     * @param bool $includeAll If `true`, entries are returned for `$class` and
+     * @param bool $fromClass If `true`, entries are returned for `$class` and
      * every parent, including any without doc comments.
-     * @return ($includeAll is false ? array<class-string,string> : array<class-string,string|null>)
+     * @param bool $groupTraits If `true`, entries for traits are grouped with
+     * class entries in a nested array.
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is false ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is false ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     public static function getAllClassDocComments(
         ReflectionClass $class,
-        bool $includeAll = false
+        bool $fromClass = false,
+        bool $groupTraits = false
     ): array {
         $comments = [];
         $current = $class;
+        $seen = [];
         do {
             $name = $current->getName();
             $comment = $current->getDocComment();
-            if ($comment === false) {
-                if ($includeAll) {
-                    $comments[$name] = null;
-                }
-            } else {
-                $comments[$name] = Str::setEol($comment);
+            if ($comment !== false || $fromClass) {
+                $comments[$name] = $comment === false
+                    ? null
+                    : Str::setEol($comment);
             }
 
             if ($current->isInterface()) {
                 break;
             }
 
-            foreach ($current->getTraits() as $trait) {
-                // Recurse into inserted traits
-                $comments = array_merge(
-                    $comments,
-                    self::getAllClassDocComments($trait, $includeAll),
-                );
+            if ($traits = $current->getTraits()) {
+                if ($groupTraits) {
+                    $group = [];
+                    if ($comment !== false || $fromClass) {
+                        /** @var string|null */
+                        $comment = $comments[$name];
+                        $group[$name] = $comment;
+                    }
+                    $originalGroup = $group;
+                    foreach ($traits as $traitName => $trait) {
+                        // Recurse into inserted traits not already seen
+                        if (!array_key_exists($traitName, $seen)) {
+                            $traitComments = array_diff_key(
+                                self::getAllClassDocComments($trait, $fromClass),
+                                $seen,
+                            );
+                            $group += $traitComments;
+                            $seen += $traitComments;
+                        }
+                    }
+                    if ($group !== $originalGroup) {
+                        $comments[$name] = $group;
+                    }
+                } else {
+                    foreach ($traits as $trait) {
+                        // Recurse into inserted traits
+                        $comments = array_merge(
+                            $comments,
+                            self::getAllClassDocComments($trait, $fromClass),
+                        );
+                    }
+                }
             }
         } while ($current = $current->getParentClass());
 
@@ -75,12 +104,10 @@ final class PHPDocUtil extends AbstractUtility
 
         foreach (self::getInterfaces($class) as $name => $interface) {
             $comment = $interface->getDocComment();
-            if ($comment === false) {
-                if ($includeAll) {
-                    $comments[$name] = null;
-                }
-            } else {
-                $comments[$name] = Str::setEol($comment);
+            if ($comment !== false || $fromClass) {
+                $comments[$name] = $comment === false
+                    ? null
+                    : Str::setEol($comment);
             }
         }
 
@@ -91,48 +118,72 @@ final class PHPDocUtil extends AbstractUtility
      * Get an array of doc comments for a method from its declaring class and
      * its parents
      *
-     * Returns an empty array if no doc comments are found in the declaring
-     * class or in any inherited classes, interfaces or traits.
-     *
      * @param ReflectionClass<*>|null $fromClass If given, entries are
      * returned for `$fromClass` and every parent with `$method`, including any
      * without doc comments or where `$method` is not declared.
+     * @param bool $groupTraits If `true`, entries for traits are grouped with
+     * class entries in a nested array.
      * @param array<class-string,string|null>|null $classDocComments If given,
      * receives the doc comment of the declaring class for each entry in the
      * return value.
-     * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is null ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     public static function getAllMethodDocComments(
         ReflectionMethod $method,
         ?ReflectionClass $fromClass = null,
+        bool $groupTraits = false,
         ?array &$classDocComments = null
     ): array {
-        if (func_num_args() > 2) {
+        if (func_num_args() > 3) {
             $classDocComments = [];
         }
 
-        $class = $fromClass ?? $method->getDeclaringClass();
+        $declaring = $method->getDeclaringClass();
+        $class = $fromClass ?? $declaring;
         $name = self::getMethodName($method, $class);
+        if ($fromClass && (
+            !$fromClass->hasMethod($name)
+            || $fromClass->getMethod($name)->getDeclaringClass()->getName()
+                !== $declaring->getName()
+        )) {
+            throw new InvalidArgumentException(sprintf(
+                '$fromClass (%s) does not inherit %s::%s()',
+                $fromClass->getName(),
+                $declaring->getName(),
+                $name,
+            ));
+        }
+
         $comments = self::doGetAllMethodDocComments(
             $method,
             $fromClass,
+            $declaring,
             $name,
             $classDocComments,
+            $groupTraits,
         );
 
+        if ($class->isTrait()) {
+            return $comments;
+        }
+
         foreach (self::getInterfaces($class) as $interface) {
-            if (!$interface->hasMethod($name)) {
-                continue;
+            if ($interface->hasMethod($name)) {
+                $comments = array_merge(
+                    $comments,
+                    self::doGetAllMethodDocComments(
+                        $interface->getMethod($name),
+                        $fromClass ? $interface : null,
+                        $declaring,
+                        $name,
+                        $classDocComments,
+                    ),
+                );
             }
-            $comments = array_merge(
-                $comments,
-                self::doGetAllMethodDocComments(
-                    $interface->getMethod($name),
-                    $fromClass ? $interface : null,
-                    $name,
-                    $classDocComments,
-                )
-            );
         }
 
         return $comments;
@@ -140,38 +191,44 @@ final class PHPDocUtil extends AbstractUtility
 
     /**
      * @param ReflectionClass<*>|null $fromClass
+     * @param ReflectionClass<*> $declaring
      * @param array<class-string,string|null>|null $classDocComments
-     * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is null ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     private static function doGetAllMethodDocComments(
         ReflectionMethod $method,
         ?ReflectionClass $fromClass,
+        ReflectionClass $declaring,
         string $name,
-        ?array &$classDocComments
+        ?array &$classDocComments,
+        bool $groupTraits = false
     ): array {
         $comments = [];
         $current = $fromClass ?? $method->getDeclaringClass();
+        $seen = [];
         do {
-            // The declaring class of a method declared in a trait is always the
-            // class or trait that inserted it, so use its location to be sure
-            $isDeclaring = (
+            $class = $current->getName();
+            $comment = (
                 !$fromClass
-                || $method->getDeclaringClass()->getName() === $current->getName()
-            ) && self::isMethodInClass($method, $current, $name);
-
-            $comment = $isDeclaring ? $method->getDocComment() : false;
+                || $method->getDeclaringClass()->getName() === $class
+            ) && self::isMethodInClass($method, $current, $name)
+                ? $method->getDocComment()
+                : false;
 
             if ($comment !== false || $fromClass) {
-                $class = $current->getName();
                 $comments[$class] = $comment === false
                     ? null
                     : Str::setEol($comment);
 
                 if ($classDocComments !== null) {
-                    $comment = $current->getDocComment();
-                    $classDocComments[$class] = $comment === false
+                    $classComment = $current->getDocComment();
+                    $classDocComments[$class] = $classComment === false
                         ? null
-                        : Str::setEol($comment);
+                        : Str::setEol($classComment);
                 }
             }
 
@@ -179,22 +236,58 @@ final class PHPDocUtil extends AbstractUtility
                 return $comments;
             }
 
-            $aliases = self::getTraitAliases($current);
-            foreach ($current->getTraits() as $traitName => $trait) {
-                $originalName = $aliases[$traitName][$name] ?? $name;
-                if (!$trait->hasMethod($originalName)) {
-                    continue;
+            if ($traits = $current->getTraits()) {
+                $aliases = self::getTraitAliases($current);
+                if ($groupTraits) {
+                    $group = [];
+                    if ($comment !== false || $fromClass) {
+                        /** @var string|null */
+                        $comment = $comments[$class];
+                        $group[$class] = $comment;
+                    }
+                    $originalGroup = $group;
+                    foreach ($traits as $traitName => $trait) {
+                        $originalName = $aliases[$traitName][$name] ?? $name;
+                        // Recurse into inserted traits not already seen
+                        if (
+                            $trait->hasMethod($originalName)
+                            && !array_key_exists($traitName, $seen)
+                        ) {
+                            $traitComments = array_diff_key(
+                                self::doGetAllMethodDocComments(
+                                    $trait->getMethod($originalName),
+                                    $fromClass ? $trait : null,
+                                    $declaring,
+                                    $originalName,
+                                    $classDocComments,
+                                ),
+                                $seen,
+                            );
+                            $group += $traitComments;
+                            $seen += $traitComments;
+                        }
+                    }
+                    if ($group !== $originalGroup) {
+                        $comments[$class] = $group;
+                    }
+                } else {
+                    foreach ($traits as $traitName => $trait) {
+                        $originalName = $aliases[$traitName][$name] ?? $name;
+                        // Recurse into inserted traits
+                        if ($trait->hasMethod($originalName)) {
+                            $comments = array_merge(
+                                $comments,
+                                self::doGetAllMethodDocComments(
+                                    $trait->getMethod($originalName),
+                                    $fromClass ? $trait : null,
+                                    $declaring,
+                                    $originalName,
+                                    $classDocComments,
+                                ),
+                            );
+                        }
+                    }
                 }
-                // Recurse into inserted traits
-                $comments = array_merge(
-                    $comments,
-                    self::doGetAllMethodDocComments(
-                        $trait->getMethod($originalName),
-                        $fromClass ? $trait : null,
-                        $originalName,
-                        $classDocComments,
-                    ),
-                );
             }
 
             $current = $current->getParentClass();
@@ -203,6 +296,12 @@ final class PHPDocUtil extends AbstractUtility
             }
 
             $method = $current->getMethod($name);
+            if ($method->isPrivate() && (
+                !$fromClass
+                || $declaring->isSubclassOf($method->getDeclaringClass())
+            )) {
+                return $comments;
+            }
             if (!$fromClass) {
                 $current = $method->getDeclaringClass();
             }
@@ -213,32 +312,52 @@ final class PHPDocUtil extends AbstractUtility
      * Get an array of doc comments for a property from its declaring class and
      * its parents
      *
-     * Returns an empty array if no doc comments are found in the declaring
-     * class or in any inherited classes or traits.
-     *
      * @param ReflectionClass<*>|null $fromClass If given, entries are
      * returned for `$fromClass` and every parent with `$property`, including
      * any without doc comments or where `$property` is not declared.
+     * @param bool $groupTraits If `true`, entries for traits are grouped with
+     * class entries in a nested array.
      * @param array<class-string,string|null>|null $classDocComments If given,
      * receives the doc comment of the declaring class for each entry in the
      * return value.
-     * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is null ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     public static function getAllPropertyDocComments(
         ReflectionProperty $property,
         ?ReflectionClass $fromClass = null,
+        bool $groupTraits = false,
         ?array &$classDocComments = null
     ): array {
-        if (func_num_args() > 2) {
+        if (func_num_args() > 3) {
             $classDocComments = [];
         }
 
+        $declaring = $property->getDeclaringClass();
         $name = $property->getName();
+        if ($fromClass && (
+            !$fromClass->hasProperty($name)
+            || $fromClass->getProperty($name)->getDeclaringClass()->getName()
+                !== $declaring->getName()
+        )) {
+            throw new InvalidArgumentException(sprintf(
+                '$fromClass (%s) does not inherit %s::$%s',
+                $fromClass->getName(),
+                $declaring->getName(),
+                $name,
+            ));
+        }
+
         $comments = self::doGetAllPropertyDocComments(
             $property,
             $fromClass,
+            $declaring,
             $name,
             $classDocComments,
+            $groupTraits,
         );
 
         return $comments;
@@ -246,52 +365,100 @@ final class PHPDocUtil extends AbstractUtility
 
     /**
      * @param ReflectionClass<*>|null $fromClass
+     * @param ReflectionClass<*> $declaring
      * @param array<class-string,string|null>|null $classDocComments
-     * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is null ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     private static function doGetAllPropertyDocComments(
         ReflectionProperty $property,
         ?ReflectionClass $fromClass,
+        ReflectionClass $declaring,
         string $name,
-        ?array &$classDocComments
+        ?array &$classDocComments,
+        bool $groupTraits = false
     ): array {
         $comments = [];
         $current = $fromClass ?? $property->getDeclaringClass();
+        $seen = [];
         do {
-            $isDeclaring = (
+            $class = $current->getName();
+            $comment = (
                 !$fromClass
-                || $property->getDeclaringClass()->getName() === $current->getName()
-            ) && self::isPropertyInClass($property, $current, $name);
-
-            $comment = $isDeclaring ? $property->getDocComment() : false;
+                || $property->getDeclaringClass()->getName() === $class
+            ) && self::isPropertyInClass($property, $current, $name)
+                ? $property->getDocComment()
+                : false;
 
             if ($comment !== false || $fromClass) {
-                $class = $current->getName();
                 $comments[$class] = $comment === false
                     ? null
                     : Str::setEol($comment);
+
                 if ($classDocComments !== null) {
-                    $comment = $current->getDocComment();
-                    $classDocComments[$class] = $comment === false
+                    $classComment = $current->getDocComment();
+                    $classDocComments[$class] = $classComment === false
                         ? null
-                        : Str::setEol($comment);
+                        : Str::setEol($classComment);
                 }
             }
 
-            foreach ($current->getTraits() as $trait) {
-                if (!$trait->hasProperty($name)) {
-                    continue;
+            if ($current->isInterface()) {
+                return $comments;
+            }
+
+            if ($traits = $current->getTraits()) {
+                if ($groupTraits) {
+                    $group = [];
+                    if ($comment !== false || $fromClass) {
+                        /** @var string|null */
+                        $comment = $comments[$class];
+                        $group[$class] = $comment;
+                    }
+                    $originalGroup = $group;
+                    foreach ($traits as $traitName => $trait) {
+                        // Recurse into inserted traits not already seen
+                        if (
+                            $trait->hasProperty($name)
+                            && !array_key_exists($traitName, $seen)
+                        ) {
+                            $traitComments = array_diff_key(
+                                self::doGetAllPropertyDocComments(
+                                    $trait->getProperty($name),
+                                    $fromClass ? $trait : null,
+                                    $declaring,
+                                    $name,
+                                    $classDocComments,
+                                ),
+                                $seen,
+                            );
+                            $group += $traitComments;
+                            $seen += $traitComments;
+                        }
+                    }
+                    if ($group !== $originalGroup) {
+                        $comments[$class] = $group;
+                    }
+                } else {
+                    foreach ($traits as $trait) {
+                        // Recurse into inserted traits
+                        if ($trait->hasProperty($name)) {
+                            $comments = array_merge(
+                                $comments,
+                                self::doGetAllPropertyDocComments(
+                                    $trait->getProperty($name),
+                                    $fromClass ? $trait : null,
+                                    $declaring,
+                                    $name,
+                                    $classDocComments,
+                                )
+                            );
+                        }
+                    }
                 }
-                // Recurse into inserted traits
-                $comments = array_merge(
-                    $comments,
-                    self::doGetAllPropertyDocComments(
-                        $trait->getProperty($name),
-                        $fromClass ? $trait : null,
-                        $name,
-                        $classDocComments,
-                    )
-                );
             }
 
             $current = $current->getParentClass();
@@ -300,6 +467,12 @@ final class PHPDocUtil extends AbstractUtility
             }
 
             $property = $current->getProperty($name);
+            if ($property->isPrivate() && (
+                !$fromClass
+                || $declaring->isSubclassOf($property->getDeclaringClass())
+            )) {
+                return $comments;
+            }
             if (!$fromClass) {
                 $current = $property->getDeclaringClass();
             }
@@ -310,51 +483,76 @@ final class PHPDocUtil extends AbstractUtility
      * Get an array of doc comments for a class constant from its declaring
      * class and its parents
      *
-     * Returns an empty array if no doc comments are found in the declaring
-     * class or in any inherited classes, interfaces or traits.
-     *
      * @param ReflectionClass<*>|null $fromClass If given, entries are
      * returned for `$fromClass` and every parent with `$constant`, including
      * any without doc comments or where `$constant` is not declared.
+     * @param bool $groupTraits If `true`, entries for traits are grouped with
+     * class entries in a nested array.
      * @param array<class-string,string|null>|null $classDocComments If given,
      * receives the doc comment of the declaring class for each entry in the
      * return value.
-     * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is null ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     public static function getAllConstantDocComments(
         ReflectionClassConstant $constant,
         ?ReflectionClass $fromClass = null,
+        bool $groupTraits = false,
         ?array &$classDocComments = null
     ): array {
-        if (func_num_args() > 2) {
+        if (func_num_args() > 3) {
             $classDocComments = [];
         }
 
-        $class = $fromClass ?? $constant->getDeclaringClass();
+        $declaring = $constant->getDeclaringClass();
+        $class = $fromClass ?? $declaring;
         $name = $constant->getName();
+        if ($fromClass && (
+            !$fromClass->hasConstant($name)
+            || !($fromConstant = $fromClass->getReflectionConstant($name))
+            || $fromConstant->getDeclaringClass()->getName()
+                !== $declaring->getName()
+        )) {
+            throw new InvalidArgumentException(sprintf(
+                '$fromClass (%s) does not inherit %s::%s',
+                $fromClass->getName(),
+                $declaring->getName(),
+                $name,
+            ));
+        }
+
         $comments = self::doGetAllConstantDocComments(
             $constant,
             $fromClass,
+            $declaring,
             $name,
             $classDocComments,
+            $groupTraits,
         );
+
+        if ($class->isTrait()) {
+            return $comments;
+        }
 
         foreach (self::getInterfaces($class) as $interface) {
             if (
-                !$interface->hasConstant($name)
-                || !($constant = $interface->getReflectionConstant($name))
+                $interface->hasConstant($name)
+                && ($constant = $interface->getReflectionConstant($name))
             ) {
-                continue;
+                $comments = array_merge(
+                    $comments,
+                    self::doGetAllConstantDocComments(
+                        $constant,
+                        $fromClass ? $interface : null,
+                        $declaring,
+                        $name,
+                        $classDocComments,
+                    )
+                );
             }
-            $comments = array_merge(
-                $comments,
-                self::doGetAllConstantDocComments(
-                    $constant,
-                    $fromClass ? $interface : null,
-                    $name,
-                    $classDocComments,
-                )
-            );
         }
 
         return $comments;
@@ -362,36 +560,44 @@ final class PHPDocUtil extends AbstractUtility
 
     /**
      * @param ReflectionClass<*>|null $fromClass
+     * @param ReflectionClass<*> $declaring
      * @param array<class-string,string|null>|null $classDocComments
-     * @return ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     * @return (
+     *     $groupTraits is false
+     *     ? ($fromClass is null ? array<class-string,string> : array<class-string,string|null>)
+     *     : ($fromClass is null ? array<class-string,array<class-string,string>|string> : array<class-string,array<class-string,string|null>|string|null>)
+     * )
      */
     private static function doGetAllConstantDocComments(
         ReflectionClassConstant $constant,
         ?ReflectionClass $fromClass,
+        ReflectionClass $declaring,
         string $name,
-        ?array &$classDocComments
+        ?array &$classDocComments,
+        bool $groupTraits = false
     ): array {
         $comments = [];
         $current = $fromClass ?? $constant->getDeclaringClass();
+        $seen = [];
         do {
-            $isDeclaring = (
+            $class = $current->getName();
+            $comment = (
                 !$fromClass
-                || $constant->getDeclaringClass()->getName() === $current->getName()
-            ) && self::isConstantInClass($constant, $current, $name);
-
-            $comment = $isDeclaring ? $constant->getDocComment() : false;
+                || $constant->getDeclaringClass()->getName() === $class
+            ) && self::isConstantInClass($constant, $current, $name)
+                ? $constant->getDocComment()
+                : false;
 
             if ($comment !== false || $fromClass) {
-                $class = $current->getName();
                 $comments[$class] = $comment === false
                     ? null
                     : Str::setEol($comment);
 
                 if ($classDocComments !== null) {
-                    $comment = $current->getDocComment();
-                    $classDocComments[$class] = $comment === false
+                    $classComment = $current->getDocComment();
+                    $classDocComments[$class] = $classComment === false
                         ? null
-                        : Str::setEol($comment);
+                        : Str::setEol($classComment);
                 }
             }
 
@@ -399,24 +605,58 @@ final class PHPDocUtil extends AbstractUtility
                 return $comments;
             }
 
-            if (\PHP_VERSION_ID >= 80200) {
-                foreach ($current->getTraits() as $trait) {
-                    if (
-                        !$trait->hasConstant($name)
-                        || !($constant = $trait->getReflectionConstant($name))
-                    ) {
-                        continue;
+            if (\PHP_VERSION_ID >= 80200 && ($traits = $current->getTraits())) {
+                if ($groupTraits) {
+                    $group = [];
+                    if ($comment !== false || $fromClass) {
+                        /** @var string|null */
+                        $comment = $comments[$class];
+                        $group[$class] = $comment;
                     }
-                    // Recurse into inserted traits
-                    $comments = array_merge(
-                        $comments,
-                        self::doGetAllConstantDocComments(
-                            $constant,
-                            $fromClass ? $trait : null,
-                            $name,
-                            $classDocComments,
-                        )
-                    );
+                    $originalGroup = $group;
+                    foreach ($traits as $traitName => $trait) {
+                        // Recurse into inserted traits not already seen
+                        if (
+                            $trait->hasConstant($name)
+                            && ($constant = $trait->getReflectionConstant($name))
+                            && !array_key_exists($traitName, $seen)
+                        ) {
+                            $traitComments = array_diff_key(
+                                self::doGetAllConstantDocComments(
+                                    $constant,
+                                    $fromClass ? $trait : null,
+                                    $declaring,
+                                    $name,
+                                    $classDocComments,
+                                ),
+                                $seen,
+                            );
+                            $group += $traitComments;
+                            $seen += $traitComments;
+                        }
+                    }
+                    if ($group !== $originalGroup) {
+                        $comments[$class] = $group;
+                    }
+                } else {
+                    foreach ($traits as $trait) {
+                        // Recurse into inserted traits
+                        if (
+                            $trait->hasConstant($name)
+                            && ($constant = $trait->getReflectionConstant($name))
+                        ) {
+                            $comments = array_merge(
+                                $comments,
+                                self::doGetAllConstantDocComments(
+                                    $constant,
+                                    $fromClass ? $trait : null,
+                                    $declaring,
+                                    $name,
+                                    $classDocComments,
+                                )
+                            );
+                        }
+                    }
                 }
             }
 
@@ -429,6 +669,12 @@ final class PHPDocUtil extends AbstractUtility
                 return $comments;
             }
 
+            if ($constant->isPrivate() && (
+                !$fromClass
+                || $declaring->isSubclassOf($constant->getDeclaringClass())
+            )) {
+                return $comments;
+            }
             if (!$fromClass) {
                 $current = $constant->getDeclaringClass();
             }

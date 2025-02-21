@@ -6,14 +6,15 @@ use Salient\Cache\CacheStore;
 use Salient\Cli\CliApplication;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
-use Salient\Console\ConsoleWriter;
+use Salient\Console\Console as ConsoleService;
 use Salient\Container\Container;
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
+use Salient\Contract\HasMessageLevel;
+use Salient\Contract\HasMessageLevels;
 use Salient\Core\Event\EventDispatcher;
 use Salient\Core\Facade\App;
 use Salient\Core\Facade\Cache;
@@ -78,7 +79,7 @@ $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
     Cache::class => [CacheInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
-    Console::class => [ConsoleWriterInterface::class, [ConsoleWriter::class], '--desc', 'A facade for the global console writer', '--api'],
+    Console::class => [ConsoleInterface::class, [ConsoleService::class], '--implement', HasMessageLevel::class . ',' . HasMessageLevels::class, '--desc', 'A facade for the global console service', '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException', '--api'],
     Event::class => [EventDispatcherInterface::class, [EventDispatcher::class], '--desc', 'A facade for the global event dispatcher', '--api'],
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],
@@ -234,7 +235,7 @@ foreach ($data as $file => $uri) {
         Console::log('Skipping', $file);
     } elseif (!$exists && in_array('--check', $args)) {
         Console::info('Would create', $file);
-        Console::count(Level::ERROR);
+        Console::count(Console::LEVEL_ERROR);
         $status |= 1;
         continue;
     } elseif (!in_array('--check', $args)) {
@@ -327,7 +328,7 @@ $attributes = implode(\PHP_EOL, $attributes) . \PHP_EOL;
 if (File::getContents($file) !== $attributes) {
     if (in_array('--check', $args)) {
         Console::info('Would replace', $file);
-        Console::count(Level::ERROR);
+        Console::count(Console::LEVEL_ERROR);
         $status |= 1;
     } else {
         Console::info('Replacing', $file);

@@ -3,8 +3,8 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Http\HttpMultipartStreamPartInterface;
+use Salient\Contract\Http\MimeType;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;

@@ -98,6 +98,8 @@ class PHPDoc implements Immutable, Stringable
     ];
 
     /**
+     * [ Tag => [ prefix, ... ] | apply default prefixes?, ... ]
+     *
      * @var non-empty-array<string,non-empty-array<string>|bool>
      */
     protected const INHERITABLE_TAGS = [
@@ -127,6 +129,8 @@ class PHPDoc implements Immutable, Stringable
     ];
 
     /**
+     * As above, but for classes inheriting from an interface or trait
+     *
      * @var non-empty-array<string,non-empty-array<string>|bool>
      */
     protected const INHERITABLE_BY_CLASS_TAGS = [
@@ -187,6 +191,10 @@ class PHPDoc implements Immutable, Stringable
     /** @var class-string|null */
     protected ?string $Class;
     protected ?string $Member;
+    /** @var class-string|null */
+    protected ?string $Static;
+    /** @var class-string|null */
+    protected ?string $Self;
     /** @var static */
     protected self $Original;
     /** @var string[] */
@@ -200,6 +208,10 @@ class PHPDoc implements Immutable, Stringable
     /**
      * @param self|string|null $classDocBlock
      * @param class-string|null $class
+     * @param class-string|null $static The class to which `'static'` and
+     * `'$this'` should resolve if not `$class`.
+     * @param class-string|null $self The class to which `'self'` should resolve
+     * if not `$class`. Traits should not be given.
      * @param array<string,class-string> $aliases
      */
     final public function __construct(
@@ -207,10 +219,14 @@ class PHPDoc implements Immutable, Stringable
         $classDocBlock = null,
         ?string $class = null,
         ?string $member = null,
+        ?string $static = null,
+        ?string $self = null,
         array $aliases = []
     ) {
         $this->Class = $class;
         $this->Member = $member;
+        $this->Static = $static ?? $class;
+        $this->Self = $self ?? $class;
         $this->Original = $this;
 
         if ($docBlock !== null) {
@@ -223,11 +239,11 @@ class PHPDoc implements Immutable, Stringable
             }
         }
 
-        // Merge templates from the declaring class, if possible
+        // Merge class templates, if possible
         if ($classDocBlock !== null && $class !== null && $member !== null) {
             $phpDoc = $classDocBlock instanceof self
                 ? $classDocBlock
-                : new static($classDocBlock, null, $class, null, $aliases);
+                : new static($classDocBlock, null, $class, null, $static, $self, $aliases);
             foreach ($phpDoc->Templates as $name => $tag) {
                 $this->Templates[$name] ??= $tag;
             }
@@ -243,11 +259,10 @@ class PHPDoc implements Immutable, Stringable
      */
     public static function forClass(
         ReflectionClass $class,
-        bool $trackInheritance = false,
         array $aliases = []
     ): self {
-        $docBlocks = PHPDocUtil::getAllClassDocComments($class, $trackInheritance);
-        return self::fromDocBlocks($docBlocks, null, null, $aliases);
+        $docBlocks = PHPDocUtil::getAllClassDocComments($class, true, true);
+        return self::fromDocBlocks($docBlocks, null, null, $class->getName(), $aliases);
     }
 
     /**
@@ -262,9 +277,10 @@ class PHPDoc implements Immutable, Stringable
         ?ReflectionClass $class = null,
         array $aliases = []
     ): self {
-        $docBlocks = PHPDocUtil::getAllMethodDocComments($method, $class, $classDocBlocks);
+        $docBlocks = PHPDocUtil::getAllMethodDocComments($method, $class, true, $classDocBlocks);
         $name = $method->getName();
-        return self::fromDocBlocks($docBlocks, $classDocBlocks, "{$name}()", $aliases);
+        $static = ($class ?? $method->getDeclaringClass())->getName();
+        return self::fromDocBlocks($docBlocks, $classDocBlocks, "{$name}()", $static, $aliases);
     }
 
     /**
@@ -279,9 +295,10 @@ class PHPDoc implements Immutable, Stringable
         ?ReflectionClass $class = null,
         array $aliases = []
     ): self {
-        $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, $classDocBlocks);
+        $docBlocks = PHPDocUtil::getAllPropertyDocComments($property, $class, true, $classDocBlocks);
         $name = $property->getName();
-        return self::fromDocBlocks($docBlocks, $classDocBlocks, "\${$name}", $aliases);
+        $static = ($class ?? $property->getDeclaringClass())->getName();
+        return self::fromDocBlocks($docBlocks, $classDocBlocks, "\${$name}", $static, $aliases);
     }
 
     /**
@@ -296,9 +313,10 @@ class PHPDoc implements Immutable, Stringable
         ?ReflectionClass $class = null,
         array $aliases = []
     ): self {
-        $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, $classDocBlocks);
+        $docBlocks = PHPDocUtil::getAllConstantDocComments($constant, $class, true, $classDocBlocks);
         $name = $constant->getName();
-        return self::fromDocBlocks($docBlocks, $classDocBlocks, $name, $aliases);
+        $static = ($class ?? $constant->getDeclaringClass())->getName();
+        return self::fromDocBlocks($docBlocks, $classDocBlocks, $name, $static, $aliases);
     }
 
     /**
@@ -439,7 +457,9 @@ class PHPDoc implements Immutable, Stringable
         $templates = $this->InheritedTemplates;
         if ($parent->Class !== null && $parent->Class !== $this->Class) {
             unset($templates[$parent->Class]);
-            $templates[$parent->Class] = $parent->Templates;
+            if ($parent->Templates) {
+                $templates[$parent->Class] = $parent->Templates;
+            }
         }
 
         if (!$byClass) {
@@ -851,6 +871,8 @@ class PHPDoc implements Immutable, Stringable
 
     /**
      * Get the name of the class associated with the PHPDoc
+     *
+     * @return class-string|null
      */
     public function getClass(): ?string
     {
@@ -863,6 +885,26 @@ class PHPDoc implements Immutable, Stringable
     public function getMember(): ?string
     {
         return $this->Member;
+    }
+
+    /**
+     * Get the class to which relative types 'static' and '$this' should resolve
+     *
+     * @return class-string|null
+     */
+    public function getStatic(): ?string
+    {
+        return $this->Static;
+    }
+
+    /**
+     * Get the class to which relative type 'self' should resolve
+     *
+     * @return class-string|null
+     */
+    public function getSelf(): ?string
+    {
+        return $this->Self;
     }
 
     /**
@@ -938,8 +980,10 @@ class PHPDoc implements Immutable, Stringable
      * Creates a new PHPDoc object from an array of PHP DocBlocks, each of which
      * inherits from subsequent blocks
      *
-     * @param array<class-string|int,string|null> $docBlocks
+     * @param array<class-string|int,array<class-string,string|null>|string|null> $docBlocks
      * @param array<class-string|int,self|string|null>|null $classDocBlocks
+     * @param class-string|null $static The class to which `'static'` and
+     * `'$this'` should resolve.
      * @param array<string,class-string> $aliases
      * @return static
      */
@@ -947,20 +991,28 @@ class PHPDoc implements Immutable, Stringable
         array $docBlocks,
         ?array $classDocBlocks = null,
         ?string $member = null,
+        ?string $static = null,
         array $aliases = []
     ): self {
-        foreach ($docBlocks as $key => $docBlock) {
-            $_phpDoc = new static(
-                $docBlock,
-                $classDocBlocks[$key] ?? null,
-                is_string($key) ? $key : null,
-                $member,
-                $aliases,
-            );
+        foreach ($docBlocks as $self => $group) {
+            if (!is_array($group)) {
+                $group = [$self => $group];
+            }
+            foreach ($group as $class => $docBlock) {
+                $_phpDoc = new static(
+                    $docBlock,
+                    $classDocBlocks[$self] ?? null,
+                    is_string($class) ? $class : null,
+                    $member,
+                    $static,
+                    is_string($self) ? $self : null,
+                    $aliases,
+                );
 
-            $phpDoc ??= $_phpDoc;
-            if ($_phpDoc !== $phpDoc) {
-                $phpDoc = $phpDoc->inherit($_phpDoc);
+                $phpDoc ??= $_phpDoc;
+                if ($_phpDoc !== $phpDoc) {
+                    $phpDoc = $phpDoc->inherit($_phpDoc);
+                }
             }
         }
 
@@ -1026,6 +1078,8 @@ class PHPDoc implements Immutable, Stringable
                             $matches['param_description'],
                             $this->Class,
                             $this->Member,
+                            $this->Static,
+                            $this->Self,
                             $aliases,
                         );
                         break;
@@ -1042,6 +1096,8 @@ class PHPDoc implements Immutable, Stringable
                             $matches['return_description'],
                             $this->Class,
                             $this->Member,
+                            $this->Static,
+                            $this->Self,
                             $aliases,
                         );
                         break;
@@ -1060,6 +1116,8 @@ class PHPDoc implements Immutable, Stringable
                             $matches['var_description'],
                             $this->Class,
                             $this->Member,
+                            $this->Static,
+                            $this->Self,
                             $aliases,
                         );
                         if ($name !== null) {
@@ -1117,6 +1175,8 @@ class PHPDoc implements Immutable, Stringable
                             $matches['method_description'],
                             $this->Class,
                             $this->Member,
+                            $this->Static,
+                            $this->Self,
                             $aliases,
                         );
                         break;
@@ -1138,6 +1198,8 @@ class PHPDoc implements Immutable, Stringable
                             $matches['property_description'],
                             $this->Class,
                             $this->Member,
+                            $this->Static,
+                            $this->Self,
                             $aliases,
                         );
                         $tag = 'property';
@@ -1160,6 +1222,8 @@ class PHPDoc implements Immutable, Stringable
                             $tag === 'template-contravariant',
                             $this->Class,
                             $this->Member,
+                            $this->Static,
+                            $this->Self,
                             $aliases,
                         );
                         $tag = 'template';

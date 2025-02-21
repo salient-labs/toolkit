@@ -2,8 +2,7 @@
 
 namespace Salient\Sli\Internal\Data;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Utility\Reflect;
 use JsonSerializable;
@@ -60,14 +59,14 @@ class ConstantData implements JsonSerializable
         array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
-        ?ConsoleWriterInterface $console = null
+        ?Console $console = null
     ): self {
         $constantName = $constant->getName();
         try {
             $phpDoc = PHPDoc::forConstant($constant, $class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
-            !$console || $console->exception($ex, Level::WARNING, null);
+            !$console || $console->exception($ex, Console::LEVEL_WARNING, null);
             $phpDoc = new PHPDoc();
         }
 

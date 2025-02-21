@@ -76,16 +76,16 @@ class GenerateBuilder extends AbstractGenerateCommand
 
     protected function getOptionList(): iterable
     {
-        return [
+        yield from [
             CliOption::build()
-                ->long('class')
+                ->name('class')
                 ->valueName('class')
                 ->description('The class to generate a builder for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->ClassFqcn),
             CliOption::build()
-                ->long('generate')
+                ->name('generate')
                 ->valueName('builder_class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
@@ -136,8 +136,8 @@ EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->Skip),
-            ...$this->getGlobalOptionList('builder'),
         ];
+        yield from $this->getGlobalOptionList('builder');
     }
 
     protected function run(string ...$args)
@@ -174,7 +174,7 @@ EOF)
         $service = $this->getFqcnAlias($classFqcn, $classClass);
         $extends = $this->getFqcnAlias(Builder::class);
 
-        $this->Description ??= sprintf(
+        $this->Desc ??= sprintf(
             'A builder for %s',
             $classClass,
         );
@@ -637,12 +637,12 @@ EOF)
         $methods = implode(\PHP_EOL, $methods ?? []);
 
         $docBlock[] = '/**';
-        if ($this->Description !== '') {
-            $docBlock[] = " * {$this->Description}";
+        if ($this->Desc !== '') {
+            $docBlock[] = " * {$this->Desc}";
             $docBlock[] = ' *';
         }
         $docBlock[] = $methods;
-        if ($this->ApiTag) {
+        if ($this->Api) {
             $docBlock[] = ' *';
             $docBlock[] = ' * @api';
         }

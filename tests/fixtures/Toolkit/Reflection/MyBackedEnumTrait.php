@@ -8,14 +8,14 @@ namespace Salient\Tests\Reflection;
 trait MyBackedEnumTrait
 {
     /**
-     * MyBackedEnumTrait::MyDocumentedMethod() PHPDoc
+     * MyBackedEnumTrait::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod() {}
 
     /**
-     * MyBackedEnumTrait::MySparselyDocumentedMethod() PHPDoc
+     * MyBackedEnumTrait::MySparselyDocumentedMethod()
      *
      * @return mixed
      */

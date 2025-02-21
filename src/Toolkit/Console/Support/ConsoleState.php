@@ -3,21 +3,21 @@
 namespace Salient\Console\Support;
 
 use Psr\Log\LoggerInterface;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleTargetInterface as Target;
 use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
 
 /**
- * ConsoleWriter state information
+ * Console state information
  */
-final class ConsoleWriterState
+final class ConsoleState
 {
-    /** @var array<Level::*,TargetStream[]> */
+    /** @var array<Console::LEVEL_*,TargetStream[]> */
     public array $StdioTargetsByLevel = [];
-    /** @var array<Level::*,TargetStream[]> */
+    /** @var array<Console::LEVEL_*,TargetStream[]> */
     public array $TtyTargetsByLevel = [];
-    /** @var array<Level::*,Target[]> */
+    /** @var array<Console::LEVEL_*,Target[]> */
     public array $TargetsByLevel = [];
     /** @var array<int,Target> */
     public array $Targets = [];

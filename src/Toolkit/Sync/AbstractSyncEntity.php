@@ -3,8 +3,6 @@
 namespace Salient\Sync;
 
 use Salient\Container\RequiresContainer;
-use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
-use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Entity\Providable;
 use Salient\Contract\Core\Entity\Temporal;
@@ -737,7 +735,10 @@ abstract class AbstractSyncEntity implements
             ->with(static::class, $context)
             ->getResolver(
                 $nameProperty,
-                Algorithm::SAME | Algorithm::CONTAINS | Algorithm::NGRAM_SIMILARITY | Flag::NORMALISE,
+                SyncEntityProviderInterface::ALGORITHM_SAME
+                    | SyncEntityProviderInterface::ALGORITHM_CONTAINS
+                    | SyncEntityProviderInterface::ALGORITHM_NGRAM_SIMILARITY
+                    | SyncEntityProviderInterface::NORMALISE,
                 $uncertaintyThreshold,
                 null,
                 true,

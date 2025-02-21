@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Support;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageAttributesInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Core\Concern\ImmutableTrait;
@@ -18,7 +18,7 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
      * Message level
      *
      * @readonly
-     * @var Level::*
+     * @var Console::LEVEL_*
      */
     public int $Level;
 
@@ -52,7 +52,7 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
     public bool $IsPrefix;
 
     /**
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param MessageType::* $type
      */
     public function __construct(

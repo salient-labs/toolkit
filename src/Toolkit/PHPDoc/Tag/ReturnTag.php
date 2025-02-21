@@ -15,9 +15,11 @@ class ReturnTag extends AbstractTag
         ?string $description = null,
         ?string $class = null,
         ?string $member = null,
+        ?string $static = null,
+        ?string $self = null,
         array $aliases = []
     ) {
-        parent::__construct('return', null, $type, $description, $class, $member, $aliases);
+        parent::__construct('return', null, $type, $description, $class, $member, $static, $self, $aliases);
     }
 
     /**

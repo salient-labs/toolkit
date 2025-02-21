@@ -5,16 +5,16 @@ namespace Salient\Tests\PsrLog;
 use Psr\Log\Test\LoggerInterfaceTest;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Salient\Console\Console;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Console\ConsoleWriter;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\HasMessageLevel;
 use Salient\Testing\Console\MockTarget;
 use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Console\ConsoleLogger
- * @covers \Salient\Console\ConsoleWriter
+ * @covers \Salient\Console\Console
  */
 final class LoggerTest extends LoggerInterfaceTest
 {
@@ -25,7 +25,7 @@ final class LoggerTest extends LoggerInterfaceTest
      */
     public function getLogger(): LoggerInterface
     {
-        return (new ConsoleWriter())
+        return (new Console())
             ->registerTarget($this->Target = new MockTarget(
                 null,
                 true,
@@ -43,7 +43,7 @@ final class LoggerTest extends LoggerInterfaceTest
     public function getLogs(): array
     {
         foreach ($this->Target->getMessages() as [$level, $message]) {
-            $logs[] = sprintf('%s %s', Str::lower(Reflect::getConstantName(Level::class, $level)), $message);
+            $logs[] = sprintf('%s %s', Str::lower(substr(Reflect::getConstantName(HasMessageLevel::class, $level), 6)), $message);
         }
         return $logs ?? [];
     }

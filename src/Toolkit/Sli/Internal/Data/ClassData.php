@@ -2,8 +2,7 @@
 
 namespace Salient\Sli\Internal\Data;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\PHPDoc\PHPDoc;
 use Salient\Sli\Internal\NavigableToken;
 use Salient\Sli\Internal\TokenExtractor;
@@ -94,7 +93,7 @@ class ClassData implements JsonSerializable
         ReflectionClass $class,
         array $aliases = [],
         ?callable $filter = null,
-        ?ConsoleWriterInterface $console = null
+        ?Console $console = null
     ): self {
         if (
             !($nsExtractor = $extractor->getParent())
@@ -109,10 +108,10 @@ class ClassData implements JsonSerializable
 
         $token = $extractor->getClassToken();
         try {
-            $phpDoc = PHPDoc::forClass($class, true, $aliases);
+            $phpDoc = PHPDoc::forClass($class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
-            !$console || $console->exception($ex, Level::WARNING, null);
+            !$console || $console->exception($ex, Console::LEVEL_WARNING, null);
             $phpDoc = new PHPDoc();
         }
 
@@ -224,7 +223,7 @@ class ClassData implements JsonSerializable
     public static function fromReflection(
         ReflectionClass $class,
         ?callable $filter = null,
-        ?ConsoleWriterInterface $console = null
+        ?Console $console = null
     ): self {
         if ($class->isAnonymous()) {
             // @codeCoverageIgnoreStart
@@ -241,10 +240,10 @@ class ClassData implements JsonSerializable
                     : \T_CLASS));
 
         try {
-            $phpDoc = PHPDoc::forClass($class, true);
+            $phpDoc = PHPDoc::forClass($class);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
-            !$console || $console->exception($ex, Level::WARNING, null);
+            !$console || $console->exception($ex, Console::LEVEL_WARNING, null);
             $phpDoc = new PHPDoc();
         }
 

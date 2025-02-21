@@ -3,14 +3,14 @@
 namespace Salient\Console\Support;
 
 use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Catalog\HasAnsiEscapeSequence;
 use Salient\Contract\Console\ConsoleFormatInterface;
 use Salient\Contract\Console\ConsoleTag as Tag;
+use Salient\Contract\HasEscapeSequence;
 
 /**
  * Applies inline character sequences to console output
  */
-final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequence
+final class ConsoleFormat implements ConsoleFormatInterface, HasEscapeSequence
 {
     /** @var string */
     private $Before;
@@ -94,12 +94,11 @@ final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequen
      */
     public static function ttyColour(string $colour): self
     {
-        /** @var string&self::* $colour */
         return new self(
             $colour,
-            self::DEFAULT,
+            self::DEFAULT_FG,
             [
-                self::DEFAULT => $colour,
+                self::DEFAULT_FG => $colour,
             ],
         );
     }
@@ -116,19 +115,19 @@ final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequen
         if ($colour !== null) {
             return new self(
                 self::BOLD . $colour,
-                self::DEFAULT . self::UNBOLD_UNDIM,
+                self::DEFAULT_FG . self::NOT_BOLD_NOT_FAINT,
                 [
-                    self::UNBOLD_UNDIM => self::UNDIM_BOLD,
-                    self::DEFAULT => $colour,
+                    self::NOT_BOLD_NOT_FAINT => self::BOLD_NOT_FAINT,
+                    self::DEFAULT_FG => $colour,
                 ],
             );
         }
 
         return new self(
             self::BOLD,
-            self::UNBOLD_UNDIM,
+            self::NOT_BOLD_NOT_FAINT,
             [
-                self::UNBOLD_UNDIM => self::UNDIM_BOLD,
+                self::NOT_BOLD_NOT_FAINT => self::BOLD_NOT_FAINT,
             ],
         );
     }
@@ -144,20 +143,20 @@ final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequen
     {
         if ($colour !== null) {
             return new self(
-                self::DIM . $colour,
-                self::DEFAULT . self::UNBOLD_UNDIM,
+                self::FAINT . $colour,
+                self::DEFAULT_FG . self::NOT_BOLD_NOT_FAINT,
                 [
-                    self::UNBOLD_UNDIM => self::UNBOLD_DIM,
-                    self::DEFAULT => $colour,
+                    self::NOT_BOLD_NOT_FAINT => self::FAINT_NOT_BOLD,
+                    self::DEFAULT_FG => $colour,
                 ],
             );
         }
 
         return new self(
-            self::DIM,
-            self::UNBOLD_UNDIM,
+            self::FAINT,
+            self::NOT_BOLD_NOT_FAINT,
             [
-                self::UNBOLD_UNDIM => self::UNBOLD_DIM,
+                self::NOT_BOLD_NOT_FAINT => self::FAINT_NOT_BOLD,
             ],
         );
     }
@@ -176,20 +175,20 @@ final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequen
     {
         if ($colour !== null) {
             return new self(
-                self::BOLD . self::DIM . $colour,
-                self::DEFAULT . self::UNBOLD_UNDIM,
+                self::BOLD . self::FAINT . $colour,
+                self::DEFAULT_FG . self::NOT_BOLD_NOT_FAINT,
                 [
-                    self::UNBOLD_UNDIM => self::BOLD . self::DIM,
-                    self::DEFAULT => $colour,
+                    self::NOT_BOLD_NOT_FAINT => self::BOLD . self::FAINT,
+                    self::DEFAULT_FG => $colour,
                 ],
             );
         }
 
         return new self(
-            self::BOLD . self::DIM,
-            self::UNBOLD_UNDIM,
+            self::BOLD . self::FAINT,
+            self::NOT_BOLD_NOT_FAINT,
             [
-                self::UNBOLD_UNDIM => self::BOLD . self::DIM,
+                self::NOT_BOLD_NOT_FAINT => self::BOLD . self::FAINT,
             ],
         );
     }
@@ -205,20 +204,20 @@ final class ConsoleFormat implements ConsoleFormatInterface, HasAnsiEscapeSequen
     {
         if ($colour !== null) {
             return new self(
-                $colour . self::UNDERLINE,
-                self::NO_UNDERLINE . self::DEFAULT,
+                $colour . self::UNDERLINED,
+                self::NOT_UNDERLINED . self::DEFAULT_FG,
                 [
-                    self::DEFAULT => $colour,
-                    self::NO_UNDERLINE => '',
+                    self::DEFAULT_FG => $colour,
+                    self::NOT_UNDERLINED => '',
                 ],
             );
         }
 
         return new self(
-            self::UNDERLINE,
-            self::NO_UNDERLINE,
+            self::UNDERLINED,
+            self::NOT_UNDERLINED,
             [
-                self::NO_UNDERLINE => '',
+                self::NOT_UNDERLINED => '',
             ],
         );
     }

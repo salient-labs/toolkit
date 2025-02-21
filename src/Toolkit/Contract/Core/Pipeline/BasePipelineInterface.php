@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
-use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\HasConformity;
 use Closure;
 
 /**

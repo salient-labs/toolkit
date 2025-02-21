@@ -10,6 +10,9 @@ class MyClass extends MyBaseClass implements MyInterface
     use MyTrait;
     use MyReusedTrait;
 
+    /**
+     * MyClass::MY_CONSTANT
+     */
     public const MY_CONSTANT = 'my constant';
 
     /** @var int|string */
@@ -22,7 +25,12 @@ class MyClass extends MyBaseClass implements MyInterface
     public $Parent;
     /** @var MyClass|null */
     public $AltParent;
-    /** @var mixed */
+
+    /**
+     * MyClass::$MyPrivateProperty2
+     *
+     * @var mixed
+     */
     protected $MyPrivateProperty2;
 
     /**
@@ -38,18 +46,26 @@ class MyClass extends MyBaseClass implements MyInterface
     }
 
     /**
-     * MyClass::$MyDocumentedProperty PHPDoc
+     * MyClass::$MyDocumentedProperty
      *
      * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
-     * MyClass::MyDocumentedMethod() PHPDoc
+     * MyClass::MyDocumentedMethod()
      *
      * @return mixed
      */
-    public function MyDocumentedMethod() {}
+    public function MyDocumentedMethod()
+    {
+        $this->MyPrivateMethod();
+    }
 
     public function MySparselyDocumentedMethod() {}
+
+    /**
+     * MyClass::MyPrivateMethod()
+     */
+    private function MyPrivateMethod(): void {}
 }

@@ -73,12 +73,6 @@ parameters:
 			path: tests/unit/Toolkit/Cli/CliApplicationTest.php
 
 		-
-			message: '#^PHPDoc tag @var with type Salient\\Console\\ConsoleWriter is not subtype of native type \$this\(Salient\\Tests\\Console\\ConsoleWriterTest\)\.$#'
-			identifier: varTag.nativeType
-			count: 1
-			path: tests/unit/Toolkit/Console/ConsoleWriterTest.php
-
-		-
 			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{array\{onClose\: ''Salient\\\\Tests\\\\Core\\\\Event\\\\NamedLoggableEvent''\}\} and array\<array\{string, string\}\|string\> will always evaluate to false\.$#'
 			identifier: method.impossibleType
 			count: 1

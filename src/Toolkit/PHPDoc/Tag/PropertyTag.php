@@ -23,12 +23,14 @@ class PropertyTag extends AbstractTag
         ?string $description = null,
         ?string $class = null,
         ?string $member = null,
+        ?string $static = null,
+        ?string $self = null,
         array $aliases = []
     ) {
         if ($isReadOnly && $isWriteOnly) {
             throw new InvalidArgumentException('$isReadOnly and $isWriteOnly cannot both be true');
         }
-        parent::__construct('property', $name, $type, $description, $class, $member, $aliases);
+        parent::__construct('property', $name, $type, $description, $class, $member, $static, $self, $aliases);
         $this->IsReadOnly = $isReadOnly;
         $this->IsWriteOnly = $isWriteOnly;
     }

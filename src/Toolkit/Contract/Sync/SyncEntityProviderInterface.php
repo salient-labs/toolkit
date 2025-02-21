@@ -2,10 +2,10 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Catalog\TextComparisonAlgorithm;
-use Salient\Contract\Catalog\TextComparisonFlag;
 use Salient\Contract\Core\Provider\HasProvider;
 use Salient\Contract\Iterator\FluentIteratorInterface;
+use Salient\Contract\HasTextComparisonFlag;
+use Closure;
 
 /**
  * Provides an entity-agnostic interface to a SyncProviderInterface's
@@ -15,7 +15,7 @@ use Salient\Contract\Iterator\FluentIteratorInterface;
  *
  * @extends HasProvider<SyncProviderInterface>
  */
-interface SyncEntityProviderInterface extends HasProvider
+interface SyncEntityProviderInterface extends HasProvider, HasTextComparisonFlag
 {
     /**
      * Get the sync entity being serviced
@@ -161,17 +161,22 @@ interface SyncEntityProviderInterface extends HasProvider
     /**
      * Use a property of the entity class to resolve names to entities
      *
-     * @param int-mask-of<TextComparisonAlgorithm::*|TextComparisonFlag::*> $algorithm
-     * @param array<TextComparisonAlgorithm::*,float>|float|null $uncertaintyThreshold
-     * @param string|null $weightProperty If multiple entities are equally
-     * similar to a given name, the one with the highest weight is preferred.
+     * @param (Closure(TEntity): string)|string|null $nameProperty If `null`,
+     * entity names are taken from {@see SyncEntityInterface::getName()}.
+     * @param int-mask-of<SyncEntityProviderInterface::*> $flags
+     * @param array<SyncEntityProviderInterface::ALGORITHM_*,float>|float|null $uncertaintyThreshold If
+     * the uncertainty of a match for a given name is greater than or equal to
+     * this value (between `0.0` and `1.0`), the entity is not returned.
+     * @param (Closure(TEntity): (int|float))|string|null $weightProperty If
+     * multiple entities are equally similar to a given name, the one with the
+     * greatest weight (highest value) is preferred.
      * @return SyncEntityResolverInterface<TEntity>
      */
     public function getResolver(
-        ?string $nameProperty = null,
-        int $algorithm = TextComparisonAlgorithm::SAME,
+        $nameProperty = null,
+        int $flags = SyncEntityProviderInterface::ALGORITHM_SAME,
         $uncertaintyThreshold = null,
-        ?string $weightProperty = null,
+        $weightProperty = null,
         bool $requireOneMatch = false
     ): SyncEntityResolverInterface;
 

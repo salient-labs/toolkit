@@ -7,14 +7,14 @@ use Dice\DiceException;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Log\LoggerInterface;
 use Salient\Cache\CacheStore;
+use Salient\Console\Console;
 use Salient\Console\ConsoleLogger;
-use Salient\Console\ConsoleWriter;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Container\Exception\ArgumentsNotUsedException;
 use Salient\Container\Exception\InvalidServiceException;
 use Salient\Container\Exception\ServiceNotFoundException;
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasBindings;
@@ -61,7 +61,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     private const DEFAULT_SERVICES = [
         CacheInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
         EventDispatcherInterface::class => [EventDispatcher::class, ServiceLifetime::SINGLETON],
-        ConsoleWriterInterface::class => [ConsoleWriter::class, ServiceLifetime::SINGLETON],
+        ConsoleInterface::class => [Console::class, ServiceLifetime::SINGLETON],
         LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::INHERIT],
         SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],
     ];

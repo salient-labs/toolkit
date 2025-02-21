@@ -5,8 +5,6 @@ namespace Salient\Tests\Cli;
 use Composer\InstalledVersions;
 use Salient\Cli\CliApplication;
 use Salient\Container\Application;
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
@@ -95,7 +93,7 @@ final class CliApplicationTest extends TestCase
         self::$RootPackage = self::PROD_PACKAGE;
 
         $this->ConsoleTarget = new MockTarget();
-        Console::registerTarget($this->ConsoleTarget, LevelGroup::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($this->ConsoleTarget, Console::LEVELS_ALL_EXCEPT_DEBUG);
 
         $_SERVER['SCRIPT_FILENAME'] = 'app';
 
@@ -134,7 +132,7 @@ final class CliApplicationTest extends TestCase
      * @dataProvider commandProvider
      *
      * @param string[] $args
-     * @param array<array{Level::*,string,2?:array<string,mixed>}>|null $consoleMessages
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null $consoleMessages
      * @param array<string,string>|null $env
      * @param (Closure(TestOptions): mixed)|null $callback
      * @param array<string,mixed>|null $rootPackage
@@ -173,7 +171,7 @@ final class CliApplicationTest extends TestCase
     }
 
     /**
-     * @return array<array{string|null,int,2?:string[],3?:array<array{Level::*,string,2?:array<string,mixed>}>|null,4?:array<string,string>|null,5?:(Closure(TestOptions): mixed)|null,6?:array<string,mixed>|null}>
+     * @return array<array{string|null,int,2?:string[],3?:array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null,4?:array<string,string>|null,5?:(Closure(TestOptions): mixed)|null,6?:array<string,mixed>|null}>
      */
     public static function commandProvider(): array
     {
@@ -183,8 +181,8 @@ final class CliApplicationTest extends TestCase
                 1,
                 [],
                 [
-                    [Level::ERROR, 'Error: --start required'],
-                    [Level::INFO, <<<'EOF'
+                    [Console::LEVEL_ERROR, 'Error: --start required'],
+                    [Console::LEVEL_INFO, <<<'EOF'
 
 app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-r[<pattern>]] -s <date>
 
@@ -198,7 +196,7 @@ EOF],
                 0,
                 ['--help'],
                 [
-                    [Level::INFO, <<<'EOF'
+                    [Console::LEVEL_INFO, <<<'EOF'
 NAME
     app - Test CliCommand options
 
@@ -239,9 +237,9 @@ EOF],
                 1,
                 [],
                 [
-                    [Level::ERROR, 'Error: INPUT-FILE required'],
-                    [Level::ERROR, 'Error: <endpoint-uri> required'],
-                    [Level::INFO, <<<'EOF'
+                    [Console::LEVEL_ERROR, 'Error: INPUT-FILE required'],
+                    [Console::LEVEL_ERROR, 'Error: <endpoint-uri> required'],
+                    [Console::LEVEL_INFO, <<<'EOF'
 
 app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-s <date>]
     [-r[<pattern>]] [--] <INPUT-FILE> <endpoint-uri> [<key>=<VALUE>...]
@@ -256,7 +254,7 @@ EOF],
                 0,
                 ['--help'],
                 [
-                    [Level::INFO, <<<'EOF'
+                    [Console::LEVEL_INFO, <<<'EOF'
 NAME
     app - Test CliCommand options
 
@@ -507,8 +505,8 @@ EOF,
                     '--data-as-object',
                 ],
                 [
-                    [Level::ERROR, 'Error: Invalid option values'],
-                    [Level::INFO, <<<'EOF'
+                    [Console::LEVEL_ERROR, 'Error: Invalid option values'],
+                    [Console::LEVEL_INFO, <<<'EOF'
 
 app [-fF] [--nullable] [-v <entity>] [-V <value>,...] [-s <date>]
     [-r[<pattern>]]
@@ -522,7 +520,7 @@ EOF],
                 0,
                 ['--version'],
                 [
-                    [Level::INFO, 'app v1.0.0 (deadbeef) PHP ' . \PHP_VERSION],
+                    [Console::LEVEL_INFO, 'app v1.0.0 (deadbeef) PHP ' . \PHP_VERSION],
                 ],
             ],
             'version (dev)' => [
@@ -530,7 +528,7 @@ EOF],
                 0,
                 ['--version'],
                 [
-                    [Level::INFO, 'app dev-main (deadbeef) PHP ' . \PHP_VERSION],
+                    [Console::LEVEL_INFO, 'app dev-main (deadbeef) PHP ' . \PHP_VERSION],
                 ],
                 null,
                 null,
@@ -541,7 +539,7 @@ EOF],
                 0,
                 ['--version'],
                 [
-                    [Level::INFO, 'app dev-main PHP ' . \PHP_VERSION],
+                    [Console::LEVEL_INFO, 'app dev-main PHP ' . \PHP_VERSION],
                 ],
                 null,
                 null,

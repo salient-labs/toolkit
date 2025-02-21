@@ -139,11 +139,11 @@ abstract class AbstractSyncCommand extends CliCommand
     }
 
     /**
-     * @return array<CliOption|CliOptionBuilder>
+     * @return iterable<CliOption|CliOptionBuilder>
      */
-    protected function getGlobalOptionList(): array
+    protected function getGlobalOptionList(): iterable
     {
-        return [
+        yield from [
             CliOption::build()
                 ->long('har')
                 ->short('H')

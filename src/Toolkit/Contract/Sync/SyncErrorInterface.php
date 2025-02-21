@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Comparable;
 use Salient\Contract\Core\Immutable;
 
@@ -18,7 +18,7 @@ interface SyncErrorInterface extends Comparable, Immutable
     /**
      * Get the error's severity/message level
      *
-     * @return Level::*
+     * @return Console::LEVEL_*
      */
     public function getLevel(): int;
 

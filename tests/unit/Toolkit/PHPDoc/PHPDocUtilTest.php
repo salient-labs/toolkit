@@ -3,11 +3,13 @@
 namespace Salient\Tests\PHPDoc;
 
 use Salient\PHPDoc\PHPDocUtil;
+use Salient\Sli\Internal\TokenExtractor;
 use Salient\Tests\Reflection\MyBaseClass;
 use Salient\Tests\Reflection\MyBaseInterface;
 use Salient\Tests\Reflection\MyBaseTrait;
 use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\Reflection\MyClassWithDnfTypes;
+use Salient\Tests\Reflection\MyClassWithTraitWithConstants;
 use Salient\Tests\Reflection\MyClassWithUnionsAndIntersections;
 use Salient\Tests\Reflection\MyInterface;
 use Salient\Tests\Reflection\MyOneLineClass;
@@ -18,11 +20,14 @@ use Salient\Tests\Reflection\MySubclass;
 use Salient\Tests\Reflection\MyTrait;
 use Salient\Tests\Reflection\MyTraitAdaptationClass;
 use Salient\Tests\Reflection\MyTraitAdaptationInterface;
+use Salient\Tests\Reflection\MyTraitWithConstants;
 use Salient\Tests\Reflection\MyUndocumentedClass;
 use Salient\Tests\TestCase;
-use Generator;
+use Salient\Utility\Arr;
+use Salient\Utility\Get;
 use LogicException;
 use ReflectionClass;
+use ReflectionClassConstant;
 use ReflectionMethod;
 use ReflectionProperty;
 
@@ -31,23 +36,37 @@ use ReflectionProperty;
  */
 final class PHPDocUtilTest extends TestCase
 {
+    private const CLASS_DOC_COMMENTS = [
+        MySubclass::class => "/**\n * MySubclass\n */",
+        MyUndocumentedClass::class => null,
+        MyClass::class => "/**\n * MyClass\n */",
+        MyTrait::class => "/**\n * MyTrait\n */",
+        MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+        MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+        MyBaseClass::class => "/**\n * MyBaseClass\n */",
+        MyInterface::class => "/**\n * MyInterface\n */",
+        MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+        MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
+    ];
+
     /**
      * @dataProvider getAllClassDocCommentsProvider
      *
-     * @param array<class-string,string|null> $expected
+     * @param array<class-string,array<class-string,string|null>|string|null> $expected
      * @param ReflectionClass<*> $class
      */
     public function testGetAllClassDocComments(
         array $expected,
         ReflectionClass $class,
-        bool $includeAll = false
+        bool $includeAll = false,
+        bool $groupTraits = false
     ): void {
-        $actual = PHPDocUtil::getAllClassDocComments($class, $includeAll);
-        $this->assertSame($expected, $actual);
+        $actual = PHPDocUtil::getAllClassDocComments($class, $includeAll, $groupTraits);
+        $this->assertSame($expected, $actual, $this->getMessage($actual));
     }
 
     /**
-     * @return array<array{array<class-string,string|null>,ReflectionClass<*>,2?:bool}>
+     * @return array<array{array<class-string,array<class-string,string|null>|string|null>,ReflectionClass<*>,2?:bool,3?:bool}>
      */
     public static function getAllClassDocCommentsProvider(): array
     {
@@ -67,18 +86,7 @@ final class PHPDocUtilTest extends TestCase
                 new ReflectionClass(MySubclass::class),
             ],
             [
-                [
-                    MySubclass::class => "/**\n * MySubclass\n */",
-                    MyUndocumentedClass::class => null,
-                    MyClass::class => "/**\n * MyClass\n */",
-                    MyTrait::class => "/**\n * MyTrait\n */",
-                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
-                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
-                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
-                    MyInterface::class => "/**\n * MyInterface\n */",
-                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
-                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
-                ],
+                self::CLASS_DOC_COMMENTS,
                 new ReflectionClass(MySubclass::class),
                 true,
             ],
@@ -114,6 +122,76 @@ final class PHPDocUtilTest extends TestCase
                     MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
                 ],
                 new ReflectionClass(MyInterface::class),
+            ],
+            [
+                [
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyClass::class => [
+                        MyClass::class => "/**\n * MyClass\n */",
+                        MyTrait::class => "/**\n * MyTrait\n */",
+                        MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                        MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+                    ],
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
+                ],
+                new ReflectionClass(MySubclass::class),
+                false,
+                true,
+            ],
+            [
+                [
+                    MySubclass::class => "/**\n * MySubclass\n */",
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => [
+                        MyClass::class => "/**\n * MyClass\n */",
+                        MyTrait::class => "/**\n * MyTrait\n */",
+                        MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                        MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+                    ],
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
+                ],
+                new ReflectionClass(MySubclass::class),
+                true,
+                true,
+            ],
+            [
+                [
+                    MyClass::class => [
+                        MyClass::class => "/**\n * MyClass\n */",
+                        MyTrait::class => "/**\n * MyTrait\n */",
+                        MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                        MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+                    ],
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                ],
+                new ReflectionClass(MyUndocumentedClass::class),
+                false,
+                true,
+            ],
+            [
+                [
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => [
+                        MyClass::class => "/**\n * MyClass\n */",
+                        MyTrait::class => "/**\n * MyTrait\n */",
+                        MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+                        MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+                    ],
+                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyInterface::class => "/**\n * MyInterface\n */",
+                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+                ],
+                new ReflectionClass(MyUndocumentedClass::class),
+                true,
+                true,
             ],
         ];
     }
@@ -121,48 +199,53 @@ final class PHPDocUtilTest extends TestCase
     /**
      * @dataProvider getAllMethodDocCommentsProvider
      *
+     * @param array<class-string,array<class-string,string|null>|string|null> $expected
+     * @param array<class-string,string|null>|null $expectedClassDocComments
      * @param ReflectionClass<*>|null $fromClass
-     * @param array<string,string|null> $expected
-     * @param array<string,string|null>|null $expectedClassDocComments
      */
     public function testGetAllMethodDocComments(
-        ReflectionMethod $method,
-        ?ReflectionClass $fromClass,
         array $expected,
-        ?array $expectedClassDocComments = null
+        ?array $expectedClassDocComments,
+        ReflectionMethod $method,
+        ?ReflectionClass $fromClass = null,
+        bool $groupTraits = false
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = PHPDocUtil::getAllMethodDocComments($method, $fromClass);
-            $this->assertSame($expected, $comments, 'comments');
-            return;
+            $actual = PHPDocUtil::getAllMethodDocComments($method, $fromClass, $groupTraits);
+            $this->assertSame($expected, $actual, $this->getMessage($actual));
+        } else {
+            $actual = PHPDocUtil::getAllMethodDocComments($method, $fromClass, $groupTraits, $classDocComments);
+            $this->assertSame($expected, $actual, $this->getMessage($actual));
+            $this->assertSame($expectedClassDocComments, $classDocComments, $this->getMessage($classDocComments, '$expectedClassDocComments'));
         }
-
-        $comments = PHPDocUtil::getAllMethodDocComments($method, $fromClass, $classDocComments);
-        $this->assertSame($expected, $comments, 'comments');
-        $this->assertSame($expectedClassDocComments, $classDocComments, 'classDocComments');
     }
 
     /**
-     * @return array<string,array{ReflectionMethod,ReflectionClass<*>|null,array<string,string|null>,3?:array<string,string|null>}>
+     * @return array<array{array<class-string,array<class-string,string|null>|string|null>,array<class-string,string|null>|null,ReflectionMethod,3?:ReflectionClass<*>|null,4?:bool}>
      */
     public static function getAllMethodDocCommentsProvider(): array
     {
         $expected1 = [
-            MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyUndocumentedClass::class => "/**\n     * MyUndocumentedClass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyClass::class => "/**\n     * MyClass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyTrait::class => "/**\n     * MyTrait::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyBaseTrait::class => "/**\n     * MyBaseTrait::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyReusedTrait::class => "/**\n     * MyReusedTrait::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyBaseClass::class => "/**\n     * MyBaseClass::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyInterface::class => "/**\n     * MyInterface::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyBaseInterface::class => "/**\n     * MyBaseInterface::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyOtherInterface::class => "/**\n     * MyOtherInterface::MyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyUndocumentedClass::class => "/**\n     * MyUndocumentedClass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyClass::class => "/**\n     * MyClass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyTrait::class => "/**\n     * MyTrait::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyReusedTrait::class => "/**\n     * MyReusedTrait::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyInterface::class => "/**\n     * MyInterface::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyOtherInterface::class => "/**\n     * MyOtherInterface::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
         ];
 
         $expected2 = [
-            MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+        ];
+
+        $expected2c = [
+            MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+            MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
         ];
 
         $expected3 = [
@@ -170,116 +253,273 @@ final class PHPDocUtilTest extends TestCase
             MyUndocumentedClass::class => null,
             MyClass::class => null,
             MyTrait::class => null,
-            MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
             MyInterface::class => null,
-            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+        ];
+
+        $expected3c = [
+            MySubclass::class => "/**\n * MySubclass\n */",
+            MyUndocumentedClass::class => null,
+            MyClass::class => "/**\n * MyClass\n */",
+            MyTrait::class => "/**\n * MyTrait\n */",
+            MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+            MyInterface::class => "/**\n * MyInterface\n */",
+            MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
+        ];
+
+        $expected4 = [
+            MySubclass::class => "/**\n     * MySubclass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyUndocumentedClass::class => "/**\n     * MyUndocumentedClass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyClass::class => [
+                MyClass::class => "/**\n     * MyClass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+                MyTrait::class => "/**\n     * MyTrait::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+                MyBaseTrait::class => "/**\n     * MyBaseTrait::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+                MyReusedTrait::class => "/**\n     * MyReusedTrait::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            ],
+            MyBaseClass::class => "/**\n     * MyBaseClass::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyInterface::class => "/**\n     * MyInterface::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            MyOtherInterface::class => "/**\n     * MyOtherInterface::MyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+        ];
+
+        $expected5 = [
+            MyClass::class => [
+                MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            ],
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+        ];
+
+        $expected6 = [
+            MySubclass::class => null,
+            MyUndocumentedClass::class => null,
+            MyClass::class => [
+                MyClass::class => null,
+                MyTrait::class => null,
+                MyBaseTrait::class => "/**\n     * MyBaseTrait::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+            ],
+            MyInterface::class => null,
+            MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
         ];
 
         return [
-            MySubclass::class . '::MyDocumentedMethod()' => [
-                new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
-                null,
+            [
                 $expected1,
-            ],
-            MySubclass::class . '::MyDocumentedMethod() + classDocComments' => [
+                null,
                 new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
-                null,
+            ],
+            [
                 $expected1,
-                [
-                    MySubclass::class => "/**\n * MySubclass\n */",
-                    MyUndocumentedClass::class => null,
-                    MyClass::class => "/**\n * MyClass\n */",
-                    MyTrait::class => "/**\n * MyTrait\n */",
-                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
-                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
-                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
-                    MyInterface::class => "/**\n * MyInterface\n */",
-                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
-                    MyOtherInterface::class => "/**\n * MyOtherInterface\n */",
-                ],
+                self::CLASS_DOC_COMMENTS,
+                new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
             ],
-            MySubclass::class . '::MySparselyDocumentedMethod()' => [
-                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
-                null,
+            [
                 $expected2,
-            ],
-            MySubclass::class . '::MySparselyDocumentedMethod() + classDocComments' => [
-                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
                 null,
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+            ],
+            [
                 $expected2,
-                [
-                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
-                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
-                ],
+                $expected2c,
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
             ],
-            MySubclass::class . '::MySparselyDocumentedMethod() + fromClass' => [
+            [
+                $expected3,
+                null,
                 new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
                 new ReflectionClass(MySubclass::class),
-                $expected3,
             ],
-            MySubclass::class . '::MySparselyDocumentedMethod() + fromClass + classDocComments' => [
+            [
+                $expected3,
+                $expected3c,
                 new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
                 new ReflectionClass(MySubclass::class),
-                $expected3,
-                [
-                    MySubclass::class => "/**\n * MySubclass\n */",
-                    MyUndocumentedClass::class => null,
-                    MyClass::class => "/**\n * MyClass\n */",
-                    MyTrait::class => "/**\n * MyTrait\n */",
-                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
-                    MyInterface::class => "/**\n * MyInterface\n */",
-                    MyBaseInterface::class => "/**\n * MyBaseInterface\n */",
-                ],
             ],
-            MySubclass::class . '::MyTraitOnlyMethod()' => [
-                new ReflectionMethod(MySubclass::class, 'MyTraitOnlyMethod'),
-                new ReflectionClass(MySubclass::class),
+            [
                 [
                     MySubclass::class => null,
                     MyUndocumentedClass::class => null,
                     MyClass::class => null,
-                    MyTrait::class => "/**\n     * MyTrait::MyTraitOnlyMethod() PHPDoc\n     */",
+                    MyTrait::class => "/**\n     * MyTrait::MyTraitOnlyMethod()\n     */",
                 ],
-            ],
-            MyInterface::class . '::MySparselyDocumentedMethod()' => [
-                new ReflectionMethod(MyInterface::class, 'MySparselyDocumentedMethod'),
                 null,
-                [
-                    MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-                ],
+                new ReflectionMethod(MySubclass::class, 'MyTraitOnlyMethod'),
+                new ReflectionClass(MySubclass::class),
             ],
-            MyInterface::class . '::MySparselyDocumentedMethod() + fromClass' => [
+            [
+                [
+                    MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
+                ],
+                null,
                 new ReflectionMethod(MyInterface::class, 'MySparselyDocumentedMethod'),
-                new ReflectionClass(MyInterface::class),
+            ],
+            [
                 [
                     MyInterface::class => null,
-                    MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+                    MyBaseInterface::class => "/**\n     * MyBaseInterface::MySparselyDocumentedMethod()\n     *\n     * @return mixed\n     */",
                 ],
-            ],
-            MyTraitAdaptationClass::class . '::MyAdaptableMethod()' => [
-                new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
                 null,
-                [
-                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
-                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod() PHPDoc\n     *\n     * @return mixed\n     */",
-                ],
+                new ReflectionMethod(MyInterface::class, 'MySparselyDocumentedMethod'),
+                new ReflectionClass(MyInterface::class),
             ],
-            MyTraitAdaptationClass::class . '::MyAdaptableMethod() + fromClass' => [
+            [
+                [
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable()\n     *\n     * @return mixed\n     */",
+                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod()\n     *\n     * @return mixed\n     */",
+                ],
+                null,
                 new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
-                new ReflectionClass(MyTraitAdaptationClass::class),
+            ],
+            [
                 [
                     MyTraitAdaptationClass::class => null,
-                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
-                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod() PHPDoc\n     *\n     * @return mixed\n     */",
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable()\n     *\n     * @return mixed\n     */",
+                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod()\n     *\n     * @return mixed\n     */",
                 ],
+                null,
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
+                new ReflectionClass(MyTraitAdaptationClass::class),
             ],
-            MyTraitAdaptationClass::class . '::Adaptable()' => [
+            [
+                [
+                    MyTraitAdaptationClass::class => "/**\n     * MyTraitAdaptationClass::Adaptable()\n     *\n     * @return mixed\n     */",
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable()\n     *\n     * @return mixed\n     */",
+                ],
+                null,
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'Adaptable'),
+            ],
+            [
+                [
+                    MyUndocumentedClass::class => "/**\n     * MyUndocumentedClass::MyPrivateMethod()\n     */",
+                ],
+                null,
+                new ReflectionMethod(MySubclass::class, 'MyPrivateMethod'),
+            ],
+            [
+                [
+                    MySubclass::class => null,
+                    MyUndocumentedClass::class => "/**\n     * MyUndocumentedClass::MyPrivateMethod()\n     */",
+                ],
+                null,
+                new ReflectionMethod(MySubclass::class, 'MyPrivateMethod'),
+                new ReflectionClass(MySubclass::class),
+            ],
+            [
+                [
+                    MyClass::class => "/**\n     * MyClass::MyPrivateMethod()\n     */",
+                    MyTrait::class => "/**\n     * MyTrait::MyPrivateMethod()\n     */",
+                    MyBaseTrait::class => "/**\n     * MyBaseTrait::MyPrivateMethod()\n     */",
+                    MyReusedTrait::class => "/**\n     * MyReusedTrait::MyPrivateMethod()\n     */",
+                ],
+                null,
+                new ReflectionMethod(MyClass::class, 'MyPrivateMethod'),
+            ],
+            [
+                $expected4,
+                null,
+                new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
+                null,
+                true,
+            ],
+            [
+                $expected4,
+                self::CLASS_DOC_COMMENTS,
+                new ReflectionMethod(MySubclass::class, 'MyDocumentedMethod'),
+                null,
+                true,
+            ],
+            [
+                $expected5,
+                null,
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                null,
+                true,
+            ],
+            [
+                $expected5,
+                $expected2c,
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                null,
+                true,
+            ],
+            [
+                $expected6,
+                null,
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                new ReflectionClass(MySubclass::class),
+                true,
+            ],
+            [
+                $expected6,
+                $expected3c,
+                new ReflectionMethod(MySubclass::class, 'MySparselyDocumentedMethod'),
+                new ReflectionClass(MySubclass::class),
+                true,
+            ],
+            [
+                [
+                    MySubclass::class => null,
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => [
+                        MyClass::class => null,
+                        MyTrait::class => "/**\n     * MyTrait::MyTraitOnlyMethod()\n     */",
+                    ],
+                ],
+                null,
+                new ReflectionMethod(MySubclass::class, 'MyTraitOnlyMethod'),
+                new ReflectionClass(MySubclass::class),
+                true,
+            ],
+            [
+                [
+                    MyTraitAdaptationClass::class => [
+                        MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable()\n     *\n     * @return mixed\n     */",
+                    ],
+                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod()\n     *\n     * @return mixed\n     */",
+                ],
+                null,
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
+                null,
+                true,
+            ],
+            [
+                [
+                    MyTraitAdaptationClass::class => [
+                        MyTraitAdaptationClass::class => null,
+                        MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable()\n     *\n     * @return mixed\n     */",
+                    ],
+                    MyTraitAdaptationInterface::class => "/**\n     * MyTraitAdaptationInterface::MyAdaptableMethod()\n     *\n     * @return mixed\n     */",
+                ],
+                null,
+                new ReflectionMethod(MyTraitAdaptationClass::class, 'MyAdaptableMethod'),
+                new ReflectionClass(MyTraitAdaptationClass::class),
+                true,
+            ],
+            [
+                [
+                    MyTraitAdaptationClass::class => [
+                        MyTraitAdaptationClass::class => "/**\n     * MyTraitAdaptationClass::Adaptable()\n     *\n     * @return mixed\n     */",
+                        MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable()\n     *\n     * @return mixed\n     */",
+                    ],
+                ],
+                null,
                 new ReflectionMethod(MyTraitAdaptationClass::class, 'Adaptable'),
                 null,
+                true,
+            ],
+            [
                 [
-                    MyTraitAdaptationClass::class => "/**\n     * MyTraitAdaptationClass::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
-                    MyBaseTrait::class => "/**\n     * MyBaseTrait::Adaptable() PHPDoc\n     *\n     * @return mixed\n     */",
+                    MyClass::class => [
+                        MyClass::class => "/**\n     * MyClass::MyPrivateMethod()\n     */",
+                        MyTrait::class => "/**\n     * MyTrait::MyPrivateMethod()\n     */",
+                        MyBaseTrait::class => "/**\n     * MyBaseTrait::MyPrivateMethod()\n     */",
+                        MyReusedTrait::class => "/**\n     * MyReusedTrait::MyPrivateMethod()\n     */",
+                    ],
                 ],
+                null,
+                new ReflectionMethod(MyClass::class, 'MyPrivateMethod'),
+                null,
+                true,
             ],
         ];
     }
@@ -300,57 +540,300 @@ final class PHPDocUtilTest extends TestCase
     /**
      * @dataProvider getAllPropertyDocCommentsProvider
      *
-     * @param array<string,string> $expected
-     * @param array<string,string>|null $expectedClassDocComments
+     * @param array<class-string,array<class-string,string|null>|string|null> $expected
+     * @param array<class-string,string|null>|null $expectedClassDocComments
+     * @param ReflectionClass<*>|null $fromClass
      */
     public function testGetAllPropertyDocComments(
-        ReflectionProperty $property,
         array $expected,
-        ?array $expectedClassDocComments = null
+        ?array $expectedClassDocComments,
+        ReflectionProperty $property,
+        ?ReflectionClass $fromClass = null,
+        bool $groupTraits = false
     ): void {
         if ($expectedClassDocComments === null) {
-            $comments = PHPDocUtil::getAllPropertyDocComments($property);
-            $this->assertSame($expected, $comments);
-            return;
+            $actual = PHPDocUtil::getAllPropertyDocComments($property, $fromClass, $groupTraits);
+            $this->assertSame($expected, $actual, $this->getMessage($actual));
+        } else {
+            $actual = PHPDocUtil::getAllPropertyDocComments($property, $fromClass, $groupTraits, $classDocComments);
+            $this->assertSame($expected, $actual, $this->getMessage($actual));
+            $this->assertSame($expectedClassDocComments, $classDocComments, $this->getMessage($classDocComments, '$expectedClassDocComments'));
         }
-
-        $comments = PHPDocUtil::getAllPropertyDocComments($property, null, $classDocComments);
-        $this->assertSame($expected, $comments);
-        $this->assertSame($expectedClassDocComments, $classDocComments);
     }
 
     /**
-     * @return array<string,array{0:ReflectionProperty,1:array<string,string>,2?:array<string,string>}>
+     * @return array<array{array<class-string,array<class-string,string|null>|string|null>,array<class-string,string|null>|null,ReflectionProperty,3?:ReflectionClass<*>|null,4?:bool}>
      */
     public static function getAllPropertyDocCommentsProvider(): array
     {
-        $expected = [
-            MySubclass::class => "/**\n     * MySubclass::\$MyDocumentedProperty PHPDoc\n     *\n     * @var mixed\n     */",
-            MyClass::class => "/**\n     * MyClass::\$MyDocumentedProperty PHPDoc\n     *\n     * @var mixed\n     */",
-            MyTrait::class => "/**\n     * MyTrait::\$MyDocumentedProperty PHPDoc\n     *\n     * @var mixed\n     */",
-            MyBaseTrait::class => "/**\n     * MyBaseTrait::\$MyDocumentedProperty PHPDoc\n     *\n     * @var mixed\n     */",
-            MyReusedTrait::class => "/**\n     * MyReusedTrait::\$MyDocumentedProperty PHPDoc\n     *\n     * @var mixed\n     */",
-            MyBaseClass::class => "/**\n     * MyBaseClass::\$MyDocumentedProperty PHPDoc\n     *\n     * @var mixed\n     */",
+        $expected1 = [
+            MySubclass::class => "/**\n     * MySubclass::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            MyClass::class => "/**\n     * MyClass::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            MyTrait::class => "/**\n     * MyTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            MyBaseTrait::class => "/**\n     * MyBaseTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            MyReusedTrait::class => "/**\n     * MyReusedTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+        ];
+
+        $expected1c = [
+            MySubclass::class => "/**\n * MySubclass\n */",
+            MyClass::class => "/**\n * MyClass\n */",
+            MyTrait::class => "/**\n * MyTrait\n */",
+            MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
+            MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
+            MyBaseClass::class => "/**\n * MyBaseClass\n */",
+        ];
+
+        $expected2 = [
+            MySubclass::class => "/**\n     * MySubclass::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            MyClass::class => [
+                MyClass::class => "/**\n     * MyClass::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+                MyTrait::class => "/**\n     * MyTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+                MyBaseTrait::class => "/**\n     * MyBaseTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+                MyReusedTrait::class => "/**\n     * MyReusedTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+            ],
+            MyBaseClass::class => "/**\n     * MyBaseClass::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
         ];
 
         return [
-            MySubclass::class . '::$MyDocumentedProperty' => [
+            [
+                $expected1,
+                null,
                 new ReflectionProperty(MySubclass::class, 'MyDocumentedProperty'),
-                $expected,
             ],
-            MySubclass::class . '::$MyDocumentedProperty + classDocComments' => [
+            [
+                $expected1,
+                $expected1c,
                 new ReflectionProperty(MySubclass::class, 'MyDocumentedProperty'),
-                $expected,
+            ],
+            [
+                $expected2,
+                null,
+                new ReflectionProperty(MySubclass::class, 'MyDocumentedProperty'),
+                null,
+                true,
+            ],
+            [
+                $expected2,
+                $expected1c,
+                new ReflectionProperty(MySubclass::class, 'MyDocumentedProperty'),
+                null,
+                true,
+            ],
+            [
                 [
-                    MySubclass::class => "/**\n * MySubclass\n */",
-                    MyClass::class => "/**\n * MyClass\n */",
-                    MyTrait::class => "/**\n * MyTrait\n */",
-                    MyBaseTrait::class => "/**\n * MyBaseTrait\n */",
-                    MyReusedTrait::class => "/**\n * MyReusedTrait\n */",
-                    MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    MyClass::class => "/**\n     * MyClass::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                    MyTrait::class => "/**\n     * MyTrait::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
                 ],
+                null,
+                new ReflectionProperty(MySubclass::class, 'MyPrivateProperty2'),
+            ],
+            [
+                [
+                    MySubclass::class => null,
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => "/**\n     * MyClass::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                    MyTrait::class => "/**\n     * MyTrait::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                ],
+                null,
+                new ReflectionProperty(MySubclass::class, 'MyPrivateProperty2'),
+                new ReflectionClass(MySubclass::class),
+            ],
+            [
+                [
+                    MyClass::class => [
+                        MyClass::class => "/**\n     * MyClass::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                        MyTrait::class => "/**\n     * MyTrait::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                    ],
+                ],
+                null,
+                new ReflectionProperty(MySubclass::class, 'MyPrivateProperty2'),
+                null,
+                true,
+            ],
+            [
+                [
+                    MySubclass::class => null,
+                    MyUndocumentedClass::class => null,
+                    MyClass::class => [
+                        MyClass::class => "/**\n     * MyClass::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                        MyTrait::class => "/**\n     * MyTrait::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                    ],
+                ],
+                null,
+                new ReflectionProperty(MySubclass::class, 'MyPrivateProperty2'),
+                new ReflectionClass(MySubclass::class),
+                true,
+            ],
+            [
+                [
+                    MyBaseClass::class => "/**\n     * MyBaseClass::\$MyPrivateProperty2\n     *\n     * @var mixed\n     */",
+                ],
+                null,
+                new ReflectionProperty(MyBaseClass::class, 'MyPrivateProperty2'),
+            ],
+            [
+                [
+                    MyTraitAdaptationClass::class => [
+                        MyBaseTrait::class => "/**\n     * MyBaseTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+                        MyReusedTrait::class => "/**\n     * MyReusedTrait::\$MyDocumentedProperty\n     *\n     * @var mixed\n     */",
+                    ],
+                ],
+                null,
+                new ReflectionProperty(MyTraitAdaptationClass::class, 'MyDocumentedProperty'),
+                null,
+                true,
             ],
         ];
+    }
+
+    /**
+     * @dataProvider getAllConstantDocCommentsProvider
+     *
+     * @param array<class-string,array<class-string,string|null>|string|null> $expected
+     * @param array<class-string,string|null>|null $expectedClassDocComments
+     * @param ReflectionClass<*>|null $fromClass
+     */
+    public function testGetAllConstantDocComments(
+        array $expected,
+        ?array $expectedClassDocComments,
+        ReflectionClassConstant $constant,
+        ?ReflectionClass $fromClass = null,
+        bool $groupTraits = false
+    ): void {
+        if ($expectedClassDocComments === null) {
+            $actual = PHPDocUtil::getAllConstantDocComments($constant, $fromClass, $groupTraits);
+            $this->assertSame($expected, $actual, $this->getMessage($actual));
+        } else {
+            $actual = PHPDocUtil::getAllConstantDocComments($constant, $fromClass, $groupTraits, $classDocComments);
+            $this->assertSame($expected, $actual, $this->getMessage($actual));
+            $this->assertSame($expectedClassDocComments, $classDocComments, $this->getMessage($classDocComments, '$expectedClassDocComments'));
+        }
+    }
+
+    /**
+     * @return iterable<array{array<class-string,array<class-string,string|null>|string|null>,array<class-string,string|null>|null,ReflectionClassConstant,3?:ReflectionClass<*>|null,4?:bool}>
+     */
+    public static function getAllConstantDocCommentsProvider(): iterable
+    {
+        $expected1 = [
+            MyClass::class => "/**\n     * MyClass::MY_CONSTANT\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::MY_CONSTANT\n     */",
+        ];
+
+        $expected1c = [
+            MyClass::class => "/**\n * MyClass\n */",
+            MyBaseClass::class => "/**\n * MyBaseClass\n */",
+        ];
+
+        $expected2 = [
+            MyClass::class => "/**\n     * MyClass::MY_CONSTANT\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::MY_CONSTANT\n     */",
+        ];
+
+        $expected3 = [
+            MyClassWithTraitWithConstants::class => null,
+            MyTraitWithConstants::class => "/**\n     * MyTraitWithConstants::MY_CONSTANT\n     */",
+            MyClass::class => "/**\n     * MyClass::MY_CONSTANT\n     */",
+            MyBaseClass::class => "/**\n     * MyBaseClass::MY_CONSTANT\n     */",
+        ];
+
+        $expected4 = [
+            MyTraitWithConstants::class => "/**\n     * MyTraitWithConstants::MY_TRAIT_CONSTANT\n     */",
+        ];
+
+        $expected4c = [
+            MyTraitWithConstants::class => "/**\n * MyTraitWithConstants\n */",
+        ];
+
+        $expected5 = [
+            MyClassWithTraitWithConstants::class => [
+                MyTraitWithConstants::class => "/**\n     * MyTraitWithConstants::MY_TRAIT_CONSTANT\n     */",
+            ],
+        ];
+
+        yield from [
+            [
+                $expected1,
+                null,
+                new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
+            ],
+            [
+                $expected1,
+                $expected1c,
+                new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
+            ],
+            [
+                $expected2,
+                null,
+                new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
+                null,
+                true,
+            ],
+            [
+                $expected2,
+                $expected1c,
+                new ReflectionClassConstant(MyClass::class, 'MY_CONSTANT'),
+                null,
+                true,
+            ],
+        ];
+
+        if (\PHP_VERSION_ID >= 80200) {
+            yield from [
+                [
+                    $expected1,
+                    null,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_CONSTANT'),
+                ],
+                [
+                    $expected1,
+                    $expected1c,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_CONSTANT'),
+                ],
+                [
+                    $expected3,
+                    null,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_CONSTANT'),
+                    new ReflectionClass(MyClassWithTraitWithConstants::class),
+                ],
+                [
+                    $expected3,
+                    [
+                        MyClassWithTraitWithConstants::class => "/**\n * MyClassWithTraitWithConstants\n */",
+                        MyTraitWithConstants::class => "/**\n * MyTraitWithConstants\n */",
+                        MyClass::class => "/**\n * MyClass\n */",
+                        MyBaseClass::class => "/**\n * MyBaseClass\n */",
+                    ],
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_CONSTANT'),
+                    new ReflectionClass(MyClassWithTraitWithConstants::class),
+                ],
+                [
+                    $expected4,
+                    null,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_TRAIT_CONSTANT'),
+                ],
+                [
+                    $expected4,
+                    $expected4c,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_TRAIT_CONSTANT'),
+                ],
+                [
+                    $expected5,
+                    null,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_TRAIT_CONSTANT'),
+                    null,
+                    true,
+                ],
+                [
+                    $expected5,
+                    $expected4c,
+                    new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_TRAIT_CONSTANT'),
+                    null,
+                    true,
+                ],
+            ];
+        }
     }
 
     /**
@@ -378,12 +861,12 @@ final class PHPDocUtilTest extends TestCase
     }
 
     /**
-     * @return Generator<string,array{string[],string,string,3?:bool}>
+     * @return iterable<array{string[],string,string,3?:bool}>
      */
-    public static function getTypeDeclarationProvider(): Generator
+    public static function getTypeDeclarationProvider(): iterable
     {
         yield from [
-            'MyClass::__construct()' => [
+            [
                 [
                     '',
                     '?int',
@@ -394,7 +877,7 @@ final class PHPDocUtilTest extends TestCase
                 MyClass::class,
                 '__construct',
             ],
-            'MyClass::__construct() [phpDoc]' => [
+            [
                 [
                     '',
                     'int|null',
@@ -409,7 +892,7 @@ final class PHPDocUtilTest extends TestCase
         ];
 
         if (\PHP_VERSION_ID >= 80100) {
-            yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
+            yield [
                 [
                     '',
                     '?int',
@@ -432,7 +915,7 @@ final class PHPDocUtilTest extends TestCase
         }
 
         if (\PHP_VERSION_ID >= 80200) {
-            yield 'MyClassWithDnfTypes::MyMethod()' => [
+            yield [
                 [
                     '',
                     'null',
@@ -481,11 +964,11 @@ final class PHPDocUtilTest extends TestCase
     }
 
     /**
-     * @return Generator<string,array{string[],string,string}>
+     * @return iterable<array{string[],string,string}>
      */
-    public static function getParameterDeclarationProvider(): Generator
+    public static function getParameterDeclarationProvider(): iterable
     {
-        yield 'MyClass::__construct()' => [
+        yield [
             [
                 '$id',
                 '?int $altId',
@@ -498,7 +981,7 @@ final class PHPDocUtilTest extends TestCase
         ];
 
         if (\PHP_VERSION_ID >= 80100) {
-            yield 'MyClassWithUnionsAndIntersections::MyMethod()' => [
+            yield [
                 [
                     '$mixed',
                     '?int $nullableInt',
@@ -521,7 +1004,7 @@ final class PHPDocUtilTest extends TestCase
         }
 
         if (\PHP_VERSION_ID >= 80200) {
-            yield 'MyClassWithDnfTypes::MyMethod()' => [
+            yield [
                 [
                     '$mixed',
                     'null $null',
@@ -548,5 +1031,29 @@ final class PHPDocUtilTest extends TestCase
                 'MyMethod',
             ];
         }
+    }
+
+    /**
+     * @param mixed $actual
+     */
+    private static function getMessage($actual, string $expectedName = '$expected'): string
+    {
+        /** @var array<class-string,non-empty-string>|null */
+        static $constants;
+
+        if ($constants === null) {
+            /** @var array<string,class-string> */
+            $aliases = Arr::pluck(TokenExtractor::fromFile(__FILE__)->getImports(), '1', true);
+            $constants = array_map(
+                fn(string $alias) => $alias . '::class',
+                array_flip($aliases),
+            );
+        }
+
+        return sprintf(
+            'If classes changed, replace %s with: %s',
+            $expectedName,
+            Get::code($actual, ', ', ' => ', null, '    ', [], $constants),
+        );
     }
 }

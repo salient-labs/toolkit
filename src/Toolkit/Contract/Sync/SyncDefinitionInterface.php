@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Sync;
 
-use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Sync\SyncOperation as OP;
+use Salient\Contract\HasConformity;
 use Closure;
 
 /**

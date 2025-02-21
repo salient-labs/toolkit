@@ -4,12 +4,12 @@ namespace Salient\Sync\Support;
 
 use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Console\ConsoleWriterInterface;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
+use Salient\Contract\HasMessageLevel;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Inflect;
@@ -54,7 +54,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
                 'title' => Reflect::getConstantName(ErrorType::class, $error->getType()),
                 'detail' => $format,
                 'meta' => [
-                    'level' => Reflect::getConstantName(Level::class, $error->getLevel()),
+                    'level' => Reflect::getConstantName(HasMessageLevel::class, $error->getLevel()),
                     'count' => 0,
                     'seen' => 0,
                 ],
@@ -110,7 +110,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
      * @inheritDoc
      */
     public function reportErrors(
-        ?ConsoleWriterInterface $writer = null,
+        ?ConsoleInterface $writer = null,
         string $successText = 'No sync errors recorded'
     ): void {
         $writer ??= Console::getInstance();
@@ -121,8 +121,8 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
         }
 
         $level = $this->ErrorCount
-            ? Level::ERROR
-            : Level::WARNING;
+            ? Console::LEVEL_ERROR
+            : Console::LEVEL_WARNING;
 
         $writer->message(
             Inflect::format(
@@ -169,13 +169,13 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
         $warnings = 0;
         foreach ($this->Items as $error) {
             switch ($error->getLevel()) {
-                case Level::EMERGENCY:
-                case Level::ALERT:
-                case Level::CRITICAL:
-                case Level::ERROR:
+                case Console::LEVEL_EMERGENCY:
+                case Console::LEVEL_ALERT:
+                case Console::LEVEL_CRITICAL:
+                case Console::LEVEL_ERROR:
                     $errors++;
                     break;
-                case Level::WARNING:
+                case Console::LEVEL_WARNING:
                     $warnings++;
                     break;
             }

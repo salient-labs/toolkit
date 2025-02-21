@@ -2,17 +2,21 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
-use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
+use Salient\Utility\Reflect;
 use Salient\Utility\Str;
 use Closure;
-use LogicException;
+use InvalidArgumentException;
 
 /**
- * Resolves a name to an entity using one or more text comparison algorithms
+ * Resolves a name to an entity by identifying the closest match
+ *
+ * Entities are retrieved when {@see SyncEntityFuzzyResolver::getByName()} is
+ * first called, and are held by the instance until it is destroyed.
+ *
+ * @api
  *
  * @template TEntity of SyncEntityInterface
  *
@@ -20,97 +24,111 @@ use LogicException;
  */
 final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
 {
-    private const ALGORITHMS = [
-        Algorithm::SAME,
-        Algorithm::CONTAINS,
-        Algorithm::LEVENSHTEIN,
-        Algorithm::SIMILAR_TEXT,
-        Algorithm::NGRAM_SIMILARITY,
-        Algorithm::NGRAM_INTERSECTION,
-    ];
+    public const DEFAULT_FLAGS =
+        SyncEntityFuzzyResolver::ALGORITHM_SAME
+        | SyncEntityFuzzyResolver::ALGORITHM_CONTAINS
+        | SyncEntityFuzzyResolver::ALGORITHM_NGRAM_SIMILARITY
+        | SyncEntityFuzzyResolver::NORMALISE;
+
+    private const FUZZY_ALGORITHMS =
+        self::ALGORITHM_LEVENSHTEIN
+        | self::ALGORITHM_SIMILAR_TEXT
+        | self::ALGORITHM_NGRAM_SIMILARITY
+        | self::ALGORITHM_NGRAM_INTERSECTION;
 
     /** @var SyncEntityProviderInterface<TEntity> */
-    private $EntityProvider;
-    /** @var string|Closure(TEntity): (string|null) */
-    private $NameProperty;
-    /** @var int-mask-of<Algorithm::*|Flag::*> */
-    private $Algorithm;
-    /** @var array<Algorithm::*,float>|float|null */
-    private $UncertaintyThreshold;
-    /** @var string|null */
-    private $WeightProperty;
-    /** @var bool */
-    private $RequireOneMatch;
+    private SyncEntityProviderInterface $EntityProvider;
+    private bool $HasNameProperty;
+    private string $NameProperty;
+    /** @var Closure(TEntity): string */
+    private Closure $GetNameClosure;
+    /** @var int-mask-of<self::*> */
+    private int $Flags;
+    /** @var array<self::ALGORITHM_*,float|null> */
+    private array $UncertaintyThreshold;
+    private bool $HasWeightProperty;
+    private string $WeightProperty;
+    /** @var (Closure(TEntity): (int|float))|null */
+    private ?Closure $GetWeightClosure;
+    private bool $RequireOneMatch;
 
     /**
-     * [ [ Entity, normalised name, weight ] ]
+     * [ [ Entity, normalised name, weight ], ... ]
      *
-     * @var array<array{TEntity,string,mixed|null}>
+     * @var array<array{TEntity,string,int|float}>
      */
     private array $Entities;
 
     /**
-     * Query => [ entity, uncertainty ]
+     * Normalised name => [ entity, uncertainty ]
      *
-     * @var array<string,array{TEntity|null,float|null}>
+     * @var array<string,array{TEntity,float}|array{null,null}>
      */
-    private $Cache = [];
+    private array $Cache = [];
 
     /**
+     * @api
+     *
      * @param SyncEntityProviderInterface<TEntity> $entityProvider
-     * @param int-mask-of<Algorithm::*|Flag::*> $algorithm
-     * @param array<Algorithm::*,float>|float|null $uncertaintyThreshold
-     * @param string|null $weightProperty If multiple entities are equally
-     * similar to a given name, the one with the highest weight is preferred.
+     * @param (Closure(TEntity): string)|string|null $nameProperty If `null`,
+     * entity names are taken from {@see SyncEntityInterface::getName()}.
+     * @param int-mask-of<SyncEntityFuzzyResolver::*> $flags
+     * @param array<SyncEntityFuzzyResolver::ALGORITHM_*,float>|float|null $uncertaintyThreshold If
+     * the uncertainty of a match for a given name is greater than or equal to
+     * this value (between `0.0` and `1.0`), the entity is not returned.
+     * @param (Closure(TEntity): (int|float))|string|null $weightProperty If
+     * multiple entities are equally similar to a given name, the one with the
+     * greatest weight (highest value) is preferred.
      */
     public function __construct(
         SyncEntityProviderInterface $entityProvider,
-        ?string $nameProperty = null,
-        int $algorithm =
-            Algorithm::SAME
-            | Algorithm::CONTAINS
-            | Algorithm::NGRAM_SIMILARITY
-            | Flag::NORMALISE,
+        $nameProperty = null,
+        int $flags = SyncEntityFuzzyResolver::DEFAULT_FLAGS,
         $uncertaintyThreshold = null,
-        ?string $weightProperty = null,
+        $weightProperty = null,
         bool $requireOneMatch = false
     ) {
-        // Reduce $uncertaintyThreshold to values that will actually be applied
-        if (is_array($uncertaintyThreshold)) {
-            $uncertaintyThreshold = array_intersect_key(
-                $uncertaintyThreshold,
-                array_flip(self::ALGORITHMS),
-            );
-            foreach (array_keys($uncertaintyThreshold) as $key) {
-                if (!($algorithm & $key)) {
-                    unset($uncertaintyThreshold[$key]);
+        $algorithms = $this->getAlgorithms($flags);
+        if (!$algorithms) {
+            throw new InvalidArgumentException('At least one algorithm flag must be set');
+        }
+        if (!is_array($uncertaintyThreshold)) {
+            $uncertaintyThreshold = array_fill_keys($algorithms, $uncertaintyThreshold);
+        }
+        $this->UncertaintyThreshold = [];
+        foreach ($algorithms as $algorithm) {
+            $threshold = $uncertaintyThreshold[$algorithm] ?? null;
+            if ($requireOneMatch && $threshold === null) {
+                if ($algorithm & self::FUZZY_ALGORITHMS) {
+                    throw new InvalidArgumentException(sprintf(
+                        'Invalid $uncertaintyThreshold for %s when $requireOneMatch is true',
+                        Reflect::getConstantName(self::class, $algorithm),
+                    ));
+                } else {
+                    $threshold = 1.0;
                 }
             }
-            if (!$uncertaintyThreshold) {
-                $uncertaintyThreshold = null;
-            }
-        }
-
-        // Throw an exception if one match is required but the list of potential
-        // matches is never narrowed
-        if (
-            $requireOneMatch
-            && $uncertaintyThreshold === null
-            && !($algorithm & (Algorithm::SAME | Algorithm::CONTAINS))
-        ) {
-            throw new LogicException(
-                '$requireOneMatch cannot be true when $uncertaintyThreshold is null'
-            );
+            $this->UncertaintyThreshold[$algorithm] = $threshold;
         }
 
         $this->EntityProvider = $entityProvider;
-        $this->NameProperty =
-            $nameProperty === null
-                ? SyncIntrospector::get($entityProvider->entity())->getGetNameClosure()
-                : $nameProperty;
-        $this->Algorithm = $algorithm;
-        $this->UncertaintyThreshold = $uncertaintyThreshold;
-        $this->WeightProperty = $weightProperty;
+        if (is_string($nameProperty)) {
+            $this->HasNameProperty = true;
+            $this->NameProperty = $nameProperty;
+        } else {
+            $this->HasNameProperty = false;
+            $this->GetNameClosure = $nameProperty
+                ?? SyncIntrospector::get($entityProvider->entity())
+                    ->getGetNameClosure();
+        }
+        $this->Flags = $flags;
+        if (is_string($weightProperty)) {
+            $this->HasWeightProperty = true;
+            $this->WeightProperty = $weightProperty;
+        } else {
+            $this->HasWeightProperty = false;
+            $this->GetWeightClosure = $weightProperty;
+        }
         $this->RequireOneMatch = $requireOneMatch;
     }
 
@@ -126,10 +144,9 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return null;
         }
 
-        $name =
-            $this->Algorithm & Flag::NORMALISE
-                ? Str::normalise($name)
-                : $name;
+        if ($this->Flags & self::NORMALISE) {
+            $name = Str::normalise($name);
+        }
 
         if (isset($this->Cache[$name])) {
             [$entity, $uncertainty] = $this->Cache[$name];
@@ -138,35 +155,11 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
 
         $entries = $this->Entities;
         $applied = 0;
-
-        foreach (self::ALGORITHMS as $algorithm) {
-            if (!($this->Algorithm & $algorithm)) {
-                continue;
-            }
-
-            $threshold =
-                $this->RequireOneMatch
-                && $algorithm & (Algorithm::SAME | Algorithm::CONTAINS)
-                    ? 1.0
-                    : ($this->UncertaintyThreshold === null
-                        ? null
-                        : (is_array($this->UncertaintyThreshold)
-                            ? ($this->UncertaintyThreshold[$algorithm] ?? null)
-                            : $this->UncertaintyThreshold));
-
-            // Skip this algorithm if it would achieve nothing
-            if ($this->RequireOneMatch && $threshold === null) {
-                continue;
-            }
-
+        foreach ($this->UncertaintyThreshold as $algorithm => $threshold) {
             $next = [];
             foreach ($entries as $entry) {
                 $entityName = $entry[1];
-                $entityUncertainty = $this->getUncertainty(
-                    $name,
-                    $entityName,
-                    $algorithm,
-                );
+                $entityUncertainty = $this->getUncertainty($name, $entityName, $algorithm);
                 if ($threshold !== null && (
                     ($threshold !== 0.0 && $entityUncertainty >= $threshold)
                     || ($threshold === 0.0 && $entityUncertainty > $threshold)
@@ -197,86 +190,113 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return $this->cacheResult($name, null, $uncertainty);
         }
 
-        /** @var array<array{TEntity,string,mixed|null,float,...<float>}> $entries */
+        // Sort entries by:
+        // - uncertainty values, most recent to least recent, ascending
+        // - weight, descending
+        /** @var array<array{TEntity,string,int|float,float,...<float>}> $entries */
         usort(
             $entries,
             function ($e1, $e2) use ($applied) {
-                // Uncertainty values, most recent to least recent, ascending
-                for ($i = $applied + 2; $i >= 3; $i--) {
-                    $result = $e1[$i] <=> $e2[$i];
-                    if ($result) {
+                for ($i = $applied + 2; $i > 2; $i--) {
+                    if ($result = $e1[$i] <=> $e2[$i]) {
                         return $result;
                     }
                 }
-                // Weight, descending
                 return $e2[2] <=> $e1[2];
             }
         );
 
+        // Return the best match
         return $this->cacheResult($name, $entries[0], $uncertainty);
     }
 
     /**
-     * @return array<array{TEntity,string,mixed|null}>
+     * @return list<self::ALGORITHM_*>
+     */
+    private function getAlgorithms(int $flags): array
+    {
+        foreach ([
+            self::ALGORITHM_SAME,
+            self::ALGORITHM_CONTAINS,
+            self::ALGORITHM_LEVENSHTEIN,
+            self::ALGORITHM_SIMILAR_TEXT,
+            self::ALGORITHM_NGRAM_SIMILARITY,
+            self::ALGORITHM_NGRAM_INTERSECTION,
+        ] as $algorithm) {
+            if ($flags & $algorithm) {
+                $algorithms[] = $algorithm;
+            }
+        }
+
+        return $algorithms ?? [];
+    }
+
+    /**
+     * @return array<array{TEntity,string,int|float}>
      */
     private function getEntities(): array
     {
         foreach ($this->EntityProvider->getList() as $entity) {
-            $name = is_string($this->NameProperty)
-                ? $entity->{$this->NameProperty}
-                : ($this->NameProperty)($entity);
-            $entities[] = [
-                $entity,
-                $this->Algorithm & Flag::NORMALISE
-                    ? Str::normalise($name)
-                    : $name,
-                $this->WeightProperty === null
-                    ? 0
-                    : $entity->{$this->WeightProperty},
-            ];
+            if ($this->HasNameProperty) {
+                $name = $entity->{$this->NameProperty} ?? null;
+                if (!is_string($name)) {
+                    continue;
+                }
+            } else {
+                $name = ($this->GetNameClosure)($entity);
+            }
+            if ($this->Flags & self::NORMALISE) {
+                $name = Str::normalise($name);
+            }
+            if ($this->HasWeightProperty) {
+                $weight = $entity->{$this->WeightProperty} ?? null;
+                if (!(is_int($weight) || is_float($weight))) {
+                    $weight = \PHP_INT_MIN;
+                }
+            } elseif ($this->GetWeightClosure) {
+                $weight = ($this->GetWeightClosure)($entity);
+            } else {
+                $weight = \PHP_INT_MIN;
+            }
+            $entities[] = [$entity, $name, $weight];
         }
+
         return $entities ?? [];
     }
 
     /**
-     * @param Algorithm::SAME|Algorithm::CONTAINS|Algorithm::LEVENSHTEIN|Algorithm::SIMILAR_TEXT|Algorithm::NGRAM_SIMILARITY|Algorithm::NGRAM_INTERSECTION $algorithm
+     * @param self::ALGORITHM_* $algorithm
      */
-    private function getUncertainty(string $string1, string $string2, $algorithm): float
+    private function getUncertainty(string $string1, string $string2, int $algorithm): float
     {
         switch ($algorithm) {
-            case Algorithm::SAME:
+            case self::ALGORITHM_SAME:
                 return $string1 === $string2
                     ? 0.0
                     : 1.0;
 
-            case Algorithm::CONTAINS:
+            case self::ALGORITHM_CONTAINS:
                 return strpos($string2, $string1) !== false
                     || strpos($string1, $string2) !== false
                         ? 0.0
                         : 1.0;
 
-            case Algorithm::LEVENSHTEIN:
+            case self::ALGORITHM_LEVENSHTEIN:
                 return Str::distance($string1, $string2);
 
-            case Algorithm::SIMILAR_TEXT:
-                return 1 - Str::similarity($string1, $string2);
+            case self::ALGORITHM_SIMILAR_TEXT:
+                return 1.0 - Str::similarity($string1, $string2);
 
-            case Algorithm::NGRAM_SIMILARITY:
-                return 1 - Str::ngramSimilarity($string1, $string2);
+            case self::ALGORITHM_NGRAM_SIMILARITY:
+                return 1.0 - Str::ngramSimilarity($string1, $string2);
 
-            case Algorithm::NGRAM_INTERSECTION:
-                return 1 - Str::ngramIntersection($string1, $string2);
-
-            default:
-                throw new LogicException(sprintf(
-                    'Invalid algorithm: %d',
-                    $this->Algorithm,
-                ));
+            case self::ALGORITHM_NGRAM_INTERSECTION:
+                return 1.0 - Str::ngramIntersection($string1, $string2);
         }
     }
 
     /**
-     * @param array{TEntity,string,mixed|null,float,...<float>}|null $entry
+     * @param array{TEntity,string,int|float,float,...<float>}|null $entry
      * @return TEntity|null
      */
     private function cacheResult(string $name, ?array $entry, ?float &$uncertainty): ?SyncEntityInterface

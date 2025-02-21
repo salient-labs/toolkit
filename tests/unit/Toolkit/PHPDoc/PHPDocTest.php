@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\PHPDoc;
 
+use Salient\PHPDoc\Tag\AbstractTag;
 use Salient\PHPDoc\Tag\ErrorTag;
 use Salient\PHPDoc\Tag\GenericTag;
 use Salient\PHPDoc\Tag\MethodParam;
@@ -21,6 +22,10 @@ use Salient\Utility\Get;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
+use ReflectionClass;
+use ReflectionClassConstant;
+use ReflectionMethod;
+use ReflectionProperty;
 use stdClass;
 
 /**
@@ -334,12 +339,12 @@ EOF;
     }
 
     /**
-     * @dataProvider phpDocProvider
+     * @dataProvider constructorProvider
      *
      * @param PHPDoc|string|null $classDocBlock
      * @param class-string|null $class
      */
-    public function testPHPDoc(
+    public function testConstructor(
         PHPDoc $expected,
         ?string $docBlock = null,
         $classDocBlock = null,
@@ -359,7 +364,7 @@ EOF;
     /**
      * @return array<array{PHPDoc,1?:string|null,2?:PHPDoc|string|null,3?:class-string|null,4?:string|null,5?:bool,6?:string|null}>
      */
-    public static function phpDocProvider(): array
+    public static function constructorProvider(): array
     {
         return [
             [
@@ -502,6 +507,70 @@ EOF,
                 null,
                 false,
                 '/** */',
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider forClassOrMemberProvider
+     *
+     * @param ReflectionClass<*>|ReflectionMethod|ReflectionProperty|ReflectionClassConstant $classOrMember
+     * @param ReflectionClass<*>|null $class
+     * @param array<string,class-string> $aliases
+     */
+    public function testForClassOrMember(
+        PHPDoc $expected,
+        $classOrMember,
+        ?ReflectionClass $class = null,
+        array $aliases = []
+    ): void {
+        if ($classOrMember instanceof ReflectionClass) {
+            $phpDoc = PHPDoc::forClass($classOrMember, $aliases);
+        } elseif ($classOrMember instanceof ReflectionMethod) {
+            $phpDoc = PHPDoc::forMethod($classOrMember, $class, $aliases);
+        } elseif ($classOrMember instanceof ReflectionProperty) {
+            $phpDoc = PHPDoc::forProperty($classOrMember, $class, $aliases);
+        } elseif ($classOrMember instanceof ReflectionClassConstant) {
+            $phpDoc = PHPDoc::forConstant($classOrMember, $class, $aliases);
+        }
+        $this->assertEquals($expected, $phpDoc->flatten());
+    }
+
+    /**
+     * @return array<array{PHPDoc,ReflectionClass<*>|ReflectionMethod|ReflectionProperty|ReflectionClassConstant,2?:ReflectionClass<*>|null,3?:array<string,class-string>}>
+     */
+    public static function forClassOrMemberProvider(): array
+    {
+        // TODO: use test fixtures here
+        return [
+            [
+                PHPDoc::fromTags([
+                    new GenericTag('api', null, ParamTag::class),
+                ], null, null, ParamTag::class),
+                new ReflectionClass(ParamTag::class),
+            ],
+            [
+                PHPDoc::fromTags([
+                    new GenericTag('internal', null, ParamTag::class, '__construct()'),
+                    new ParamTag('class', 'class-string|null', false, false, null, AbstractTag::class, '__construct()', ParamTag::class),
+                    new ParamTag('static', 'class-string|null', false, false, null, AbstractTag::class, '__construct()', ParamTag::class),
+                    new ParamTag('self', 'class-string|null', false, false, null, AbstractTag::class, '__construct()', ParamTag::class),
+                    new ParamTag('aliases', 'array<string,class-string>', false, false, null, AbstractTag::class, '__construct()', ParamTag::class),
+                ], null, null, ParamTag::class, '__construct()'),
+                new ReflectionMethod(ParamTag::class, '__construct'),
+            ],
+            [
+                PHPDoc::fromTags([
+                    new VarTag('class-string|null', null, null, AbstractTag::class, '$Class', ParamTag::class),
+                ], null, null, ParamTag::class, '$Class'),
+                new ReflectionProperty(ParamTag::class, 'Class'),
+                new ReflectionClass(ParamTag::class),
+            ],
+            [
+                PHPDoc::fromTags([
+                    new VarTag('non-empty-array<string>', null, null, PHPDoc::class, 'DEFAULT_TAG_PREFIXES'),
+                ], null, null, PHPDoc::class, 'DEFAULT_TAG_PREFIXES'),
+                new ReflectionClassConstant(PHPDoc::class, 'DEFAULT_TAG_PREFIXES'),
             ],
         ];
     }

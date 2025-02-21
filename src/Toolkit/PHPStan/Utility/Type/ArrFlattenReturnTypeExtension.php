@@ -5,11 +5,13 @@ namespace Salient\PHPStan\Utility\Type;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\IntegerType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
@@ -51,9 +53,21 @@ class ArrFlattenReturnTypeExtension implements DynamicStaticMethodReturnTypeExte
             ) {
                 return null;
             }
-            $values = $type->getConstantScalarValues();
             /** @var int */
-            $limit = $values[0];
+            $limit = $type->getConstantScalarValues()[0];
+        }
+
+        $preserveKeys = false;
+        if (isset($args[2])) {
+            $type = $scope->getType($args[2]->value);
+            if (
+                !$type->isConstantScalarValue()->yes()
+                || !$type->isBoolean()->yes()
+            ) {
+                return null;
+            }
+            /** @var bool */
+            $preserveKeys = $type->getConstantScalarValues()[0];
         }
 
         $type = $scope->getType($args[0]->value);
@@ -62,58 +76,150 @@ class ArrFlattenReturnTypeExtension implements DynamicStaticMethodReturnTypeExte
             return null;
         }
 
-        $types = $this->getIterableValueTypes($type, $constant);
+        $arrayKey = new UnionType([new IntegerType(), new StringType()]);
+
+        [$keyTypes, $valueTypes, $isOptional, $isConstant] = $this->getIterableTypes($type);
+        $isAlwaysConstant = $isConstant;
 
         do {
-            $flattened = [];
+            $flattenedKeys = [];
+            $flattenedValues = [];
+            $flattenedIsOptional = [];
+            $addKeyTypes = function (
+                array $keyTypes,
+                bool $isConstant,
+                bool $valueTypeAdded
+            ) use ($preserveKeys, $arrayKey, &$flattenedKeys) {
+                if (!$isConstant && $preserveKeys && $valueTypeAdded) {
+                    $type = TypeCombinator::union(...array_values($keyTypes));
+                    $flattenedKeys[] = $arrayKey->isSuperTypeOf($type)->yes()
+                        ? $type
+                        : TypeCombinator::union(
+                            TypeCombinator::intersect($type, $arrayKey),
+                            new IntegerType(),
+                        );
+                }
+            };
+
+            $i = null;
             $fromIterable = false;
-            foreach ($types as $type) {
+            $valueTypeAdded = false;
+            foreach ($valueTypes as $index => $type) {
                 if (!$type->isIterable()->yes() || !$limit) {
-                    $flattened[] = $type;
+                    $flattenedValues[] = $type;
+                    if ($isConstant) {
+                        if ($preserveKeys) {
+                            $flattenedKeys[] = $this->getKey($keyTypes[$index], $i);
+                        }
+                        $flattenedIsOptional[] = $isOptional[$index];
+                    }
+                    $valueTypeAdded = true;
                     continue;
                 }
+
+                [$_keyTypes, $_valueTypes, $_isOptional, $_isConstant] = $this->getIterableTypes($type);
+                $isAlwaysConstant = $isAlwaysConstant && $_isConstant;
+
                 $fromIterable = true;
-                $types = $this->getIterableValueTypes($type, $constant);
-                foreach ($types as $type) {
-                    $flattened[] = $type;
+                $_valueTypeAdded = false;
+                foreach ($_valueTypes as $index => $type) {
+                    $flattenedValues[] = $type;
+                    if ($_isConstant) {
+                        if ($preserveKeys) {
+                            $flattenedKeys[] = $limit === 1 || !$type->isIterable()->yes()
+                                ? $this->getKey($_keyTypes[$index], $i)
+                                : new ConstantIntegerType(array_key_last($flattenedValues));
+                        }
+                        $flattenedIsOptional[] = $_isOptional[$index];
+                    }
+                    $_valueTypeAdded = true;
                 }
+
+                $addKeyTypes($_keyTypes, $_isConstant, $_valueTypeAdded);
             }
-            $types = $flattened;
+
+            $addKeyTypes($keyTypes, $isConstant, $valueTypeAdded);
+
+            $keyTypes = $flattenedKeys;
+            $valueTypes = $flattenedValues;
+            $isOptional = $flattenedIsOptional;
+            $isConstant = $isAlwaysConstant;
+
             $limit--;
         } while ($fromIterable && $limit);
 
-        if ($constant) {
-            $keys = [];
-            foreach (array_keys($flattened) as $key) {
-                $keys[] = new ConstantIntegerType($key);
+        if ($isConstant) {
+            $builder = ConstantArrayTypeBuilder::createEmpty();
+            foreach ($valueTypes as $index => $type) {
+                $builder->setOffsetValueType(
+                    $preserveKeys ? $keyTypes[$index] : null,
+                    $type,
+                    $isOptional[$index],
+                );
             }
-            return new ConstantArrayType($keys, $flattened);
+            return $builder->getArray();
         }
 
         return new ArrayType(
-            new MixedType(),
-            TypeCombinator::union(...$flattened),
+            $preserveKeys ? TypeCombinator::union(...$keyTypes) : new MixedType(),
+            TypeCombinator::union(...$valueTypes),
         );
     }
 
     /**
-     * @param-out bool $constant
-     * @return Type[]
+     * @return array{Type[],Type[],bool[],bool}
      */
-    private function getIterableValueTypes(Type $type, ?bool &$constant = null): array
+    private function getIterableTypes(Type $type): array
     {
         if (
             $type->isConstantArray()->yes()
             && count($arrays = $type->getConstantArrays()) === 1
         ) {
-            $constant ??= true;
-            return $arrays[0]->getValueTypes();
+            $keyTypes = $arrays[0]->getKeyTypes();
+            $optionalKeys = $arrays[0]->getOptionalKeys();
+            foreach (array_keys($keyTypes) as $key) {
+                $isOptional[$key] = in_array($key, $optionalKeys, true);
+            }
+            return [
+                $keyTypes,
+                $arrays[0]->getValueTypes(),
+                $isOptional ?? [],
+                true,
+            ];
         }
 
-        $constant = false;
-        $type = $type->getIterableValueType();
-        return $type instanceof UnionType
-            ? $type->getTypes()
-            : [$type];
+        $keyType = $type->getIterableKeyType();
+        $valueType = $type->getIterableValueType();
+        return [
+            $keyType instanceof UnionType
+                ? $keyType->getTypes()
+                : [$keyType],
+            $valueType instanceof UnionType
+                ? $valueType->getTypes()
+                : [$valueType],
+            [],
+            false,
+        ];
+    }
+
+    private function getKey(Type $type, ?int &$i): Type
+    {
+        if ($type->isConstantScalarValue()->yes()) {
+            if ($type->isInteger()->yes()) {
+                /** @var int */
+                $key = $type->getConstantScalarValues()[0];
+                if ($i === null || $key > $i) {
+                    $i = $key;
+                }
+                return $type;
+            }
+            if ($type->isString()->yes()) {
+                return $type;
+            }
+        }
+        if ($i === null) {
+            return new ConstantIntegerType($i = 0);
+        }
+        return new ConstantIntegerType(++$i);
     }
 }

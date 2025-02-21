@@ -3,7 +3,7 @@
 namespace Salient\Contract\Sync;
 
 use Salient\Contract\Collection\CollectionInterface;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Stringable;
 
 /**
@@ -44,11 +44,11 @@ interface SyncErrorCollectionInterface extends CollectionInterface, Stringable
      * - ERROR if one or more recorded errors have level ERROR or higher
      * - WARNING if all recorded errors have level WARNING or lower
      *
-     * @param ConsoleWriterInterface|null $writer If `null`, the default console
+     * @param ConsoleInterface|null $writer If `null`, the default console
      * writer is used.
      */
     public function reportErrors(
-        ?ConsoleWriterInterface $writer = null,
+        ?ConsoleInterface $writer = null,
         string $successText = 'No sync errors recorded'
     ): void;
 

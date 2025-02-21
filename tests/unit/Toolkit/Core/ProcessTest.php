@@ -60,7 +60,7 @@ final class ProcessTest extends TestCase
     {
         $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo', $this->getCallback($output), null, null, null, false);
         $this->assertSame(0, $process->run());
-        $this->assertSame('foo', $output[Process::OUT]);
+        $this->assertSame('foo', $output[Process::STDOUT]);
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Output collection disabled');
         $process->getOutput();
@@ -71,7 +71,7 @@ final class ProcessTest extends TestCase
         $process = new Process([...self::PHP_COMMAND, self::getFixturesPath(__CLASS__) . '/cat.php'], 'foo', $this->getCallback($output));
         $process->disableOutputCollection();
         $this->assertSame(0, $process->run());
-        $this->assertSame('foo', $output[Process::OUT]);
+        $this->assertSame('foo', $output[Process::STDOUT]);
         $process->enableOutputCollection();
         $process->clearOutput();
         $this->expectException(LogicException::class);
@@ -156,8 +156,8 @@ final class ProcessTest extends TestCase
         foreach ($processes as $key => $process) {
             [$exitStatus, $stdout, $stderr] = $runs[$key];
             $this->assertSame($exitStatus, $process->getExitStatus(), $key);
-            $this->assertSame($stdout, $process->getOutput(Process::OUT), $key);
-            $this->assertSame($stderr, $process->getOutput(Process::ERR), $key);
+            $this->assertSame($stdout, $process->getOutput(Process::STDOUT), $key);
+            $this->assertSame($stderr, $process->getOutput(Process::STDERR), $key);
         }
     }
 
@@ -189,8 +189,8 @@ final class ProcessTest extends TestCase
 
         $this->assertSame($exitStatus, $result);
         $this->assertSame($exitStatus, $process->getExitStatus());
-        $this->assertSame($stdout, $process->getOutput(Process::OUT));
-        $this->assertSame($stderr, $process->getOutput(Process::ERR));
+        $this->assertSame($stdout, $process->getOutput(Process::STDOUT));
+        $this->assertSame($stderr, $process->getOutput(Process::STDERR));
         $this->assertTrue($process->isTerminated());
         $this->assertIsInt($pid = $process->getPid());
         $this->assertGreaterThan(0, $pid);
@@ -318,8 +318,8 @@ EOF,
         $result = $process->run();
         $this->assertNotSame(0, $exitStatus = $process->getExitStatus());
         $this->assertSame($exitStatus, $result);
-        $this->assertSame('', $process->getOutput(Process::OUT));
-        $this->assertSame('', $process->getOutput(Process::ERR));
+        $this->assertSame('', $process->getOutput(Process::STDOUT));
+        $this->assertSame('', $process->getOutput(Process::STDERR));
     }
 
     /**
@@ -416,7 +416,7 @@ EOF,
     }
 
     /**
-     * @param Closure(Closure(Process::OUT|Process::ERR, string): void): Process $getProcess
+     * @param Closure(Closure(Process::STDOUT|Process::STDERR, string): void): Process $getProcess
      * @param array{1:int,2:int}|null $writes
      * @param-out string $stdout
      * @param-out string $stderr
@@ -435,7 +435,7 @@ EOF,
         return $getProcess(
             static function (int $fd, string $output) use (&$stdout, &$stderr, &$writes): void {
                 $writes[$fd]++;
-                if ($fd === Process::ERR) {
+                if ($fd === Process::STDERR) {
                     $stderr .= $output;
                     return;
                 }
@@ -474,14 +474,14 @@ EOF,
     }
 
     /**
-     * @param array<Process::OUT|Process::ERR,string>|null $output
-     * @return Closure(Process::OUT|Process::ERR $fd, string $output): mixed
+     * @param array<Process::STDOUT|Process::STDERR,string>|null $output
+     * @return Closure(Process::STDOUT|Process::STDERR $fd, string $output): mixed
      */
     private function getCallback(?array &$output): Closure
     {
         $output = [
-            Process::OUT => '',
-            Process::ERR => '',
+            Process::STDOUT => '',
+            Process::STDERR => '',
         ];
 
         return static function (int $fd, string $data) use (&$output): void {

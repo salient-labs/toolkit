@@ -3,14 +3,14 @@
 namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Instantiable;
+use Salient\Contract\HasMessageLevel;
+use Salient\Contract\HasMessageLevels;
 use Throwable;
 
-interface ConsoleWriterInterface extends Instantiable
+interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLevels
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the
@@ -37,12 +37,12 @@ interface ConsoleWriterInterface extends Instantiable
     /**
      * Register a target to receive console output
      *
-     * @param array<Level::*> $levels
+     * @param array<ConsoleInterface::LEVEL_*> $levels
      * @return $this
      */
     public function registerTarget(
         ConsoleTargetInterface $target,
-        array $levels = LevelGroup::ALL
+        array $levels = ConsoleInterface::LEVELS_ALL
     );
 
     /**
@@ -59,7 +59,7 @@ interface ConsoleWriterInterface extends Instantiable
     /**
      * Get a list of registered targets, optionally filtered by level and type
      *
-     * @param Level::*|null $level
+     * @param ConsoleInterface::LEVEL_*|null $level
      * @param int-mask-of<ConsoleTargetTypeFlag::*> $flags
      * @return ConsoleTargetInterface[]
      */
@@ -86,19 +86,19 @@ interface ConsoleWriterInterface extends Instantiable
      * - the target returned by {@see getStderrTarget()} if backed by a TTY
      * - the target returned by {@see getStdoutTarget()}
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      */
-    public function getWidth(int $level = Level::INFO): ?int;
+    public function getWidth(int $level = ConsoleInterface::LEVEL_INFO): ?int;
 
     /**
      * Get an output formatter for a registered target
      *
      * Returns {@see ConsoleTargetInterface::getFormatter()} from the same
-     * target as {@see ConsoleWriterInterface::getWidth()}.
+     * target as {@see ConsoleInterface::getWidth()}.
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      */
-    public function getFormatter(int $level = Level::INFO): FormatterInterface;
+    public function getFormatter(int $level = ConsoleInterface::LEVEL_INFO): FormatterInterface;
 
     /**
      * Get a PSR-3 logger backed by the writer
@@ -256,14 +256,14 @@ interface ConsoleWriterInterface extends Instantiable
     /**
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function message(
         string $msg1,
         ?string $msg2 = null,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
@@ -273,14 +273,14 @@ interface ConsoleWriterInterface extends Instantiable
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
      * once per run
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function messageOnce(
         string $msg1,
         ?string $msg2 = null,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
@@ -289,7 +289,7 @@ interface ConsoleWriterInterface extends Instantiable
     /**
      * Record a message with level $level without printing anything
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @return $this
      */
     public function count(int $level);
@@ -299,7 +299,7 @@ interface ConsoleWriterInterface extends Instantiable
      * level NOTICE
      *
      * If `$endMsg1` is not `null`, `"« $endMsg1 $endMsg2"` is printed with
-     * level `NOTICE` when {@see groupEnd()} is called to close the group.
+     * level NOTICE when {@see groupEnd()} is called to close the group.
      *
      * @return $this
      */
@@ -321,15 +321,15 @@ interface ConsoleWriterInterface extends Instantiable
      * Print an exception's name and message with a given level, optionally
      * followed by its stack trace with a different level
      *
-     * @param Level::* $level
-     * @param Level::*|null $traceLevel If `null`, the exception's stack trace
-     * is not printed.
+     * @param ConsoleInterface::LEVEL_* $level
+     * @param ConsoleInterface::LEVEL_*|null $traceLevel If `null`, the exception's
+     * stack trace is not printed.
      * @return $this
      */
     public function exception(
         Throwable $exception,
-        int $level = Level::ERROR,
-        ?int $traceLevel = Level::DEBUG
+        int $level = ConsoleInterface::LEVEL_ERROR,
+        ?int $traceLevel = ConsoleInterface::LEVEL_DEBUG
     );
 
     /**
@@ -349,65 +349,65 @@ interface ConsoleWriterInterface extends Instantiable
     /**
      * Print "$msg" to registered targets
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function print(
         string $msg,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered STDOUT or STDERR targets
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function printOut(
         string $msg,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered TTY targets
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function printTty(
         string $msg,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDOUT even if no STDOUT target is registered
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function printStdout(
         string $msg,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDERR even if no STDERR target is registered
      *
-     * @param Level::* $level
+     * @param ConsoleInterface::LEVEL_* $level
      * @param MessageType::* $type
      * @return $this
      */
     public function printStderr(
         string $msg,
-        int $level = Level::INFO,
+        int $level = ConsoleInterface::LEVEL_INFO,
         int $type = MessageType::UNFORMATTED
     );
 }

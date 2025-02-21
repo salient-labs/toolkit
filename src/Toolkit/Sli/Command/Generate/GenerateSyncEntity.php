@@ -59,9 +59,9 @@ class GenerateSyncEntity extends AbstractGenerateCommand
 
     protected function getOptionList(): iterable
     {
-        return [
+        yield from [
             CliOption::build()
-                ->long('class')
+                ->name('class')
                 ->valueName('class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
@@ -174,8 +174,8 @@ EOF)
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->SkipProperties),
-            ...$this->getGlobalOptionList('entity'),
         ];
+        yield from $this->getGlobalOptionList('entity');
     }
 
     protected function run(string ...$args)
@@ -210,7 +210,7 @@ EOF)
             $this->Uses[] = $this->getFqcnAlias(TreeableTrait::class);
         }
 
-        $this->Description ??= sprintf(
+        $this->Desc ??= sprintf(
             'Represents the state of %s %s entity in a backend',
             Inflect::indefinite($class),
             $class,

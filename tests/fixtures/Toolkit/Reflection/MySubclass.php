@@ -8,14 +8,14 @@ namespace Salient\Tests\Reflection;
 class MySubclass extends MyUndocumentedClass implements MyOtherInterface
 {
     /**
-     * MySubclass::$MyDocumentedProperty PHPDoc
+     * MySubclass::$MyDocumentedProperty
      *
      * @var mixed
      */
     public $MyDocumentedProperty;
 
     /**
-     * MySubclass::MyDocumentedMethod() PHPDoc
+     * MySubclass::MyDocumentedMethod()
      *
      * @return mixed
      */

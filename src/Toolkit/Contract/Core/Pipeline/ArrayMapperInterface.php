@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Core\Pipeline;
 
-use Salient\Contract\Catalog\HasConformity;
 use Salient\Contract\Core\Exception\InvalidDataException;
+use Salient\Contract\HasConformity;
 
 /**
  * @api

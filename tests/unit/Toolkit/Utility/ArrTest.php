@@ -30,10 +30,12 @@ final class ArrTest extends TestCase
     public function testPluck(): void
     {
         $data = [
-            ['foo' => 'bar', 'baz' => 'qux'],
-            ['foo' => 'quux', 'baz' => 'quuux'],
+            'FOO' => ['foo' => 'bar', 'baz' => 'qux'],
+            'BAR' => ['foo' => 'quux', 'baz' => 'quuux'],
         ];
         $this->assertSame(['bar', 'quux'], Arr::pluck($data, 'foo'));
+        $this->assertSame(['bar', 'quux'], Arr::pluck($data, 'foo', false));
+        $this->assertSame(['FOO' => 'bar', 'BAR' => 'quux'], Arr::pluck($data, 'foo', true));
         $this->assertSame(['bar' => 'qux', 'quux' => 'quuux'], Arr::pluck($data, 'baz', 'foo'));
 
         $data = [
@@ -282,20 +284,42 @@ final class ArrTest extends TestCase
      * @param mixed[] $expected
      * @param iterable<mixed> $array
      */
-    public function testFlatten(array $expected, iterable $array, int $limit = -1): void
+    public function testFlatten(array $expected, iterable $array, int $limit = -1, bool $preserveKeys = false): void
     {
-        $this->assertSame($expected, Arr::flatten($array, $limit));
+        $this->assertSame($expected, Arr::flatten($array, $limit, $preserveKeys));
     }
 
     /**
-     * @return array<array{mixed[],mixed[],2?:int}>
+     * @return array<array{mixed[],mixed[],2?:int,3?:bool}>
      */
     public static function flattenProvider(): array
     {
+        $data = [
+            'foo' => 0,
+            'bar' => 1,
+            'baz' => 2,
+            [
+                'foo' => null,
+                'bar' => null,
+                'baz' => [
+                    'FOO' => 3,
+                    'BAR' => 71,
+                ],
+            ],
+        ];
+
         return [
+            [
+                [],
+                [],
+            ],
             [
                 [1],
                 [1],
+            ],
+            [
+                [2],
+                [1 => 2],
             ],
             [
                 [1],
@@ -380,6 +404,63 @@ final class ArrTest extends TestCase
                 [[]],
                 [[[[[]]]]],
                 3,
+            ],
+            [
+                [],
+                [],
+                -1,
+                true,
+            ],
+            [
+                [1],
+                [1],
+                -1,
+                true,
+            ],
+            [
+                [1 => 2],
+                [1 => 2],
+                -1,
+                true,
+            ],
+            [
+                [1 => 2],
+                [1 => 2],
+                0,
+                true,
+            ],
+            [
+                [0, 1, 2, null, null, 3, 71],
+                $data,
+            ],
+            [
+                [0, 1, 2, null, null, ['FOO' => 3, 'BAR' => 71]],
+                $data,
+                1,
+            ],
+            [
+                ['foo' => null, 'bar' => null, 'baz' => 2, 'FOO' => 3, 'BAR' => 71],
+                $data,
+                -1,
+                true,
+            ],
+            [
+                $data,
+                $data,
+                0,
+                true,
+            ],
+            [
+                ['foo' => null, 'bar' => null, 'baz' => ['FOO' => 3, 'BAR' => 71]],
+                $data,
+                1,
+                true,
+            ],
+            [
+                ['foo' => null, 'bar' => null, 'baz' => 2, 'FOO' => 3, 'BAR' => 71],
+                $data,
+                2,
+                true,
             ],
         ];
     }

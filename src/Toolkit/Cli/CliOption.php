@@ -4,7 +4,6 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
@@ -981,7 +980,7 @@ final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
                     throw new CliUnknownValueException($message);
                 }
 
-                Console::message('__Warning:__', $message, Level::WARNING, MessageType::UNFORMATTED);
+                Console::message('__Warning:__', $message, Console::LEVEL_WARNING, MessageType::UNFORMATTED);
                 $value = array_intersect($value, $this->AllowedValues);
             }
         }

@@ -54,6 +54,45 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Get the file name of a reflector, or null if its file name is unknown
+     *
+     * @param ReflectionClass<*>|ReflectionClassConstant|ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty $reflector
+     */
+    public static function getFileName($reflector): ?string
+    {
+        $filename = self::getDeclaring($reflector)->getFileName();
+        return $filename === false
+            ? null
+            : $filename;
+    }
+
+    /**
+     * Get the namespace name of a reflector
+     *
+     * @param ReflectionClass<*>|ReflectionClassConstant|ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty $reflector
+     */
+    public static function getNamespaceName($reflector): string
+    {
+        return self::getDeclaring($reflector)->getNamespaceName();
+    }
+
+    /**
+     * Get the declaring class or function of a reflector
+     *
+     * @param ReflectionClass<*>|ReflectionClassConstant|ReflectionFunctionAbstract|ReflectionParameter|ReflectionProperty $reflector
+     * @return ReflectionClass<*>|ReflectionFunctionAbstract
+     */
+    public static function getDeclaring($reflector)
+    {
+        return $reflector instanceof ReflectionParameter
+            ? $reflector->getDeclaringFunction()
+            : ($reflector instanceof ReflectionProperty
+                || $reflector instanceof ReflectionClassConstant
+                    ? $reflector->getDeclaringClass()
+                    : $reflector);
+    }
+
+    /**
      * Follow the parents of a class to its base class
      *
      * @param ReflectionClass<*> $class

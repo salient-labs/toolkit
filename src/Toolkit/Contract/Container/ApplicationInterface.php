@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Container;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
@@ -71,12 +71,12 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Log console output to the application's log directory
      *
-     * Messages with levels between {@see Level::EMERGENCY} and
-     * {@see Level::INFO} are written to `<name>.log`.
+     * Messages with levels between `LEVEL_EMERGENCY` and `LEVEL_INFO` are
+     * written to `<name>.log`.
      *
      * If `$debug` is `true`, or `$debug` is `null` and debug mode is enabled in
-     * the environment, messages with levels between {@see Level::EMERGENCY} and
-     * {@see Level::DEBUG} are simultaneously written to `<name>.debug.log`.
+     * the environment, messages with levels between `LEVEL_EMERGENCY` and
+     * `LEVEL_DEBUG` are simultaneously written to `<name>.debug.log`.
      *
      * @param string|null $name If `null`, the name of the application is used.
      * @return $this
@@ -198,13 +198,13 @@ interface ApplicationInterface extends ContainerInterface
      * Print a summary of the application's runtime performance metrics and
      * system resource usage when it terminates
      *
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
      * reported, otherwise only metrics in the given groups are reported.
      * @return $this
      */
     public function registerShutdownReport(
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         bool $includeResourceUsage = true,
         bool $includeRunningTimers = true,
         $groups = null,
@@ -214,21 +214,21 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Print a summary of the application's system resource usage
      *
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @return $this
      */
-    public function reportResourceUsage(int $level = Level::INFO);
+    public function reportResourceUsage(int $level = Console::LEVEL_INFO);
 
     /**
      * Print a summary of the application's runtime performance metrics
      *
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
      * reported, otherwise only metrics in the given groups are reported.
      * @return $this
      */
     public function reportMetrics(
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         bool $includeRunningTimers = true,
         $groups = null,
         ?int $limit = 10

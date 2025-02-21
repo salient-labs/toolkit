@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Concept;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleTargetPrefixInterface;
 
@@ -16,15 +16,15 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTarge
     private int $PrefixLength = 0;
 
     /**
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param array<string,mixed> $context
      */
-    abstract protected function writeToTarget($level, string $message, array $context): void;
+    abstract protected function writeToTarget(int $level, string $message, array $context): void;
 
     /**
      * @inheritDoc
      */
-    final public function write($level, string $message, array $context = []): void
+    final public function write(int $level, string $message, array $context = []): void
     {
         $this->assertIsValid();
 

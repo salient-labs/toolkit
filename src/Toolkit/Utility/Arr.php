@@ -25,18 +25,29 @@ final class Arr extends AbstractUtility
     /**
      * Get values from a list of arrays using dot notation
      *
-     * @param iterable<mixed[]> $array
-     * @return ($key is null ? list<mixed> : mixed[])
+     * @template TKey
+     *
+     * @param iterable<TKey,mixed[]> $array
+     * @param string|bool|null $key - `true`: keys in `$array` are preserved.
+     * - `false` or `null` (default): keys are discarded.
+     * - `string`: keys are replaced with values using dot notation.
+     * @return ($key is true ? (TKey is array-key ? array<TKey,mixed> : array<array-key,mixed>) : ($key is false|null ? list<mixed> : mixed[]))
      */
-    public static function pluck(iterable $array, string $value, ?string $key = null): array
+    public static function pluck(iterable $array, string $value, $key = null): array
     {
-        foreach ($array as $item) {
+        if ($key === false) {
+            $key = null;
+        }
+        foreach ($array as $itemKey => $item) {
             $itemValue = self::get($item, $value, null);
             if ($key === null) {
                 $plucked[] = $itemValue;
                 continue;
+            } elseif ($key === true) {
+                $itemKey = self::getKey($itemKey, $i);
+            } else {
+                $itemKey = self::get($item, $key);
             }
-            $itemKey = self::get($item, $key);
             $plucked[$itemKey] = $itemValue;
         }
         return $plucked ?? [];
@@ -148,7 +159,7 @@ final class Arr extends AbstractUtility
     }
 
     /**
-     * Get an array comprised of the given keys and values
+     * Get an array by combining the given keys and values
      *
      * @template TKey of array-key
      * @template TValue
@@ -161,9 +172,8 @@ final class Arr extends AbstractUtility
     {
         $array = @array_combine($keys, $values);
         if ($array === false) {
-            throw new ValueError(
-                error_get_last()['message'] ?? 'array_combine() failed',
-            );
+            $error = error_get_last();
+            throw new ValueError($error['message'] ?? 'array_combine() failed');
         }
         return $array;
     }
@@ -989,19 +999,31 @@ final class Arr extends AbstractUtility
      * for no limit.
      * @return mixed[]
      */
-    public static function flatten(iterable $array, int $limit = -1): array
-    {
+    public static function flatten(
+        iterable $array,
+        int $limit = -1,
+        bool $preserveKeys = false
+    ): array {
         do {
             $flattened = [];
+            $i = null;
             $fromIterable = false;
-            foreach ($array as $value) {
+            foreach ($array as $key => $value) {
                 if (!is_iterable($value) || !$limit) {
-                    $flattened[] = $value;
+                    if ($preserveKeys) {
+                        $flattened[self::getKey($key, $i)] = $value;
+                    } else {
+                        $flattened[] = $value;
+                    }
                     continue;
                 }
                 $fromIterable = true;
-                foreach ($value as $value) {
-                    $flattened[] = $value;
+                foreach ($value as $key => $value) {
+                    if ($preserveKeys && ($limit === 1 || !is_iterable($value))) {
+                        $flattened[self::getKey($key, $i)] = $value;
+                    } else {
+                        $flattened[] = $value;
+                    }
                 }
             }
             $limit--;
@@ -1071,7 +1093,7 @@ final class Arr extends AbstractUtility
      * @param T $key
      * @return (T is array-key ? T : int)
      */
-    private static function getKey($key, ?int &$i = null)
+    private static function getKey($key, ?int &$i)
     {
         if (is_int($key)) {
             if ($i === null || $key > $i) {

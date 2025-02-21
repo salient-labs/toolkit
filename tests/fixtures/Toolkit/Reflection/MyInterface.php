@@ -8,7 +8,7 @@ namespace Salient\Tests\Reflection;
 interface MyInterface extends MyBaseInterface
 {
     /**
-     * MyInterface::MyDocumentedMethod() PHPDoc
+     * MyInterface::MyDocumentedMethod()
      *
      * @return mixed
      */

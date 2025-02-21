@@ -8,14 +8,14 @@ namespace Salient\Tests\Reflection;
 interface MyBaseInterface
 {
     /**
-     * MyBaseInterface::MyDocumentedMethod() PHPDoc
+     * MyBaseInterface::MyDocumentedMethod()
      *
      * @return mixed
      */
     public function MyDocumentedMethod();
 
     /**
-     * MyBaseInterface::MySparselyDocumentedMethod() PHPDoc
+     * MyBaseInterface::MySparselyDocumentedMethod()
      *
      * @return mixed
      */

@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * A console output target
@@ -33,10 +33,10 @@ interface ConsoleTargetInterface
     /**
      * Write formatted output to the target
      *
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param array<string,mixed> $context
      */
-    public function write($level, string $message, array $context = []): void;
+    public function write(int $level, string $message, array $context = []): void;
 
     /**
      * Close the target and any underlying resources

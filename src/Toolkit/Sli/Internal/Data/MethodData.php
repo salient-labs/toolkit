@@ -2,8 +2,7 @@
 
 namespace Salient\Sli\Internal\Data;
 
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\PHPDoc\Tag\MethodTag;
 use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
@@ -74,14 +73,14 @@ class MethodData implements JsonSerializable
         array $aliases = [],
         ?bool $declared = null,
         ?int $line = null,
-        ?ConsoleWriterInterface $console = null
+        ?Console $console = null
     ): self {
         $methodName = $method->getName();
         try {
             $phpDoc = PHPDoc::forMethod($method, $class, $aliases);
             self::checkPHPDoc($phpDoc, $console);
         } catch (Throwable $ex) {
-            !$console || $console->exception($ex, Level::WARNING, null);
+            !$console || $console->exception($ex, Console::LEVEL_WARNING, null);
             $phpDoc = new PHPDoc();
         }
         $declaring = $method->getDeclaringClass();

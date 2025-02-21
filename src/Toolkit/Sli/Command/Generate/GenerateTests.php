@@ -37,16 +37,16 @@ class GenerateTests extends AbstractGenerateCommand
 
     protected function getOptionList(): iterable
     {
-        return [
+        yield from [
             CliOption::build()
-                ->long('class')
+                ->name('class')
                 ->valueName('class')
                 ->description('The class to generate tests for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->required()
                 ->bindTo($this->ClassFqcn),
             CliOption::build()
-                ->long('generate')
+                ->name('generate')
                 ->valueName('test_class')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
@@ -58,15 +58,15 @@ class GenerateTests extends AbstractGenerateCommand
                 ->optionType(CliOptionType::VALUE)
                 ->multipleAllowed()
                 ->bindTo($this->Skip),
-            ...$this->getGlobalOptionList('tests', false),
         ];
+        yield from $this->getGlobalOptionList('tests', false);
     }
 
     protected function run(string ...$args)
     {
         $this->startRun();
 
-        $this->Skip = array_merge($this->Skip, self::SKIP);
+        $skip = array_merge($this->Skip, self::SKIP);
 
         $classFqcn = $this->requireFqcnOptionValue(
             'class',
@@ -157,7 +157,7 @@ class GenerateTests extends AbstractGenerateCommand
                 continue;
             }
 
-            if (in_array($method, $this->Skip)) {
+            if (in_array($method, $skip)) {
                 continue;
             }
 

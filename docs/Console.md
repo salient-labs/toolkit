@@ -1,7 +1,7 @@
 ## Terminal output and logging
 
 With a similar API to the `console` object provided by web browsers, the
-[Console][Console] class[^1] provides:
+[Console][] class[^1] provides:
 
 - Familiar methods like `Console::log()` and `Console::error()`
 - Variants like `Console::logOnce()` and `Console::errorOnce()` to output
@@ -13,8 +13,8 @@ With a similar API to the `console` object provided by web browsers, the
 
 ### Default targets
 
-By default, [Console][Console] output is appended to a file in the default
-temporary directory, created with mode `0600` if it doesn't already exist:
+By default, [Console][] output is appended to a file in the default temporary
+directory, created with mode `0600` if it doesn't already exist:
 
 ```php
 <?php
@@ -22,7 +22,7 @@ sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
 ```
 
 If the value of environment variable `console_target` is `stderr` or `stdout`,
-[Console][Console] output is also written to `STDERR` or `STDOUT` respectively.
+[Console][] output is also written to `STDERR` or `STDOUT` respectively.
 
 If `console_target` is not set and the script is running on the command line:
 
@@ -34,38 +34,40 @@ If `console_target` is not set and the script is running on the command line:
 Debug messages are written to the output log but are not written to `STDOUT` or
 `STDERR` if environment variable `DEBUG` is empty or not set.
 
-To override these defaults, register at least one [Console][Console] output
-target, e.g. by calling [registerTarget()][registerTarget], before any other
-`Console` methods are called, preferably while bootstrapping your application.
+To override these defaults, register at least one [Console][] output target,
+e.g. by calling [registerTarget()][], before any other `Console` methods are
+called, preferably while bootstrapping your application.
 
-> [Application][Application] and [CliApplication][CliApplication] always call
-> [registerStdioTargets()][registerStdioTargets], which registers the default
-> `STDOUT` and `STDERR` targets and prevents creation of the default output log.
-> To create a log file that persists between reboots (in your project's
-> `var/log` directory by default), call the app container's
-> [logOutput()][logOutput] method.
+> [Application][] and [CliApplication][] always call [registerStdioTargets()][],
+> which registers the default `STDOUT` and `STDERR` targets and prevents
+> creation of the default output log. To create a log file that persists between
+> reboots (in your project's `var/log` directory by default), call the app
+> container's [logOutput()][] method.
 
 ### Output methods
 
 <!-- prettier-ignore -->
-| `Console` method | `ConsoleLevel`  | Message prefix | Default output target     |
-| ---------------- | --------------- | -------------- | ------------------------- |
-| `error[Once]()`  | `ERROR` = `3`   | ` !  `         | `STDERR`                  |
-| `warn[Once]()`   | `WARNING` = `4` | ` ^  `         | `STDERR`                  |
-| `info[Once]()`   | `NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
-| `log[Once]()`    | `INFO` = `6`    | ` -  `         | `STDOUT`                  |
-| `debug[Once]()`  | `DEBUG` = `7`   | ` :  `         | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]    | `NOTICE` = `5`  | ` »  `         | `STDOUT`                  |
-| `logProgress()`  | `INFO` = `6`    | ` ⠿  `         | `STDOUT`                  |
+| Method          | Message level         | Default prefix | Default output target     |
+| --------------- | --------------------- | -------------- | ------------------------- |
+| `error[Once]()` | `LEVEL_ERROR` = `3`   | ` !  `         | `STDERR`                  |
+| `warn[Once]()`  | `LEVEL_WARNING` = `4` | ` ^  `         | `STDERR`                  |
+| `info[Once]()`  | `LEVEL_NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
+| `log[Once]()`   | `LEVEL_INFO` = `6`    | ` -  `         | `STDOUT`                  |
+| `debug[Once]()` | `LEVEL_DEBUG` = `7`   | ` :  `         | `STDOUT` (if `DEBUG` set) |
+| `group()`[^2]   | `LEVEL_NOTICE` = `5`  | ` »  `         | `STDOUT`                  |
+| `logProgress()` | `LEVEL_INFO` = `6`    | ` ⠿  `         | `STDOUT`                  |
 
-[^1]: Actually a facade for [ConsoleWriter][ConsoleWriter].
+[^1]:
+    Actually a facade for [ConsoleInterface][], which is backed by a shared
+    instance of [Console][ConsoleService] by default.
+
 [^2]:
     `Console::group()` adds a level of indentation to all `Console` output until
     `Console::groupEnd()` is called.
 
 ### Formatting
 
-The following Markdown-like syntax is supported in [Console][Console] messages:
+The following Markdown-like syntax is supported in [Console][] messages:
 
 | Style        | Tag                                                    | Typical appearance                    | Example                                                                   |
 | ------------ | ------------------------------------------------------ | ------------------------------------- | ------------------------------------------------------------------------- |
@@ -83,11 +85,13 @@ The following Markdown-like syntax is supported in [Console][Console] messages:
   https://salient-labs.github.io/toolkit/Salient.Cli.CliApplication.html
 [Console]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html
-[ConsoleWriter]:
-  https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html
-[logOutput]:
+[ConsoleInterface]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Console.ConsoleInterface.html
+[ConsoleService]:
+  https://salient-labs.github.io/toolkit/Salient.Console.Console.html
+[logOutput()]:
   https://salient-labs.github.io/toolkit/Salient.Container.Application.html#_logOutput
-[registerStdioTargets]:
-  https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html#_registerStdioTargets
-[registerTarget]:
-  https://salient-labs.github.io/toolkit/Salient.Console.ConsoleWriter.html#_registerTarget
+[registerStdioTargets()]:
+  https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerStdioTargets
+[registerTarget()]:
+  https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerTarget

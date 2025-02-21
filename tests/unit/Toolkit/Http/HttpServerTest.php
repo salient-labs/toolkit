@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Contract\Http\HttpResponseInterface as ResponseInterface;
 use Salient\Contract\Http\HttpServerRequestInterface as ServerRequest;
+use Salient\Contract\Http\MimeType;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
 use Salient\Http\HttpResponse as Response;
@@ -126,7 +126,7 @@ EOF, "\r\n"), $client->getOutputAsText());
 > Host: localhost:3008
 > Accept: */*
 >
-EOF, $client->getOutputAsText(Process::ERR));
+EOF, $client->getOutputAsText(Process::STDERR));
     }
 
     private function getServerWithClient(

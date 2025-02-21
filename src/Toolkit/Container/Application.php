@@ -5,8 +5,6 @@ namespace Salient\Container;
 use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Contract\Catalog\MessageLevel as Level;
-use Salient\Contract\Catalog\MessageLevelGroup as LevelGroup;
 use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Curler\Event\CurlerEventInterface;
@@ -88,7 +86,7 @@ class Application extends Container implements ApplicationInterface
 
     // --
 
-    /** @var Level::* */
+    /** @var Console::LEVEL_* */
     private static int $ShutdownReportLevel;
     private static bool $ShutdownReportResourceUsage;
     private static bool $ShutdownReportRunningTimers;
@@ -381,11 +379,11 @@ class Application extends Container implements ApplicationInterface
 
         $name ??= $this->AppName;
         $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
-        Console::registerTarget($target, LevelGroup::ALL_EXCEPT_DEBUG);
+        Console::registerTarget($target, Console::LEVELS_ALL_EXCEPT_DEBUG);
 
         if ($debug || ($debug === null && Env::getDebug())) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
-            Console::registerTarget($target, LevelGroup::ALL);
+            Console::registerTarget($target, Console::LEVELS_ALL);
         }
 
         return $this;
@@ -630,7 +628,7 @@ class Application extends Container implements ApplicationInterface
      * @inheritDoc
      */
     final public function registerShutdownReport(
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         bool $includeResourceUsage = true,
         bool $includeRunningTimers = true,
         $groups = null,
@@ -668,14 +666,14 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function reportResourceUsage(int $level = Level::INFO)
+    final public function reportResourceUsage(int $level = Console::LEVEL_INFO)
     {
         self::doReportResourceUsage($level);
         return $this;
     }
 
     /**
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      */
     private static function doReportResourceUsage(int $level): void
     {
@@ -704,7 +702,7 @@ class Application extends Container implements ApplicationInterface
      * @inheritDoc
      */
     final public function reportMetrics(
-        int $level = Level::INFO,
+        int $level = Console::LEVEL_INFO,
         bool $includeRunningTimers = true,
         $groups = null,
         ?int $limit = 10
@@ -714,7 +712,7 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @param Level::* $level
+     * @param Console::LEVEL_* $level
      * @param string[]|string|null $groups
      */
     private static function doReportMetrics(

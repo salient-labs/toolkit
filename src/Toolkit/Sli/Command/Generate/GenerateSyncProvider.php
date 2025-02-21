@@ -51,9 +51,9 @@ class GenerateSyncProvider extends AbstractGenerateCommand
 
     protected function getOptionList(): iterable
     {
-        return [
+        yield from [
             CliOption::build()
-                ->long('class')
+                ->name('class')
                 ->valueName('class')
                 ->description('The sync entity class to generate a provider for')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
@@ -81,8 +81,8 @@ class GenerateSyncProvider extends AbstractGenerateCommand
                 ->description('Specify the plural form of <class>')
                 ->optionType(CliOptionType::VALUE)
                 ->bindTo($this->Plural),
-            ...$this->getGlobalOptionList('interface'),
         ];
+        yield from $this->getGlobalOptionList('interface');
     }
 
     protected function run(string ...$args)
@@ -128,12 +128,10 @@ class GenerateSyncProvider extends AbstractGenerateCommand
         $context = $this->getFqcnAlias(SyncContextInterface::class);
         $this->Extends[] = $this->getFqcnAlias(SyncProviderInterface::class);
 
-        if ($this->Description === null) {
-            $this->Description = sprintf(
-                'Syncs %s objects with a backend',
-                $class,
-            );
-        }
+        $this->Desc ??= sprintf(
+            'Syncs %s objects with a backend',
+            $class,
+        );
 
         $ops = array_map(
             fn($op) => self::OPERATION_MAP[$op],

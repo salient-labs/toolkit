@@ -6,7 +6,7 @@ use Psr\Container\ContainerInterface as PsrContainerInterface;
 use Psr\Log\LoggerInterface;
 use Salient\Container\Application;
 use Salient\Container\Container;
-use Salient\Contract\Console\ConsoleWriterInterface;
+use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ArgumentsNotUsedExceptionInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
@@ -167,8 +167,8 @@ final class ContainerTest extends TestCase
     {
         $container = new Container();
         $this->assertInstanceOf(
-            ConsoleWriterInterface::class,
-            $container->get(ConsoleWriterInterface::class),
+            ConsoleInterface::class,
+            $container->get(ConsoleInterface::class),
         );
         $this->assertInstanceOf(
             LoggerInterface::class,

@@ -4,12 +4,12 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpMessageInterface;
 use Salient\Contract\Http\HttpMultipartStreamInterface;
+use Salient\Contract\Http\MimeType;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;

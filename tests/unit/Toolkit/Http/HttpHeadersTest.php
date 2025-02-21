@@ -3,10 +3,10 @@
 namespace Salient\Tests\Http;
 
 use Salient\Collection\Collection;
-use Salient\Contract\Catalog\MimeType;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
+use Salient\Contract\Http\MimeType;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
