@@ -11,7 +11,6 @@ use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpTarget;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\HasJsonSchema;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
@@ -459,9 +458,9 @@ class CliApplication extends Application implements CliApplicationInterface
         $version = $this->getVersionString();
 
         if ($stdout) {
-            Console::printStdout($version, $level, MessageType::UNFORMATTED);
+            Console::printStdout($version, $level, Console::TYPE_UNFORMATTED);
         } else {
-            Console::print($version, $level, MessageType::UNFORMATTED);
+            Console::print($version, $level, Console::TYPE_UNFORMATTED);
         }
         return $this;
     }

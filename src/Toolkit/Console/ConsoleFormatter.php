@@ -11,7 +11,6 @@ use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\ConsoleFormatInterface as Format;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
@@ -38,12 +37,12 @@ final class ConsoleFormatter implements FormatterInterface
     ];
 
     public const DEFAULT_TYPE_PREFIX_MAP = [
-        MessageType::PROGRESS => '⠿ ',  // U+283F
-        MessageType::GROUP_START => '» ',  // U+00BB
-        MessageType::GROUP_END => '« ',  // U+00AB
-        MessageType::SUMMARY => '» ',  // U+00BB
-        MessageType::SUCCESS => '✔ ',  // U+2714
-        MessageType::FAILURE => '✘ ',  // U+2718
+        Console::TYPE_PROGRESS => '⠿ ',  // U+283F
+        Console::TYPE_GROUP_START => '» ',  // U+00BB
+        Console::TYPE_GROUP_END => '« ',  // U+00AB
+        Console::TYPE_SUMMARY => '» ',  // U+00BB
+        Console::TYPE_SUCCESS => '✔ ',  // U+2714
+        Console::TYPE_FAILURE => '✘ ',  // U+2718
     ];
 
     /** @link https://github.com/sindresorhus/cli-spinners */
@@ -147,7 +146,7 @@ REGEX;
     private $WidthCallback;
     /** @var array<Console::LEVEL_*,string> */
     private array $LevelPrefixMap;
-    /** @var array<MessageType::*,string> */
+    /** @var array<Console::TYPE_*,string> */
     private array $TypePrefixMap;
     /** @var array{int<0,max>,float} */
     private array $SpinnerState;
@@ -155,7 +154,7 @@ REGEX;
     /**
      * @param (callable(): (int|null))|null $widthCallback
      * @param array<Console::LEVEL_*,string> $levelPrefixMap
-     * @param array<MessageType::*,string> $typePrefixMap
+     * @param array<Console::TYPE_*,string> $typePrefixMap
      */
     public function __construct(
         ?TagFormats $tagFormats = null,
@@ -213,7 +212,7 @@ REGEX;
      */
     public function getMessageFormat(
         int $level,
-        int $type = MessageType::STANDARD
+        int $type = Console::TYPE_STANDARD
     ): MessageFormat {
         return $this->MessageFormats->get($level, $type);
     }
@@ -239,12 +238,12 @@ REGEX;
      */
     public function getMessagePrefix(
         int $level,
-        int $type = MessageType::STANDARD
+        int $type = Console::TYPE_STANDARD
     ): string {
-        if ($type === MessageType::UNFORMATTED || $type === MessageType::UNDECORATED) {
+        if ($type === Console::TYPE_UNFORMATTED || $type === Console::TYPE_UNDECORATED) {
             return '';
         }
-        if ($type === MessageType::PROGRESS && isset($this->SpinnerState)) {
+        if ($type === Console::TYPE_PROGRESS && isset($this->SpinnerState)) {
             $frames = count(self::SPINNER);
             $prefix = self::SPINNER[$this->SpinnerState[0] % $frames] . ' ';
             $now = (float) (hrtime(true) / 1000);
@@ -562,11 +561,11 @@ REGEX;
         string $msg1,
         ?string $msg2 = null,
         int $level = Console::LEVEL_INFO,
-        int $type = MessageType::STANDARD
+        int $type = Console::TYPE_STANDARD
     ): string {
         $attributes = new MessageAttributes($level, $type);
 
-        if ($type === MessageType::UNFORMATTED) {
+        if ($type === Console::TYPE_UNFORMATTED) {
             return $this
                 ->getDefaultMessageFormats()
                 ->get($level, $type)

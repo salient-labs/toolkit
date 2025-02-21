@@ -5,7 +5,6 @@ namespace Salient\Sync\Support;
 use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
@@ -134,13 +133,13 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
             ),
             null,
             $level,
-            MessageType::STANDARD,
+            Console::TYPE_STANDARD,
         );
 
         $console->print(
             $this->doGetSummaryText(true),
             $level,
-            MessageType::UNFORMATTED,
+            Console::TYPE_UNFORMATTED,
         );
     }
 

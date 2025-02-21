@@ -6,10 +6,10 @@ use Psr\Log\LoggerInterface;
 use Salient\Console\Console as ConsoleService;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Console\ConsoleTargetTypeFlag;
+use Salient\Contract\Console\HasMessageType;
 use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;
 use Throwable;
@@ -41,13 +41,13 @@ use Throwable;
  * @method static ConsoleInterface log(string $msg1, string|null $msg2 = null) Print "- $msg1 $msg2" with level INFO
  * @method static ConsoleInterface logOnce(string $msg1, string|null $msg2 = null) Print "- $msg1 $msg2" with level INFO once per run
  * @method static ConsoleInterface logProgress(string $msg1, string|null $msg2 = null) Print "⠿ $msg1 $msg2" with level INFO to TTY targets without moving to the next line (see {@see ConsoleInterface::logProgress()})
- * @method static ConsoleInterface message(string $msg1, string|null $msg2 = null, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNDECORATED, Throwable|null $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level
- * @method static ConsoleInterface messageOnce(string $msg1, string|null $msg2 = null, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNDECORATED, Throwable|null $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run
- * @method static ConsoleInterface print(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to registered targets
- * @method static ConsoleInterface printOut(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to registered STDOUT or STDERR targets
- * @method static ConsoleInterface printStderr(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to STDERR even if no STDERR target is registered
- * @method static ConsoleInterface printStdout(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to STDOUT even if no STDOUT target is registered
- * @method static ConsoleInterface printTty(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, MessageType::* $type = MessageType::UNFORMATTED) Print "$msg" to registered TTY targets
+ * @method static ConsoleInterface message(string $msg1, string|null $msg2 = null, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNDECORATED, Throwable|null $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level
+ * @method static ConsoleInterface messageOnce(string $msg1, string|null $msg2 = null, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNDECORATED, Throwable|null $ex = null, bool $count = true) Print "$msg1 $msg2" with prefix and formatting optionally based on $level once per run
+ * @method static ConsoleInterface print(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNFORMATTED) Print "$msg" to registered targets
+ * @method static ConsoleInterface printOut(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNFORMATTED) Print "$msg" to registered STDOUT or STDERR targets
+ * @method static ConsoleInterface printStderr(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNFORMATTED) Print "$msg" to STDERR even if no STDERR target is registered
+ * @method static ConsoleInterface printStdout(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNFORMATTED) Print "$msg" to STDOUT even if no STDOUT target is registered
+ * @method static ConsoleInterface printTty(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNFORMATTED) Print "$msg" to registered TTY targets
  * @method static ConsoleInterface registerStderrTarget() Register STDERR to receive console output if running on the command line (see {@see ConsoleInterface::registerStderrTarget()})
  * @method static ConsoleInterface registerStdioTargets() Register STDOUT and STDERR to receive console output if running on the command line (see {@see ConsoleInterface::registerStdioTargets()})
  * @method static ConsoleInterface registerTarget(ConsoleTargetInterface $target, array<ConsoleInterface::LEVEL_*> $levels = ConsoleInterface::LEVELS_ALL) Register a target to receive console output
@@ -62,7 +62,7 @@ use Throwable;
  *
  * @generated
  */
-final class Console extends Facade implements HasMessageLevel, HasMessageLevels
+final class Console extends Facade implements HasMessageLevel, HasMessageLevels, HasMessageType
 {
     /**
      * @internal

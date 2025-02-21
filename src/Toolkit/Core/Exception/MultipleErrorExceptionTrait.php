@@ -3,7 +3,6 @@
 namespace Salient\Core\Exception;
 
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Utility\Arr;
 use Salient\Utility\Format;
@@ -62,7 +61,7 @@ trait MultipleErrorExceptionTrait
     public function reportErrors(Console $console): void
     {
         foreach ($this->Errors as $error) {
-            $console->message('__Error:__', $error, Console::LEVEL_ERROR, MessageType::UNFORMATTED);
+            $console->message('__Error:__', $error, Console::LEVEL_ERROR, Console::TYPE_UNFORMATTED);
         }
         $this->HasUnreportedErrors = false;
     }

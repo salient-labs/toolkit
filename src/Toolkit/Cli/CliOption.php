@@ -8,7 +8,6 @@ use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Cli\CliOptionValueUnknownPolicy;
 use Salient\Contract\Cli\CliOptionVisibility;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Buildable;
 use Salient\Contract\Core\HasJsonSchema;
@@ -980,7 +979,7 @@ final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
                     throw new CliUnknownValueException($message);
                 }
 
-                Console::message('__Warning:__', $message, Console::LEVEL_WARNING, MessageType::UNFORMATTED);
+                Console::message('__Warning:__', $message, Console::LEVEL_WARNING, Console::TYPE_UNFORMATTED);
                 $value = array_intersect($value, $this->AllowedValues);
             }
         }

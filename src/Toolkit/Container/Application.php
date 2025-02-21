@@ -5,7 +5,6 @@ namespace Salient\Container;
 use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Cache\CacheInterface;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Curler\Event\CurlerEventInterface;
 use Salient\Contract\Curler\Event\CurlRequestEventInterface;
@@ -694,7 +693,7 @@ class Application extends Container implements ApplicationInterface
                 Format::bytes($peakMemory),
             ),
             $level,
-            MessageType::UNFORMATTED,
+            Console::TYPE_UNFORMATTED,
         );
     }
 
@@ -806,7 +805,7 @@ class Application extends Container implements ApplicationInterface
             Console::print(
                 "\n" . implode("\n\n", $report),
                 $level,
-                MessageType::UNFORMATTED,
+                Console::TYPE_UNFORMATTED,
             );
         }
     }

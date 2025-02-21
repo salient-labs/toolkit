@@ -6,7 +6,6 @@ use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Utility\Format;
 use Throwable;
 
@@ -124,7 +123,7 @@ final class ConsoleLogger implements LoggerInterface
             (string) $message,
             null,
             self::LOG_LEVEL_MAP[$level],
-            MessageType::STANDARD,
+            Console::TYPE_STANDARD,
             $exception ?? null,
         );
     }

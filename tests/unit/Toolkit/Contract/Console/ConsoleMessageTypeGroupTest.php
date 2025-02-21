@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Contract\Console;
 
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
-use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
+use Salient\Contract\Console\ConsoleMessageTypeGroup;
+use Salient\Contract\Console\HasMessageType;
 use Salient\Tests\TestCase;
 use Salient\Utility\Reflect;
 
@@ -14,6 +14,6 @@ final class ConsoleMessageTypeGroupTest extends TestCase
 {
     public function testALL(): void
     {
-        $this->assertSame(array_values(Reflect::getConstants(MessageType::class)), MessageTypeGroup::ALL);
+        $this->assertSame(array_values(Reflect::getConstants(HasMessageType::class)), ConsoleMessageTypeGroup::ALL);
     }
 }

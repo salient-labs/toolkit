@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Console;
 
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
+use Salient\Contract\Console\HasMessageType as MessageType;
 
 /**
  * Groups of console message types
@@ -15,22 +15,22 @@ interface ConsoleMessageTypeGroup
      * @var list<MessageType::*>
      */
     public const ALL = [
-        MessageType::STANDARD,
-        MessageType::UNDECORATED,
-        MessageType::UNFORMATTED,
-        MessageType::PROGRESS,
-        MessageType::GROUP_START,
-        MessageType::GROUP_END,
-        MessageType::SUMMARY,
-        MessageType::SUCCESS,
-        MessageType::FAILURE,
+        MessageType::TYPE_STANDARD,
+        MessageType::TYPE_UNDECORATED,
+        MessageType::TYPE_UNFORMATTED,
+        MessageType::TYPE_PROGRESS,
+        MessageType::TYPE_GROUP_START,
+        MessageType::TYPE_GROUP_END,
+        MessageType::TYPE_SUMMARY,
+        MessageType::TYPE_SUCCESS,
+        MessageType::TYPE_FAILURE,
     ];
 
     /**
      * @var list<MessageType::*>
      */
     public const GROUP = [
-        MessageType::GROUP_START,
-        MessageType::GROUP_END,
+        MessageType::TYPE_GROUP_START,
+        MessageType::TYPE_GROUP_END,
     ];
 }

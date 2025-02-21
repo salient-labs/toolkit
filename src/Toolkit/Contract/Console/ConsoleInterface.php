@@ -4,13 +4,12 @@ namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
 use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;
 use Throwable;
 
-interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLevels
+interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLevels, HasMessageType
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the
@@ -257,14 +256,14 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function message(
         string $msg1,
         ?string $msg2 = null,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNDECORATED,
+        int $type = ConsoleInterface::TYPE_UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
     );
@@ -274,14 +273,14 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
      * once per run
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function messageOnce(
         string $msg1,
         ?string $msg2 = null,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNDECORATED,
+        int $type = ConsoleInterface::TYPE_UNDECORATED,
         ?Throwable $ex = null,
         bool $count = true
     );
@@ -350,64 +349,64 @@ interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLeve
      * Print "$msg" to registered targets
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function print(
         string $msg,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNFORMATTED
+        int $type = ConsoleInterface::TYPE_UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered STDOUT or STDERR targets
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function printOut(
         string $msg,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNFORMATTED
+        int $type = ConsoleInterface::TYPE_UNFORMATTED
     );
 
     /**
      * Print "$msg" to registered TTY targets
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function printTty(
         string $msg,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNFORMATTED
+        int $type = ConsoleInterface::TYPE_UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDOUT even if no STDOUT target is registered
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function printStdout(
         string $msg,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNFORMATTED
+        int $type = ConsoleInterface::TYPE_UNFORMATTED
     );
 
     /**
      * Print "$msg" to STDERR even if no STDERR target is registered
      *
      * @param ConsoleInterface::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param ConsoleInterface::TYPE_* $type
      * @return $this
      */
     public function printStderr(
         string $msg,
         int $level = ConsoleInterface::LEVEL_INFO,
-        int $type = MessageType::UNFORMATTED
+        int $type = ConsoleInterface::TYPE_UNFORMATTED
     );
 }

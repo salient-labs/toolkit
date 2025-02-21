@@ -7,7 +7,6 @@ use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Support\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Console\ConsoleMessageTypeGroup as MessageTypeGroup;
 use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
@@ -104,10 +103,10 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
             ->set(Console::LEVEL_NOTICE, MessageTypeGroup::ALL, new MessageFormat($bold, $cyan, $boldCyan))
             ->set(Console::LEVEL_INFO, MessageTypeGroup::ALL, new MessageFormat($default, $yellow, $yellow))
             ->set(Console::LEVEL_DEBUG, MessageTypeGroup::ALL, new MessageFormat($dim, $dim, $dim))
-            ->set(Console::LEVELS_INFO, MessageType::PROGRESS, new MessageFormat($default, $yellow, $yellow))
+            ->set(Console::LEVELS_INFO, Console::TYPE_PROGRESS, new MessageFormat($default, $yellow, $yellow))
             ->set(Console::LEVELS_INFO, MessageTypeGroup::GROUP, new MessageFormat($boldMagenta, $default, $boldMagenta))
-            ->set(Console::LEVELS_INFO, MessageType::SUMMARY, new MessageFormat($default, $default, $bold))
-            ->set(Console::LEVELS_INFO, MessageType::SUCCESS, new MessageFormat($green, $default, $boldGreen))
-            ->set(Console::LEVELS_ERRORS_AND_WARNINGS, MessageType::FAILURE, new MessageFormat($yellow, $default, $boldYellow));
+            ->set(Console::LEVELS_INFO, Console::TYPE_SUMMARY, new MessageFormat($default, $default, $bold))
+            ->set(Console::LEVELS_INFO, Console::TYPE_SUCCESS, new MessageFormat($green, $default, $boldGreen))
+            ->set(Console::LEVELS_ERRORS_AND_WARNINGS, Console::TYPE_FAILURE, new MessageFormat($yellow, $default, $boldYellow));
     }
 }
