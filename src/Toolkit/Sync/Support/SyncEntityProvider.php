@@ -2,7 +2,6 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Contract\Catalog\TextComparisonAlgorithm;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Contract\Sync\DeferralPolicy;
@@ -570,27 +569,24 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
      * @inheritDoc
      */
     public function getResolver(
-        ?string $nameProperty = null,
-        int $algorithm = TextComparisonAlgorithm::SAME,
+        $nameProperty = null,
+        int $flags = SyncEntityProvider::ALGORITHM_SAME,
         $uncertaintyThreshold = null,
-        ?string $weightProperty = null,
+        $weightProperty = null,
         bool $requireOneMatch = false
     ): SyncEntityResolverInterface {
-        if (
-            $nameProperty !== null
-            && $algorithm === TextComparisonAlgorithm::SAME
+        return is_string($nameProperty)
+            && $flags === self::ALGORITHM_SAME
             && $weightProperty === null
             && !$requireOneMatch
-        ) {
-            return new SyncEntityResolver($this, $nameProperty);
-        }
-        return new SyncEntityFuzzyResolver(
-            $this,
-            $nameProperty,
-            $algorithm,
-            $uncertaintyThreshold,
-            $weightProperty,
-            $requireOneMatch,
-        );
+                ? new SyncEntityResolver($this, $nameProperty)
+                : new SyncEntityFuzzyResolver(
+                    $this,
+                    $nameProperty,
+                    $flags,
+                    $uncertaintyThreshold,
+                    $weightProperty,
+                    $requireOneMatch,
+                );
     }
 }

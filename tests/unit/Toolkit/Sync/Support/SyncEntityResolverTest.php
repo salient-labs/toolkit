@@ -2,15 +2,13 @@
 
 namespace Salient\Tests\Sync\Support;
 
-use Salient\Contract\Catalog\TextComparisonAlgorithm as Algorithm;
-use Salient\Contract\Catalog\TextComparisonFlag as Flag;
 use Salient\Contract\Sync\SyncEntityInterface;
-use Salient\Contract\Sync\SyncEntityProviderInterface;
 use Salient\Contract\Sync\SyncEntityResolverInterface;
-use Salient\Sync\Support\SyncEntityFuzzyResolver;
-use Salient\Sync\Support\SyncEntityResolver;
+use Salient\Sync\Support\SyncEntityFuzzyResolver as FuzzyResolver;
+use Salient\Sync\Support\SyncEntityResolver as Resolver;
 use Salient\Tests\Sync\Entity\User;
 use Salient\Tests\Sync\SyncTestCase;
+use InvalidArgumentException;
 
 /**
  * @covers \Salient\Sync\Support\SyncEntityResolver
@@ -23,22 +21,22 @@ final class SyncEntityResolverTest extends SyncTestCase
      *
      * @template T of SyncEntityInterface
      *
-     * @param array<array{string|null,float|null}> $expected
+     * @param array<array{string,float}|array{null,null}>|string $expected
      * @param class-string<SyncEntityResolverInterface<T>> $resolver
      * @param class-string<T> $entity
      * @param mixed[] $args
      * @param string[] $names
      */
     public function testGetByName(
-        array $expected,
+        $expected,
         string $resolver,
         string $entity,
         string $propertyName,
         array $args,
         array $names
     ): void {
-        /** @var SyncEntityProviderInterface<T> */
-        $provider = [$entity, 'withDefaultProvider']($this->App);
+        $provider = $entity::withDefaultProvider($this->App);
+        $this->maybeExpectException($expected);
         /** @var SyncEntityResolverInterface<T> */
         $resolver = new $resolver($provider, $propertyName, ...$args);
         foreach ($names as $name) {
@@ -53,7 +51,7 @@ final class SyncEntityResolverTest extends SyncTestCase
     }
 
     /**
-     * @return array<string,array{array<array{string|null,float|null}>,class-string<SyncEntityResolverInterface<SyncEntityInterface>>,class-string<SyncEntityInterface>,string,mixed[],string[]}>
+     * @return array<array{array<array{string,float}|array{null,null}>|string,class-string<SyncEntityResolverInterface<SyncEntityInterface>>,class-string<SyncEntityInterface>,string,mixed[],string[]}>
      */
     public static function getByNameProvider(): array
     {
@@ -78,7 +76,7 @@ final class SyncEntityResolverTest extends SyncTestCase
                     [null, null],
                     [null, null],
                 ],
-                SyncEntityResolver::class,
+                Resolver::class,
                 User::class,
                 'Name',
                 [],
@@ -94,10 +92,10 @@ final class SyncEntityResolverTest extends SyncTestCase
                     [null, null],
                     ['Leanne Graham', 0.2],
                 ],
-                SyncEntityFuzzyResolver::class,
+                FuzzyResolver::class,
                 User::class,
                 'Name',
-                [Algorithm::LEVENSHTEIN | Flag::NORMALISE, 0.6],
+                [FuzzyResolver::ALGORITHM_LEVENSHTEIN | FuzzyResolver::NORMALISE, 0.6],
                 $names,
             ],
             'similar_text + normalise' => [
@@ -110,12 +108,28 @@ final class SyncEntityResolverTest extends SyncTestCase
                     ['Leanne Graham', 0.5384615384615384],
                     ['Leanne Graham', 0.19999999999999996],
                 ],
-                SyncEntityFuzzyResolver::class,
+                FuzzyResolver::class,
                 User::class,
                 'Name',
-                [Algorithm::SIMILAR_TEXT | Flag::NORMALISE, 0.6],
+                [FuzzyResolver::ALGORITHM_SIMILAR_TEXT | FuzzyResolver::NORMALISE, 0.6],
                 $names,
-            ]
+            ],
+            [
+                InvalidArgumentException::class . ',At least one algorithm flag must be set',
+                FuzzyResolver::class,
+                User::class,
+                'Name',
+                [0],
+                [],
+            ],
+            [
+                InvalidArgumentException::class . ',Invalid $uncertaintyThreshold for ALGORITHM_NGRAM_SIMILARITY when $requireOneMatch is true',
+                FuzzyResolver::class,
+                User::class,
+                'Name',
+                [FuzzyResolver::DEFAULT_FLAGS, null, null, true],
+                [],
+            ],
         ];
     }
 }
