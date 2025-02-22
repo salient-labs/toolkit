@@ -9,7 +9,12 @@ use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;
 use Throwable;
 
-interface ConsoleInterface extends Instantiable, HasMessageLevel, HasMessageLevels, HasMessageType
+interface ConsoleInterface extends
+    Instantiable,
+    HasMessageLevel,
+    HasMessageLevels,
+    HasMessageType,
+    HasMessageTypes
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the

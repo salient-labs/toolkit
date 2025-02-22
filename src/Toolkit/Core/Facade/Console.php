@@ -10,6 +10,7 @@ use Salient\Contract\Console\ConsoleTargetInterface;
 use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Console\ConsoleTargetTypeFlag;
 use Salient\Contract\Console\HasMessageType;
+use Salient\Contract\Console\HasMessageTypes;
 use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;
 use Throwable;
@@ -62,7 +63,7 @@ use Throwable;
  *
  * @generated
  */
-final class Console extends Facade implements HasMessageLevel, HasMessageLevels, HasMessageType
+final class Console extends Facade implements HasMessageLevel, HasMessageLevels, HasMessageType, HasMessageTypes
 {
     /**
      * @internal
