@@ -58,6 +58,7 @@ class Introspector
      */
     public static function getService(ContainerInterface $container, string $service)
     {
+        /** @var static<T,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
         return new static(
             $service,
             $container->getName($service),
@@ -77,6 +78,7 @@ class Introspector
      */
     public static function get(string $class)
     {
+        /** @var static<T,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
         return new static(
             $class,
             $class,
