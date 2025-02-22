@@ -10,6 +10,219 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.75] - 2025-02-22
+
+Achieved with the changes detailed below:
+
+- Completion of `Core` API review
+- Cleaner access to constants via classes that implement their interfaces
+- Progress towards decoupling the `Core` component from `Container`
+- Progress towards rewritten "sli generate" commands
+
+### Added
+
+#### `Core`
+
+- Add `Serializable` interface
+- Add, implement and adopt `InvalidDataException`
+- Add, implement and adopt `EventDispatcherInterface` and `EventListenerProviderInterface`
+- Add `Builder::getStaticConstructor()` to allow use of a static method for instantiation instead of the constructor
+- Add `MetricCollector::getMaxTimers()` to provide maximum number of timers running simultaneously per group
+
+#### `Utility`
+
+- Add `File::eof()` and `File::select()`
+- Add `File::getIndentation()`
+- Add `Inflect::list()`, with optional Oxford comma support
+- Add `Reflect::getDeclaring()`, `Reflect::getFileName()` and `getNamespaceName()`
+
+### Changed
+
+- Rename exception interfaces to reduce verbosity
+- Move `Indentation` to `Salient\Utility\Support`
+- Move `MimeType` to `Salient\Contract\Http`
+- Move `SqlQuery` to `Salient\Db`
+
+#### `Cache`
+
+- Treat `DateInterval` TTLs like integers, i.e. delete the item if TTL is <= 0 seconds
+
+#### `Console`
+
+- Rename:
+  - `ConsoleWriterInterface` -> `ConsoleInterface`
+  - `ConsoleWriter` -> `Console`
+  - `ConsoleMessageType` -> `HasMessageType`
+  - `ConsoleMessageTypeGroup` -> `HasMessageTypes`
+- Implement `HasMessageLevel`, `HasMessageLevels`, `HasMessageType` and `HasMessageTypes` from the `Console` facade
+
+#### `Core`
+
+- Rename:
+  - `AbstractBuilder` -> `Builder`
+  - `AbstractFacade` -> `Facade` and move to `Salient\Core\Facade`
+  - `AbstractStore` -> `Store`
+  - `AbstractStreamWrapper` -> `StreamWrapper`
+  - `AbstractException` -> `Exception` and move to `Salient\Core\Exception`
+  - `AbstractMultipleErrorException` -> `MultipleErrorException` and move to `Salient\Core\Exception`
+  - `HasBuilder` -> `BuildableTrait`
+  - `HasChainableMethods` -> `ChainableTrait`
+  - `HasFacade` -> `FacadeAwareInstanceTrait`
+  - `HasMutator` -> `ImmutableTrait`
+  - `HasNormaliser` -> `NormalisableTrait`
+  - `HasReadableProperties` -> `ReadableTrait`
+  - `HasWritableProperties` -> `WritableTrait`
+  - `JsonSchemaInterface` -> `HasJsonSchema`
+  - `Process` methods:
+    - `getText()` -> `getOutputAsText()`
+    - `getNewText()` -> `getNewOutputAsText()`
+  - `ProvidableEntityInterface` -> `ProviderEntityInterface` and move to `Salient\Core\Entity`
+  - `ReadsProtectedProperties` -> `ReadableProtectedPropertiesTrait`
+  - `SerializeRulesInterface` methods:
+    - `getIncludeMeta()` -> `getDynamicProperties()`
+    - `withIncludeMeta()` -> `withDynamicProperties()`
+  - `UnloadsFacades` -> `FacadeAwareTrait`
+- Rename, move to `Salient\Contract` and update constants:
+  - `EscapeSequence` -> `HasEscapeSequence`
+  - `FileDescriptor` -> `HasFileDescriptor`
+  - `ListConformity` -> `HasConformity`
+  - `MessageLevel` -> `HasMessageLevel`
+  - `MessageLevelGroup` -> `HasMessageLevels`
+  - `TextComparisonAlgorithm` -> `HasTextComparisonFlag`
+  - `TextComparisonFlag` -> `HasTextComparisonFlag`
+- Move:
+  - `StoppableEventInterface` -> `Salient\Contract\Core\Event`
+  - `EventDispatcher` -> `Salient\Core\Event`
+  - `StoppableEventTrait` -> `Salient\Core\Event`
+  - `FacadeInterface` -> `Salient\Contract\Core\Facade`
+  - `FacadeAwareInterface` -> `Salient\Contract\Core\Facade`
+  - `ArrayMapperInterface` -> `Salient\Contract\Core\Pipeline`
+  - `DateFormatter` -> `Salient\Core\Date`
+  - `DateFormatParser` -> `Salient\Core\Date`
+  - `DateParser` -> `Salient\Core\Date`
+  - `DotNetDateParser` -> `Salient\Core\Date`
+  - `Providable` -> `Salient\Core\Entity`
+  - `SerializeRulesInterface` -> `Salient\Core\Entity`
+  - `ExceptionTrait` -> `Salient\Core\Exception`
+  - `MultipleErrorExceptionTrait` -> `Salient\Core\Exception`
+  - `AbstractEntity` -> `Salient\Core\Provider`
+  - `AbstractProvider` -> `Salient\Core\Provider`
+  - `ProviderContext` -> `Salient\Core\Provider`
+- Don't accept a container when creating a builder (builders are tightly coupled with constructors, so no container is needed)
+- In `Facade`, only use `Container` if it is defined
+- Detect date properties and parameters via native type hints even if `Temporal` is not implemented
+- Refactor `Facade::getService()` for simplicity
+- Narrow `Hierarchical` return types to `$this` as needed
+- Refactor `Normalisable::normaliseProperty()` for clarity
+- Make `$context` a required parameter of `Providable` methods `provide()` and `provideMultiple()` and remove `$provider` accordingly
+- Refactor `Providable::provideMultiple()` for consistency with `Constructible`
+- Improve uninitialised property handling in `TreeableTrait`
+- Replace `ConfigurationManager::getMany()` with `getMultiple()`
+- Extend `DateParserInterface` from `DateFormatterInterface`
+- In `DateParserInterface::parse()`, specify that `$timezone` is ignored if `$value` has a timezone and update implementations accordingly
+- Deregister `ErrorHandler` when the facade it's running behind is unloaded
+- In `MultipleErrorException`:
+  - Rename `getMessageWithoutErrors()` to `getMessageOnly()`
+  - Add `$console` parameter to `reportErrors()`
+- In `Process`:
+  - Improve robustness of stream handling
+  - Always throw `ProcessTerminatedBySignalException` when a process is killed, not just when `wait()` is called
+  - Add and throw `ProcessDidNotTerminateException`
+  - Do not throw `ProcessException` for stream-related errors
+- Add `ClassReflection` and adopt instead of `Introspector` and `IntrospectionClass` where possible
+  - Fix issue where reserved properties are ignored when getting "magic" properties
+  - Fix issue where properties with asymmetric handling are not serialized, e.g. when a protected property is read via `__get()` and written via `_setMyProperty()`
+  - Do not allow multiple properties or "magic" property methods to resolve to the same name after normalisation
+  - Do not allow dynamic property properties to be serviced by "magic" property methods
+  - Do not allow `Treeable` classes to return invalid parent/children properties
+
+#### `PHPDoc`
+
+- Collect and propagate context data to allow expansion of relative class types like `static`, `$this` and `self`
+
+#### `PHPStan`
+
+- Preserve key types when `$preserveKeys = true` is passed to `Arr::flatten()`
+- Handle optional keys in arrays passed to `Arr::flatten()`
+
+#### `Sli`
+
+- Refactor "generate facade" command
+  - Add new options:
+    - `--implement <interface>`
+    - `--skip-deprecated` (previous behaviour was to skip deprecated methods unconditionally)
+  - Exclude `@internal` methods from facades
+- Build out PHPDoc tag handling and other abstractions in `AbstractGenerateCommand`
+
+#### `Sync`
+
+- Extend `ClassReflection` from `Reflection` classes
+- Rename `Reflection` classes for consistency
+- Refactor `SyncSerializeRulesInterface` for consistency with `SerializeRulesInterface`
+- Rename `SyncSerializeRulesInterface` methods:
+  - `getIncludeCanonicalId()` -> `getCanonicalId()`
+  - `withIncludeCanonicalId()` -> `withCanonicalId()`
+- Rename `SyncSerializeRulesBuilder` methods:
+  - `includeMeta()` -> `dynamicProperties()`
+  - `includeCanonicalId()` -> `canonicalId()`
+- Do not extend `AbstractEntity` from `AbstractSyncEntity`
+- Remove `Temporal` from `SyncEntityInterface` and implement it in `AbstractSyncEntity`
+- Refactor `SyncEntityProviderInterface::getResolver()` and downstream implementations
+  - Accept closures for `$nameProperty` and `$weightProperty`
+  - Require `$nameProperty` closures to return `string`
+  - Handle uninitialised properties and invalid values gracefully
+
+#### `Utility`
+
+- Optionally preserve keys in `Arr::pluck()`, `Arr::flatten()` and `Reflect::getNames()`
+- In `Test::isBuiltinType()`, optionally exclude relative class types and/or the `resource` type, and remove soft-reserved types `enum` and `numeric` entirely
+
+### Removed
+
+#### `Core`
+
+- Remove `getB()`, `issetB()`, `unsetB()` from `BuilderInterface` (implementation details are not needed in the contract)
+- Remove unused `Exception::withExitStatus()` method
+- Remove `MultipleErrorExceptionTrait::getMetadata()` to prevent errors being reported twice
+- Remove `GraphInterface` from API
+- Remove `NormaliserFlag`
+- Remove unused `PipeInterface` and related code
+- Remove unused `Process::isTerminatedBySignal()`
+- Remove unused `WritesProtectedProperties` trait
+- Remove date formatter caching from `AbstractProvider`
+  - Remove `final` from `AbstractProvider::getDateFormatter()` and replace with a default implementation
+  - Deprecate `AbstractProvider::createDateFormatter()` and make it `final` to force downstream implementation updates
+
+#### `PHPDoc`
+
+- Remove `$trackInheritance` parameter from `PHPDoc::forClass()`
+
+#### `Sli`
+
+- Remove support for setting properties via generated builders
+
+#### `Utility`
+
+- Remove `Indentation::from()` (replaced with `File::getIndentation()`)
+
+### Fixed
+
+#### `Core`
+
+- Fix issue where a deregistered `ErrorHandler` cannot be re-registered and may still report errors on shutdown
+- Fix issue where multiple calls to `ErrorHandler::deregister()` may remove other error/exception handlers
+- Fix issue where timeout behaviour may be incorrect after calling `Process::setTimeout()`
+
+#### `PHPDoc`
+
+- Do not inherit DocBlocks from private members of inherited classes
+- Fix issue where empty template maps are needlessly inherited
+
+#### `Utility`
+
+- Fix `Date::maybeSetTimezone()` issue where `+00:00`, the timezone applied when timestamps are parsed, is not handled correctly
+- Add missing `int<1,max>` type to tab size in `Indentation`
+
 ## [v0.99.74] - 2025-01-29
 
 ### Fixed
@@ -4436,6 +4649,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.75]: https://github.com/salient-labs/toolkit/compare/v0.99.74...v0.99.75
 [v0.99.74]: https://github.com/salient-labs/toolkit/compare/v0.99.73...v0.99.74
 [v0.99.73]: https://github.com/salient-labs/toolkit/compare/v0.99.72...v0.99.73
 [v0.99.72]: https://github.com/salient-labs/toolkit/compare/v0.99.71...v0.99.72
