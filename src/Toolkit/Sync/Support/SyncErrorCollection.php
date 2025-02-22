@@ -5,7 +5,6 @@ namespace Salient\Sync\Support;
 use Salient\Collection\Collection;
 use Salient\Console\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
 use Salient\Contract\Sync\SyncErrorInterface;
@@ -110,13 +109,13 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
      * @inheritDoc
      */
     public function reportErrors(
-        ?ConsoleInterface $writer = null,
+        ?ConsoleInterface $console = null,
         string $successText = 'No sync errors recorded'
     ): void {
-        $writer ??= Console::getInstance();
+        $console ??= Console::getInstance();
 
         if (!$this->ErrorCount && !$this->WarningCount) {
-            $writer->info($successText);
+            $console->info($successText);
             return;
         }
 
@@ -124,7 +123,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
             ? Console::LEVEL_ERROR
             : Console::LEVEL_WARNING;
 
-        $writer->message(
+        $console->message(
             Inflect::format(
                 $this->ErrorCount,
                 '{{#}} sync {{#:error}}%s recorded:',
@@ -134,13 +133,13 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
             ),
             null,
             $level,
-            MessageType::STANDARD,
+            Console::TYPE_STANDARD,
         );
 
-        $writer->print(
+        $console->print(
             $this->doGetSummaryText(true),
             $level,
-            MessageType::UNFORMATTED,
+            Console::TYPE_UNFORMATTED,
         );
     }
 

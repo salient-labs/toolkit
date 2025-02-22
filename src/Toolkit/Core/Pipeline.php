@@ -94,7 +94,7 @@ final class Pipeline implements
      *
      * @param iterable<T0>|T0 $payload
      * @param T1 $arg
-     * @return static<TInput&T0,TOutput,TArgument&T1>
+     * @return self<TInput&T0,TOutput,TArgument&T1>
      */
     private function withPayload($payload, $arg, bool $stream)
     {
@@ -102,7 +102,7 @@ final class Pipeline implements
             throw new LogicException('Payload already set');
         }
 
-        /** @var static<T0,TOutput,T1> */
+        /** @var self<T0,TOutput,T1> */
         // @phpstan-ignore varTag.nativeType
         $pipeline = $this;
         $pipeline = $pipeline
@@ -110,7 +110,7 @@ final class Pipeline implements
             ->with('PayloadIsStream', $stream)
             ->with('Payload', $payload)
             ->with('Arg', $arg);
-        /** @var static<TInput&T0,TOutput,TArgument&T1> */
+        /** @var self<TInput&T0,TOutput,TArgument&T1> */
         return $pipeline;
     }
 

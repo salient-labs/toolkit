@@ -6,12 +6,11 @@ use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Utility\Format;
 use Throwable;
 
 /**
- * A PSR-3 logger backed by a console writer
+ * A PSR-3 logger backed by a console service
  */
 final class ConsoleLogger implements LoggerInterface
 {
@@ -26,11 +25,11 @@ final class ConsoleLogger implements LoggerInterface
         LogLevel::DEBUG => Console::LEVEL_DEBUG,
     ];
 
-    private Console $Writer;
+    private Console $Console;
 
-    public function __construct(Console $writer)
+    public function __construct(Console $console)
     {
-        $this->Writer = $writer;
+        $this->Console = $console;
     }
 
     /**
@@ -120,11 +119,11 @@ final class ConsoleLogger implements LoggerInterface
             }
         }
 
-        $this->Writer->message(
+        $this->Console->message(
             (string) $message,
             null,
             self::LOG_LEVEL_MAP[$level],
-            MessageType::STANDARD,
+            Console::TYPE_STANDARD,
             $exception ?? null,
         );
     }

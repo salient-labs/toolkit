@@ -4,7 +4,6 @@ namespace Salient\Console\Support;
 
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Console\ConsoleMessageAttributesInterface;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Core\Concern\ImmutableTrait;
 
 /**
@@ -26,7 +25,7 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
      * Message type
      *
      * @readonly
-     * @var MessageType::*
+     * @var Console::TYPE_*
      */
     public int $Type;
 
@@ -53,7 +52,7 @@ final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterfac
 
     /**
      * @param Console::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param Console::TYPE_* $type
      */
     public function __construct(
         int $level,

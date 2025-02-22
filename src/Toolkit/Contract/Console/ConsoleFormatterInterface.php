@@ -3,7 +3,6 @@
 namespace Salient\Contract\Console;
 
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageType as MessageType;
 use Salient\Contract\Core\Immutable;
 
 /**
@@ -55,22 +54,22 @@ interface ConsoleFormatterInterface extends Immutable
      * Get the format applied to a message level and type
      *
      * @param Console::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param Console::TYPE_* $type
      */
     public function getMessageFormat(
         int $level,
-        int $type = MessageType::STANDARD
+        int $type = Console::TYPE_STANDARD
     ): ConsoleMessageFormatInterface;
 
     /**
      * Get the prefix applied to a message level and type
      *
      * @param Console::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param Console::TYPE_* $type
      */
     public function getMessagePrefix(
         int $level,
-        int $type = MessageType::STANDARD
+        int $type = Console::TYPE_STANDARD
     ): string;
 
     /**
@@ -114,13 +113,13 @@ interface ConsoleFormatterInterface extends Immutable
      * Format a console message
      *
      * @param Console::LEVEL_* $level
-     * @param MessageType::* $type
+     * @param Console::TYPE_* $type
      */
     public function formatMessage(
         string $msg1,
         ?string $msg2 = null,
         int $level = Console::LEVEL_INFO,
-        int $type = MessageType::STANDARD
+        int $type = Console::TYPE_STANDARD
     ): string;
 
     /**

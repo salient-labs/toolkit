@@ -95,6 +95,7 @@ abstract class Builder implements BuilderInterface
      */
     final public static function create()
     {
+        /** @var static<TClass> */
         return new static();
     }
 
