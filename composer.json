@@ -73,6 +73,7 @@
         "psr/simple-cache-implementation": "^1 || ^2"
     },
     "suggest": {
+        "ext-sqlite3": "Required by CacheStore and SyncStore",
         "adodb/adodb-php": "Required for access to databases",
         "analog/analog": "Allows Analog handlers to be used as console message targets",
         "firebase/php-jwt": "Required for validation of OAuth 2.0 access tokens",

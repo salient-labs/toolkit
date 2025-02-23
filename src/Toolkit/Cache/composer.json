@@ -15,8 +15,10 @@
     },
     "require": {
         "php": ">=7.4",
+        "ext-sqlite3": "*",
         "salient/contracts": "self.version",
-        "salient/core": "self.version"
+        "salient/core": "self.version",
+        "salient/utils": "self.version"
     },
     "provide": {
         "psr/simple-cache-implementation": "^1 || ^2"
