@@ -85,6 +85,14 @@ final class CurlerBuilder extends Builder
     /**
      * @internal
      */
+    protected static function getStaticConstructor(): string
+    {
+        return 'create';
+    }
+
+    /**
+     * @internal
+     */
     protected static function getTerminators(): array
     {
         return [
