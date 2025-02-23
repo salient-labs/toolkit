@@ -18,6 +18,8 @@ use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 use Salient\Contract\Http\UriInterface;
 use Closure;
+use InvalidArgumentException;
+use LogicException;
 use OutOfRangeException;
 use Stringable;
 
@@ -27,17 +29,16 @@ use Stringable;
 interface CurlerInterface extends ClientInterface, Immutable
 {
     /**
-     * Get the URI of the endpoint
+     * Get the endpoint URI applied to the instance
      */
     public function getUri(): UriInterface;
 
     /**
      * Get an instance with the given endpoint URI
      *
-     * An exception is thrown if the endpoint URI has a query or fragment.
-     *
      * @param PsrUriInterface|Stringable|string|null $uri
      * @return static
+     * @throws InvalidArgumentException if the URI has a query or fragment.
      */
     public function withUri($uri);
 
@@ -127,6 +128,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      *
      * @param mixed[]|null $query
      * @return iterable<mixed>
+     * @throws LogicException if the instance does not have a pager.
      */
     public function getP(?array $query = null): iterable;
 
@@ -136,6 +138,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
+     * @throws LogicException if the instance does not have a pager.
      */
     public function postP($data = null, ?array $query = null): iterable;
 
@@ -145,6 +148,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
+     * @throws LogicException if the instance does not have a pager.
      */
     public function putP($data = null, ?array $query = null): iterable;
 
@@ -154,6 +158,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
+     * @throws LogicException if the instance does not have a pager.
      */
     public function patchP($data = null, ?array $query = null): iterable;
 
@@ -163,6 +168,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      * @param mixed[]|object|null $data
      * @param mixed[]|null $query
      * @return iterable<mixed>
+     * @throws LogicException if the instance does not have a pager.
      */
     public function deleteP($data = null, ?array $query = null): iterable;
 
@@ -216,6 +222,18 @@ interface CurlerInterface extends ClientInterface, Immutable
      */
     public function flushCookies();
 
+    /**
+     * Use the form data flags and date formatter applied to the instance to
+     * replace the query string of a request or URI
+     *
+     * @template T of RequestInterface|PsrUriInterface|Stringable|string
+     *
+     * @param T $value
+     * @param mixed[] $query
+     * @return (T is RequestInterface|PsrUriInterface ? T : UriInterface)
+     */
+    public function replaceQuery($value, array $query);
+
     // --
 
     /**
@@ -248,6 +266,11 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function getHeader(string $name): array;
 
     /**
+     * Get the value of a request header as a string of comma-delimited values
+     */
+    public function getHeaderLine(string $name): string;
+
+    /**
      * Get the value of a request header as a list of values, splitting any
      * comma-separated values
      *
@@ -256,29 +279,24 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function getHeaderValues(string $name): array;
 
     /**
-     * Get the comma-separated values of a request header
-     */
-    public function getHeaderLine(string $name): string;
-
-    /**
      * Get the first value of a request header after splitting any
      * comma-separated values
      */
-    public function getFirstHeaderLine(string $name): string;
+    public function getFirstHeaderValue(string $name): string;
 
     /**
      * Get the last value of a request header after splitting any
      * comma-separated values
      */
-    public function getLastHeaderLine(string $name): string;
+    public function getLastHeaderValue(string $name): string;
 
     /**
      * Get the only value of a request header after splitting any
      * comma-separated values
      *
-     * An exception is thrown if the request header has more than one value.
+     * An exception is thrown if the header has more than one value.
      */
-    public function getOneHeaderLine(string $name, bool $orSame = false): string;
+    public function getOnlyHeaderValue(string $name, bool $orSame = false): string;
 
     /**
      * Get an instance with a value applied to a request header, replacing any
@@ -299,7 +317,7 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function withAddedHeader(string $name, $value);
 
     /**
-     * Get an instance with a request header removed
+     * Get an instance where a request header is removed if present
      *
      * @return static
      */
@@ -336,7 +354,7 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function withSensitiveHeader(string $name);
 
     /**
-     * Get an instance that does not treat the given header as sensitive
+     * Get an instance that doesn't treat a header as sensitive
      *
      * @return static
      */
@@ -365,7 +383,7 @@ interface CurlerInterface extends ClientInterface, Immutable
     /**
      * Get an instance with the given user agent string
      *
-     * If `$userAgent` is `null`, the default user agent string is restored.
+     * If `$userAgent` is `null`, the default user agent string is applied.
      *
      * @return static
      */
@@ -487,8 +505,8 @@ interface CurlerInterface extends ClientInterface, Immutable
     /**
      * Get an instance with the given cache store
      *
-     * If no `$store` is given, cookies and responses are cached in the default
-     * cache store as needed.
+     * If no `$store` is given, cookies and responses are cached in the global
+     * cache as needed.
      *
      * @return static
      */
@@ -676,16 +694,4 @@ interface CurlerInterface extends ClientInterface, Immutable
      * @return static
      */
     public function withThrowHttpErrors(bool $throw = true);
-
-    /**
-     * Use the form data flags and date formatter applied to the instance to
-     * replace the query string of a request or URI
-     *
-     * @template T of RequestInterface|PsrUriInterface|Stringable|string
-     *
-     * @param T $value
-     * @param mixed[] $query
-     * @return (T is RequestInterface|PsrUriInterface ? T : UriInterface)
-     */
-    public function replaceQuery($value, array $query);
 }

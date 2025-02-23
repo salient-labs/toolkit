@@ -379,29 +379,29 @@ final class HttpHeadersTest extends TestCase
         $this->assertSame('qux, quux, quuux', $headers->getHeaderLine('Foo'));
         $this->assertSame('', $headers->getHeaderLine('Baz'));
         $this->assertSame('item1, item2, item3, item4, item5, item6, item7', $headers->getHeaderLine('Items'));
-        $this->assertSame('qux', $headers->getFirstHeaderLine('Foo'));
-        $this->assertSame('quuux', $headers->getLastHeaderLine('Foo'));
-        $this->assertSame('baz', $headers->getOneHeaderLine('Bar'));
-        $this->assertSame('100', $headers->getOneHeaderLine('Size1', true));
-        $this->assertSame('quux="comma,separated,value"', $headers->getFirstHeaderLine('Qux'));
-        $this->assertSame('quuux', $headers->getLastHeaderLine('Qux'));
-        $this->assertSame('item1', $headers->getFirstHeaderLine('Items'));
-        $this->assertSame('item7', $headers->getLastHeaderLine('Items'));
+        $this->assertSame('qux', $headers->getFirstHeaderValue('Foo'));
+        $this->assertSame('quuux', $headers->getLastHeaderValue('Foo'));
+        $this->assertSame('baz', $headers->getOnlyHeaderValue('Bar'));
+        $this->assertSame('100', $headers->getOnlyHeaderValue('Size1', true));
+        $this->assertSame('quux="comma,separated,value"', $headers->getFirstHeaderValue('Qux'));
+        $this->assertSame('quuux', $headers->getLastHeaderValue('Qux'));
+        $this->assertSame('item1', $headers->getFirstHeaderValue('Items'));
+        $this->assertSame('item7', $headers->getLastHeaderValue('Items'));
 
         $this->assertCallbackThrowsException(
-            fn() => $headers->getOneHeaderLine('Size1'),
+            fn() => $headers->getOnlyHeaderValue('Size1'),
             InvalidHeaderException::class,
             'HTTP header has more than one value: Size1',
         );
         $this->assertCallbackThrowsException(
-            fn() => $headers->getOneHeaderLine('Size2', true),
+            fn() => $headers->getOnlyHeaderValue('Size2', true),
             InvalidHeaderException::class,
             'HTTP header has more than one value: Size2',
         );
 
         $this->expectException(InvalidHeaderException::class);
         $this->expectExceptionMessage('HTTP header has more than one value: Qux');
-        $headers->getOneHeaderLine('Qux');
+        $headers->getOnlyHeaderValue('Qux');
     }
 
     public function testGetPreferences(): void

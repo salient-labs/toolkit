@@ -298,7 +298,7 @@ class Curler implements CurlerInterface, Buildable
 
         try {
             return HttpUtil::mediaTypeIs(
-                $headers->getOneHeaderLine(HttpHeader::CONTENT_TYPE),
+                $headers->getOnlyHeaderValue(HttpHeader::CONTENT_TYPE),
                 MimeType::JSON
             );
         } catch (InvalidHeaderException $ex) {

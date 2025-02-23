@@ -149,7 +149,7 @@ REGEX;
             return null;
         }
 
-        $length = $this->getOneHeaderLine(HttpHeader::CONTENT_LENGTH);
+        $length = $this->getOnlyHeaderValue(HttpHeader::CONTENT_LENGTH);
         if (!Test::isInteger($length) || (int) $length < 0) {
             throw new InvalidHeaderException(sprintf(
                 'Invalid value for HTTP header %s: %s',
@@ -176,7 +176,7 @@ REGEX;
 
         try {
             return HttpUtil::getParameters(
-                $this->getOneHeaderLine(HttpHeader::CONTENT_TYPE),
+                $this->getOnlyHeaderValue(HttpHeader::CONTENT_TYPE),
                 false,
                 false,
             )['boundary'] ?? null;
@@ -788,6 +788,14 @@ REGEX;
     /**
      * @inheritDoc
      */
+    public function getHeaderLine(string $name): string
+    {
+        return $this->doGetHeaderValue($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getHeaderValues(string $name): array
     {
         $values = $this->Items[Str::lower($name)] ?? [];
@@ -802,40 +810,32 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getHeaderLine(string $name): string
+    public function getFirstHeaderValue(string $name): string
     {
-        return $this->doGetHeaderLine($name);
+        return $this->doGetHeaderValue($name, true);
     }
 
     /**
      * @inheritDoc
      */
-    public function getFirstHeaderLine(string $name): string
+    public function getLastHeaderValue(string $name): string
     {
-        return $this->doGetHeaderLine($name, true);
+        return $this->doGetHeaderValue($name, false, true);
     }
 
     /**
      * @inheritDoc
      */
-    public function getLastHeaderLine(string $name): string
+    public function getOnlyHeaderValue(string $name, bool $orSame = false): string
     {
-        return $this->doGetHeaderLine($name, false, true);
+        return $this->doGetHeaderValue($name, false, false, true, $orSame);
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getOneHeaderLine(string $name, bool $orSame = false): string
-    {
-        return $this->doGetHeaderLine($name, false, false, true, $orSame);
-    }
-
-    private function doGetHeaderLine(
+    private function doGetHeaderValue(
         string $name,
         bool $first = false,
         bool $last = false,
-        bool $one = false,
+        bool $only = false,
         bool $orSame = false
     ): string {
         $values = $this->getHeaderValues($name);
@@ -848,7 +848,7 @@ REGEX;
         if ($last) {
             return end($values);
         }
-        if ($one) {
+        if ($only) {
             if ($orSame) {
                 $values = array_unique($values);
             }

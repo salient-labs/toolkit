@@ -145,6 +145,11 @@ interface HttpHeadersInterface extends
     public function getHeader(string $name): array;
 
     /**
+     * Get the value of a header as a string of comma-delimited values
+     */
+    public function getHeaderLine(string $name): string;
+
+    /**
      * Get the value of a header as a list of values, splitting any
      * comma-separated values
      *
@@ -153,27 +158,22 @@ interface HttpHeadersInterface extends
     public function getHeaderValues(string $name): array;
 
     /**
-     * Get the comma-separated values of a header
-     */
-    public function getHeaderLine(string $name): string;
-
-    /**
      * Get the first value of a header after splitting any comma-separated
      * values
      */
-    public function getFirstHeaderLine(string $name): string;
+    public function getFirstHeaderValue(string $name): string;
 
     /**
      * Get the last value of a header after splitting any comma-separated values
      */
-    public function getLastHeaderLine(string $name): string;
+    public function getLastHeaderValue(string $name): string;
 
     /**
      * Get the only value of a header after splitting any comma-separated values
      *
      * An exception is thrown if the header has more than one value.
      */
-    public function getOneHeaderLine(string $name, bool $orSame = false): string;
+    public function getOnlyHeaderValue(string $name, bool $orSame = false): string;
 
     /**
      * Get header names and values in their original order as a list of HTTP

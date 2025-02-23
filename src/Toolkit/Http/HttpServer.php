@@ -399,7 +399,7 @@ class HttpServer implements Immutable
             $uri = implode('', [
                 $this->getScheme(),
                 '://',
-                Str::coalesce($headers->getOneHeaderLine(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
+                Str::coalesce($headers->getOnlyHeaderValue(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
             ]);
             if (!Regex::match('/:[0-9]++$/', $uri)) {
                 $uri .= ':' . ($this->ProxyPort ?? $this->Port);
