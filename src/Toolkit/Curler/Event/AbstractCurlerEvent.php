@@ -17,6 +17,9 @@ abstract class AbstractCurlerEvent implements CurlerEventInterface
         $this->Curler = $curler;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCurler(): CurlerInterface
     {
         return $this->Curler;

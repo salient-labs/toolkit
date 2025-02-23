@@ -27,11 +27,17 @@ class CurlResponseEvent extends AbstractCurlEvent implements CurlResponseEventIn
         parent::__construct($curler, $curlHandle);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRequest(): RequestInterface
     {
         return $this->Request;
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getResponse(): HttpResponseInterface
     {
         return $this->Response;

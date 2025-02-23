@@ -24,6 +24,9 @@ class CurlRequestEvent extends AbstractCurlEvent implements CurlRequestEventInte
         parent::__construct($curler, $curlHandle);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getRequest(): RequestInterface
     {
         return $this->Request;

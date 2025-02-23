@@ -24,6 +24,9 @@ abstract class AbstractCurlEvent extends AbstractCurlerEvent implements CurlEven
         parent::__construct($curler);
     }
 
+    /**
+     * @inheritDoc
+     */
     public function getCurlHandle()
     {
         return $this->CurlHandle;
