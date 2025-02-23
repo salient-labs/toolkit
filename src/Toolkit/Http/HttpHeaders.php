@@ -18,6 +18,7 @@ use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
 use InvalidArgumentException;
+use IteratorAggregate;
 use LogicException;
 
 /**
@@ -27,8 +28,10 @@ use LogicException;
  * {@see HttpHeaders::addLine()}.
  *
  * @api
+ *
+ * @implements IteratorAggregate<string,string[]>
  */
-class HttpHeaders implements HttpHeadersInterface
+class HttpHeaders implements HttpHeadersInterface, IteratorAggregate
 {
     /** @use ReadOnlyCollectionTrait<string,string[]> */
     use ReadOnlyCollectionTrait;

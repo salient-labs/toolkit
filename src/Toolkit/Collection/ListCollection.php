@@ -3,6 +3,7 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
+use IteratorAggregate;
 
 /**
  * @api
@@ -10,9 +11,10 @@ use Salient\Contract\Collection\CollectionInterface;
  * @template TValue
  *
  * @implements CollectionInterface<int,TValue>
+ * @implements IteratorAggregate<int,TValue>
  */
-class ListCollection implements CollectionInterface
+class ListCollection implements CollectionInterface, IteratorAggregate
 {
-    /** @use ListCollectionTrait<int,TValue> */
+    /** @use ListCollectionTrait<int,TValue,static<TValue>> */
     use ListCollectionTrait;
 }
