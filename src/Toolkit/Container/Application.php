@@ -6,9 +6,9 @@ use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Container\ApplicationInterface;
-use Salient\Contract\Curler\Event\CurlerEventInterface;
-use Salient\Contract\Curler\Event\CurlRequestEventInterface;
-use Salient\Contract\Curler\Event\ResponseCacheHitEventInterface;
+use Salient\Contract\Curler\Event\CurlerEvent;
+use Salient\Contract\Curler\Event\CurlRequestEvent;
+use Salient\Contract\Curler\Event\ResponseCacheHitEvent;
 use Salient\Contract\Sync\SyncNamespaceHelperInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
@@ -402,11 +402,11 @@ class Application extends Container implements ApplicationInterface
         }
 
         $this->HarListenerId = Event::getInstance()->listen(function (
-            CurlerEventInterface $event
+            CurlerEvent $event
         ) use ($name, $creatorName, $creatorVersion, $uuid): void {
             if (
-                !$event instanceof CurlRequestEventInterface
-                && !$event instanceof ResponseCacheHitEventInterface
+                !$event instanceof CurlRequestEvent
+                && !$event instanceof ResponseCacheHitEvent
             ) {
                 return;
             }

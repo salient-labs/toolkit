@@ -2,14 +2,14 @@
 
 namespace Salient\Curler\Event;
 
-use Salient\Contract\Curler\Event\CurlEventInterface;
+use Salient\Contract\Curler\Event\CurlEvent as CurlEventInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use CurlHandle;
 
 /**
  * @internal
  */
-abstract class AbstractCurlEvent extends AbstractCurlerEvent implements CurlEventInterface
+abstract class CurlEvent extends CurlerEvent implements CurlEventInterface
 {
     /** @var CurlHandle|resource */
     protected $CurlHandle;

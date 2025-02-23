@@ -6,19 +6,19 @@ use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Http\HttpResponseInterface;
 
 /**
- * Dispatched when a request is resolved from the response cache
+ * Dispatched after a cURL request is executed
  *
  * @api
  */
-interface ResponseCacheHitEventInterface extends CurlerEventInterface
+interface CurlResponseEvent extends CurlEvent
 {
     /**
-     * Get the request resolved from the response cache
+     * Get the request sent to the endpoint
      */
     public function getRequest(): RequestInterface;
 
     /**
-     * Get the response originally received from the endpoint
+     * Get the response received from the endpoint
      */
     public function getResponse(): HttpResponseInterface;
 }

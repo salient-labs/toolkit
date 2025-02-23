@@ -7,7 +7,7 @@ use Salient\Contract\Curler\CurlerInterface;
 /**
  * @api
  */
-interface CurlerEventInterface
+interface CurlerEvent
 {
     /**
      * Get the Curler instance that dispatched the event

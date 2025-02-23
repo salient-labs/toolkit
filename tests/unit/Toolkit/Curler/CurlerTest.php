@@ -5,7 +5,7 @@ namespace Salient\Tests\Curler;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
-use Salient\Contract\Curler\Event\CurlResponseEventInterface;
+use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Exception\CurlErrorException;
 use Salient\Contract\Curler\Exception\HttpErrorException;
 use Salient\Contract\Curler\Exception\TooManyRedirectsException;
@@ -493,7 +493,7 @@ EOF;
             ->withResponseCache();
 
         $this->ListenerId = Event::getInstance()->listen(
-            function (CurlResponseEventInterface $event) use ($server, &$output) {
+            function (CurlResponseEvent $event) use ($server, &$output) {
                 $output[] = $server->getNewOutput();
             }
         );
@@ -552,7 +552,7 @@ EOF,
             ->withResponseCache();
 
         $this->ListenerId = Event::getInstance()->listen(
-            function (CurlResponseEventInterface $event) use ($server, &$output) {
+            function (CurlResponseEvent $event) use ($server, &$output) {
                 $output[] = $server->getNewOutput();
             }
         );

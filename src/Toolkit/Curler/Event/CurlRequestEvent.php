@@ -3,14 +3,14 @@
 namespace Salient\Curler\Event;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Curler\Event\CurlRequestEventInterface;
+use Salient\Contract\Curler\Event\CurlRequestEvent as CurlRequestEventInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use CurlHandle;
 
 /**
  * @internal
  */
-class CurlRequestEvent extends AbstractCurlEvent implements CurlRequestEventInterface
+class CurlRequestEvent extends CurlEvent implements CurlRequestEventInterface
 {
     protected RequestInterface $Request;
 

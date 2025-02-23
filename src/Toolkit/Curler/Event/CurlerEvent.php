@@ -2,13 +2,13 @@
 
 namespace Salient\Curler\Event;
 
-use Salient\Contract\Curler\Event\CurlerEventInterface;
+use Salient\Contract\Curler\Event\CurlerEvent as CurlerEventInterface;
 use Salient\Contract\Curler\CurlerInterface;
 
 /**
  * @internal
  */
-abstract class AbstractCurlerEvent implements CurlerEventInterface
+abstract class CurlerEvent implements CurlerEventInterface
 {
     protected CurlerInterface $Curler;
 
