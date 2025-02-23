@@ -2,6 +2,7 @@
 
 namespace Salient\Sli\Command\Generate;
 
+use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Container\ContainerInterface;
@@ -13,6 +14,7 @@ use Salient\PHPDoc\PHPDoc;
 use Salient\PHPDoc\PHPDocUtil;
 use Salient\Sli\EnvVar;
 use Salient\Utility\Arr;
+use Salient\Utility\Get;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
@@ -51,7 +53,8 @@ class GenerateBuilder extends AbstractGenerateCommand
 
     private string $ClassFqcn = '';
     private ?string $BuilderFqcn = null;
-    private bool $IgnoreProperties = false;
+    private ?string $Constructor = null;
+    private bool $NoProperties = false;
     /** @var string[]|null */
     private ?array $Forward = null;
     /** @var string[] */
@@ -85,11 +88,23 @@ class GenerateBuilder extends AbstractGenerateCommand
                 ->required()
                 ->bindTo($this->ClassFqcn),
             CliOption::build()
-                ->name('generate')
-                ->valueName('builder_class')
+                ->name('builder')
+                ->valueName('builder')
                 ->description('The class to generate')
                 ->optionType(CliOptionType::VALUE_POSITIONAL)
                 ->bindTo($this->BuilderFqcn),
+            CliOption::build()
+                ->long('constructor')
+                ->short('n')
+                ->valueName('method')
+                ->description(<<<EOF
+Call a static method of <class> to create an instance
+
+By default, instances of <class> are created by calling its constructor. Use
+this option to call a public static method instead.
+EOF)
+                ->optionType(CliOptionType::VALUE)
+                ->bindTo($this->Constructor),
             CliOption::build()
                 ->long('no-properties')
                 ->short('i')
@@ -100,7 +115,7 @@ By default, if a property with the same name as a constructor parameter has a
 DocBlock, its description is used in the absence of a parameter description. Use
 this option to disable this behaviour.
 EOF)
-                ->bindTo($this->IgnoreProperties),
+                ->bindTo($this->NoProperties),
             CliOption::build()
                 ->long('forward')
                 ->short('w')
@@ -210,7 +225,19 @@ EOF)
          */
         $returnsValue = [];
 
-        if ($_constructor = $this->InputClass->getConstructor()) {
+        if ($this->Constructor !== null && (
+            !$this->InputClass->hasMethod($this->Constructor)
+            || !($_constructor = $this->InputClass->getMethod($this->Constructor))->isPublic()
+            || !$_constructor->isStatic()
+        )) {
+            throw new CliInvalidArgumentsException(sprintf(
+                'invalid constructor: %s::%s()',
+                $this->InputClassName,
+                $this->Constructor,
+            ));
+        }
+
+        if ($_constructor ??= $this->InputClass->getConstructor()) {
             foreach ($_constructor->getParameters() as $_param) {
                 $name = Str::camel($_param->getName());
                 $_params[$name] = $_param;
@@ -236,7 +263,7 @@ EOF)
          */
         $defaultPropertyValues = [];
 
-        if (!$this->IgnoreProperties) {
+        if (!$this->NoProperties) {
             $defaults = $this->InputClass->getDefaultProperties();
             foreach ($this->InputClass->getProperties(
                 ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED
@@ -253,7 +280,9 @@ EOF)
             }
         }
 
-        $_phpDoc = $_constructor ? PHPDoc::forMethod($_constructor) : new PHPDoc();
+        $_phpDoc = $_constructor
+            ? PHPDoc::forMethod($_constructor, $this->InputClass)
+            : new PHPDoc();
 
         $names = array_keys($_params);
         foreach ($names as $name) {
@@ -261,7 +290,6 @@ EOF)
                 continue;
             }
 
-            // If we end up here, we're dealing with a constructor parameter
             /** @var MethodReflection $_constructor */
             $maps = $this->getMaps();
             $propertyFile = Str::coalesce($_constructor->getFileName(), null);
@@ -702,6 +730,21 @@ EOF)
                 self::VISIBILITY_PROTECTED,
             )),
         );
+
+        if ($this->Constructor !== null) {
+            /** @var MethodReflection $_constructor */
+            array_push(
+                $lines,
+                '',
+                ...$this->indent($this->generateGetter(
+                    'getStaticConstructor',
+                    Get::code($_constructor->name),
+                    '@internal',
+                    'string',
+                    self::VISIBILITY_PROTECTED,
+                )),
+            );
+        }
 
         if (isset($terminators)) {
             array_push(
