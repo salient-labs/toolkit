@@ -36,7 +36,7 @@ use Stringable;
  * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
- * @method $this cacheStore(CacheInterface|null $value) Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+ * @method $this cache(CacheInterface|null $value) Cache to use for cookie and response storage instead of the global cache
  * @method $this handleCookies(bool $value = true) Enable cookie handling (default: false)
  * @method $this cookiesCacheKey(string|null $value) Key to cache cookies under (cookie handling is implicitly enabled if given)
  * @method $this cacheResponses(bool $value = true) Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY) (default: false)
@@ -65,6 +65,7 @@ use Stringable;
  * @method mixed putR(string $data, string $mediaType, mixed[]|null $query = null) Send raw data to the endpoint in a PUT request and return the body of the response
  * @method mixed patchR(string $data, string $mediaType, mixed[]|null $query = null) Send raw data to the endpoint in a PATCH request and return the body of the response
  * @method mixed deleteR(string $data, string $mediaType, mixed[]|null $query = null) Send raw data to the endpoint in a DELETE request and return the body of the response
+ * @method ResponseInterface sendRequest(RequestInterface $request) Sends a PSR-7 request and returns a PSR-7 response
  *
  * @api
  *
@@ -111,6 +112,7 @@ final class CurlerBuilder extends Builder
             'putR',
             'patchR',
             'deleteR',
+            'sendRequest',
         ];
     }
 }

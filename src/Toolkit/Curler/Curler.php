@@ -16,6 +16,8 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPageRequestInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
+use Salient\Contract\Http\Exception\InvalidHeaderException as InvalidHeaderExceptionInterface;
+use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeader;
@@ -41,7 +43,6 @@ use Salient\Curler\Exception\NetworkException;
 use Salient\Curler\Exception\RequestException;
 use Salient\Curler\Exception\TooManyRedirectsException;
 use Salient\Http\Exception\InvalidHeaderException;
-use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\HasHttpHeaders;
 use Salient\Http\HttpHeaders;
 use Salient\Http\HttpRequest;
@@ -57,7 +58,6 @@ use Salient\Utility\Json;
 use Salient\Utility\Str;
 use Closure;
 use CurlHandle;
-use Generator;
 use InvalidArgumentException;
 use LogicException;
 use OutOfRangeException;
@@ -66,7 +66,7 @@ use Stringable;
 use Throwable;
 
 /**
- * A PSR-18 HTTP client optimised for exchanging data with RESTful API endpoints
+ * An HTTP client optimised for exchanging data with RESTful API endpoints
  *
  * @api
  *
@@ -112,12 +112,12 @@ class Curler implements CurlerInterface, Buildable
     protected array $Middleware = [];
     protected ?CurlerPagerInterface $Pager = null;
     protected bool $AlwaysPaginate = false;
-    protected ?CacheInterface $CacheStore = null;
+    protected ?CacheInterface $Cache = null;
     protected ?string $CookiesCacheKey = null;
     protected bool $CacheResponses = false;
     protected bool $CachePostResponses = false;
-    /** @var (Closure(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null */
-    protected ?Closure $CacheKeyClosure = null;
+    /** @var (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null */
+    protected $CacheKeyCallback = null;
     /** @var int<-1,max> */
     protected int $CacheLifetime = 3600;
     protected bool $RefreshCache = false;
@@ -130,10 +130,16 @@ class Curler implements CurlerInterface, Buildable
     /** @var int<0,max> */
     protected int $RetryAfterMaxSeconds = 300;
     protected bool $ThrowHttpErrors = true;
+
+    // --
+
     protected ?RequestInterface $LastRequest = null;
     protected ?HttpResponseInterface $LastResponse = null;
     private ?Curler $WithoutThrowHttpErrors = null;
     private ?Closure $Closure = null;
+
+    // --
+
     private static string $DefaultUserAgent;
     /** @var array<string,true> */
     private static array $UnstableHeaders;
@@ -177,7 +183,7 @@ class Curler implements CurlerInterface, Buildable
      * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
      * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
-     * @param CacheInterface|null $cacheStore Cache store used for cookie and response caching instead of the {@see Cache} facade's underlying store
+     * @param CacheInterface|null $cache Cache to use for cookie and response storage instead of the global cache
      * @param bool $handleCookies Enable cookie handling
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
@@ -191,6 +197,7 @@ class Curler implements CurlerInterface, Buildable
      * @param bool $retryAfterTooManyRequests Retry throttled requests when the endpoint returns a "Retry-After" header
      * @param int<0,max> $retryAfterMaxSeconds Limit the delay between request attempts (`0` = unlimited; default: `300`)
      * @param bool $throwHttpErrors Throw exceptions for HTTP errors
+     * @return static
      */
     public static function create(
         $uri = null,
@@ -208,7 +215,7 @@ class Curler implements CurlerInterface, Buildable
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
-        ?CacheInterface $cacheStore = null,
+        ?CacheInterface $cache = null,
         bool $handleCookies = false,
         ?string $cookiesCacheKey = null,
         bool $cacheResponses = false,
@@ -240,13 +247,13 @@ class Curler implements CurlerInterface, Buildable
         }
         $curler->Pager = $pager;
         $curler->AlwaysPaginate = $pager && $alwaysPaginate;
-        $curler->CacheStore = $cacheStore;
+        $curler->Cache = $cache;
         $curler->CookiesCacheKey = $handleCookies || $cookiesCacheKey !== null
             ? self::filterCookiesCacheKey($cookiesCacheKey)
             : null;
         $curler->CacheResponses = $cacheResponses;
         $curler->CachePostResponses = $cachePostResponses;
-        $curler->CacheKeyClosure = Get::closure($cacheKeyCallback);
+        $curler->CacheKeyCallback = $cacheKeyCallback;
         $curler->CacheLifetime = $cacheLifetime;
         $curler->RefreshCache = $refreshCache;
         $curler->Timeout = $timeout;
@@ -298,7 +305,6 @@ class Curler implements CurlerInterface, Buildable
         if ($this->LastResponse === null) {
             throw new OutOfRangeException('No response to check');
         }
-
         return $this->responseIsJson($this->LastResponse);
     }
 
@@ -308,16 +314,13 @@ class Curler implements CurlerInterface, Buildable
         if (!$headers->hasHeader(HttpHeader::CONTENT_TYPE)) {
             return $this->ExpectJson;
         }
-
         try {
-            return HttpUtil::mediaTypeIs(
-                $headers->getOnlyHeaderValue(HttpHeader::CONTENT_TYPE),
-                MimeType::JSON
-            );
-        } catch (InvalidHeaderException $ex) {
-            Console::debug($ex->getMessage());
+            $contentType = $headers->getOnlyHeaderValue(HttpHeader::CONTENT_TYPE);
+        } catch (InvalidHeaderExceptionInterface $ex) {
+            $this->debug($ex->getMessage());
             return false;
         }
+        return HttpUtil::mediaTypeIs($contentType, MimeType::JSON);
     }
 
     // --
@@ -371,17 +374,13 @@ class Curler implements CurlerInterface, Buildable
     }
 
     /**
-     * @template TMethod of Method::GET|Method::HEAD|Method::POST|Method::PUT|Method::PATCH|Method::DELETE
-     *
-     * @param string&TMethod $method
      * @param mixed[]|null $query
      * @param mixed[]|object|false|null $data
-     * @return (TMethod is Method::HEAD ? HttpHeadersInterface : mixed)
+     * @return ($method is Method::HEAD ? HttpHeadersInterface : mixed)
      */
     private function process(string $method, ?array $query, $data = false)
     {
         $request = $this->createRequest($method, $query, $data);
-
         $pager = $this->AlwaysPaginate ? $this->Pager : null;
         if ($pager) {
             $request = $pager->getFirstRequest($request, $this, $query);
@@ -390,20 +389,15 @@ class Curler implements CurlerInterface, Buildable
                 $request = $request->getRequest();
             }
         }
-
         $response = $this->doSendRequest($request);
-
         if ($method === Method::HEAD) {
             return $response->getHttpHeaders();
         }
-
         $result = $this->getResponseBody($response);
-
         if ($pager) {
             $page = $pager->getPage($result, $request, $response, $this, null, $query);
             return Arr::unwrap($page->getEntities(), 1);
         }
-
         return $result;
     }
 
@@ -452,16 +446,16 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @param mixed[]|null $query
      * @param mixed[]|object|false|null $data
-     * @return Generator<mixed>
+     * @return iterable<mixed>
      */
-    private function paginate(string $method, ?array $query, $data = false): Generator
+    private function paginate(string $method, ?array $query, $data = false): iterable
     {
         if ($this->Pager === null) {
             throw new LogicException('No pager');
         }
-
+        $pager = $this->Pager;
         $request = $this->createRequest($method, $query, $data);
-        $request = $this->Pager->getFirstRequest($request, $this, $query);
+        $request = $pager->getFirstRequest($request, $this, $query);
         $prev = null;
         do {
             if ($request instanceof CurlerPageRequestInterface) {
@@ -469,21 +463,14 @@ class Curler implements CurlerInterface, Buildable
                 $request = $request->getRequest();
             }
             $response = $this->doSendRequest($request);
-            $page = $this->Pager->getPage(
-                $this->getResponseBody($response),
-                $request,
-                $response,
-                $this,
-                $prev,
-                $query,
-            );
-            // Use `yield` instead of `yield from` so each entity gets a
-            // unique key
+            $result = $this->getResponseBody($response);
+            $page = $pager->getPage($result, $request, $response, $this, $prev, $query);
+            // Use `yield` instead of `yield from` so entities get unique keys
             foreach ($page->getEntities() as $entity) {
                 yield $entity;
             }
             if (!$page->hasNextRequest()) {
-                break;
+                return;
             }
             $request = $page->getNextRequest();
             $prev = $page;
@@ -545,9 +532,22 @@ class Curler implements CurlerInterface, Buildable
     public function flushCookies()
     {
         if ($this->CookiesCacheKey !== null) {
-            $this->getCache()->delete($this->CookiesCacheKey);
+            $this->getCacheInstance()->delete($this->CookiesCacheKey);
         }
         return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function replaceQuery($value, array $query)
+    {
+        return HttpUtil::replaceQuery(
+            $value,
+            $query,
+            $this->FormDataFlags,
+            $this->DateFormatter,
+        );
     }
 
     // --
@@ -558,23 +558,24 @@ class Curler implements CurlerInterface, Buildable
     public function getHttpHeaders(): HttpHeadersInterface
     {
         $headers = $this->Headers;
-
         if ($this->AccessToken !== null) {
             $headers = $headers->authorize($this->AccessToken, $this->AccessTokenHeaderName);
         }
-
         if ($this->MediaType !== null) {
             $headers = $headers->set(HttpHeader::CONTENT_TYPE, $this->MediaType);
         }
-
         if ($this->ExpectJson) {
             $headers = $headers->set(HttpHeader::ACCEPT, MimeType::JSON);
         }
-
-        if ($this->UserAgent !== '') {
-            $headers = $headers->set(HttpHeader::USER_AGENT, $this->UserAgent ??= $this->getDefaultUserAgent());
+        if ($this->UserAgent !== '' && (
+            $this->UserAgent !== null
+            || !$headers->hasHeader(HttpHeader::USER_AGENT)
+        )) {
+            $headers = $headers->set(
+                HttpHeader::USER_AGENT,
+                $this->UserAgent ?? $this->getDefaultUserAgent(),
+            );
         }
-
         return $headers;
     }
 
@@ -583,7 +584,11 @@ class Curler implements CurlerInterface, Buildable
      */
     public function getPublicHttpHeaders(): HttpHeadersInterface
     {
-        return $this->getHttpHeaders()->exceptIn($this->SensitiveHeaders);
+        $sensitive = $this->SensitiveHeaders;
+        if ($this->AccessToken !== null) {
+            $sensitive[Str::lower($this->AccessTokenHeaderName)] = true;
+        }
+        return $this->getHttpHeaders()->exceptIn($sensitive);
     }
 
     /**
@@ -613,9 +618,17 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
+    public function hasUserAgent(): bool
+    {
+        return $this->UserAgent !== null;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getUserAgent(): string
     {
-        return $this->UserAgent ??= $this->getDefaultUserAgent();
+        return $this->UserAgent ?? $this->getDefaultUserAgent();
     }
 
     /**
@@ -669,9 +682,9 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getCacheStore(): ?CacheInterface
+    public function getCache(): ?CacheInterface
     {
-        return $this->CacheStore;
+        return $this->Cache;
     }
 
     /**
@@ -762,19 +775,6 @@ class Curler implements CurlerInterface, Buildable
         return $this->ThrowHttpErrors;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function replaceQuery($value, array $query)
-    {
-        return HttpUtil::replaceQuery(
-            $value,
-            $query,
-            $this->FormDataFlags,
-            $this->DateFormatter,
-        );
-    }
-
     // --
 
     /**
@@ -795,23 +795,27 @@ class Curler implements CurlerInterface, Buildable
         $curler = $this->withUri($request->getUri());
 
         $headers = HttpHeaders::from($request);
-        $currentHeaders = $this->getHttpHeaders();
-        if (Arr::same($headers->all(), $currentHeaders->all())) {
+        $_headers = $this->getHttpHeaders();
+        if (Arr::same($headers->all(), $_headers->all())) {
             return $curler;
         }
 
         if ($this->AccessToken !== null) {
-            $header = $this->AccessTokenHeaderName;
-            if ($headers->getHeader($header) !== $currentHeaders->getHeader($header)) {
+            $header = $headers->getHeader($this->AccessTokenHeaderName);
+            $_header = $_headers->getHeader($this->AccessTokenHeaderName);
+            if ($header !== $_header) {
                 $curler = $curler->withAccessToken(null);
             }
         }
 
-        $mediaType = $headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
-        $userAgent = $headers->getHeaderLine(HttpHeader::USER_AGENT);
-        $expectJson = $headers->getHeader(HttpHeader::ACCEPT) === [MimeType::JSON];
+        $mediaType = Arr::last($headers->getHeaderValues(HttpHeader::CONTENT_TYPE));
+        $userAgent = Arr::last($headers->getHeaderValues(HttpHeader::USER_AGENT));
+        $expectJson = Arr::lower($headers->getHeaderValues(HttpHeader::ACCEPT)) === [MimeType::JSON];
+        if ($userAgent !== null && $userAgent === $this->getDefaultUserAgent()) {
+            $userAgent = null;
+        }
         return $curler
-            ->withMediaType(count($mediaType) === 1 ? $mediaType[0] : null)
+            ->withMediaType($mediaType)
             ->withUserAgent($userAgent)
             ->withExpectJson($expectJson)
             ->with('Headers', $headers);
@@ -927,10 +931,10 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withoutMiddleware($middleware)
     {
-        $i = is_string($middleware) ? 1 : 0;
+        $index = is_string($middleware) ? 1 : 0;
         $values = $this->Middleware;
         foreach ($values as $key => $value) {
-            if ($middleware === $value[$i]) {
+            if ($middleware === $value[$index]) {
                 unset($values[$key]);
             }
         }
@@ -950,9 +954,9 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withCacheStore(?CacheInterface $store = null)
+    public function withCache(?CacheInterface $cache = null)
     {
-        return $this->with('CacheStore', $store);
+        return $this->with('Cache', $cache);
     }
 
     /**
@@ -992,8 +996,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withCacheKeyCallback(?callable $callback)
     {
-        // @phpstan-ignore salient.property.type
-        return $this->with('CacheKeyClosure', Get::closure($callback));
+        return $this->with('CacheKeyCallback', $callback);
     }
 
     /**
@@ -1071,8 +1074,7 @@ class Curler implements CurlerInterface, Buildable
         // response as an error condition. For example, response status codes in
         // the 400 and 500 range MUST NOT cause an exception and MUST be
         // returned to the Calling Library as normal."
-        $curler = $this->WithoutThrowHttpErrors ??=
-            $this->withThrowHttpErrors(false);
+        $curler = $this->WithoutThrowHttpErrors ??= $this->withThrowHttpErrors(false);
         try {
             try {
                 return $curler->doSendRequest($request);
@@ -1099,7 +1101,6 @@ class Curler implements CurlerInterface, Buildable
     {
         $this->LastRequest = null;
         $this->LastResponse = null;
-
         return $this->Middleware
             ? ($this->Closure ??= $this->getClosure())($request)
             : $this->getResponse($request);
@@ -1112,7 +1113,6 @@ class Curler implements CurlerInterface, Buildable
     {
         $closure = fn(RequestInterface $request): HttpResponseInterface =>
             $this->getResponse($request);
-
         foreach (array_reverse($this->Middleware) as [$middleware]) {
             $closure = $middleware instanceof CurlerMiddlewareInterface
                 ? fn(RequestInterface $request): HttpResponseInterface =>
@@ -1123,7 +1123,6 @@ class Curler implements CurlerInterface, Buildable
                     : fn(RequestInterface $request): HttpResponseInterface =>
                         $this->handleResponse($middleware($request, $closure, $this), $request));
         }
-
         return $closure;
     }
 
@@ -1250,8 +1249,8 @@ class Curler implements CurlerInterface, Buildable
                         Method::POST => $this->CachePostResponses,
                     ][$method] ?? false)
                 ) {
-                    $cacheKey = $this->CacheKeyClosure
-                        ? (array) ($this->CacheKeyClosure)($request, $this)
+                    $cacheKey = $this->CacheKeyCallback !== null
+                        ? (array) ($this->CacheKeyCallback)($request, $this)
                         : $headers->exceptIn($this->getUnstableHeaders())->getLines('%s:%s');
 
                     if ($size !== 0 || $method === Method::POST) {
@@ -1276,7 +1275,7 @@ class Curler implements CurlerInterface, Buildable
             if (
                 $cacheKey !== false
                 && !$this->RefreshCache
-                && ($last = $this->getCache()->getArray($cacheKey)) !== null
+                && ($last = $this->getCacheInstance()->getArray($cacheKey)) !== null
             ) {
                 /** @var array{code:int,body:string,headers:array<array{name:string,value:string}>|HttpHeaders,reason:string|null,version:string}|array{int,string,HttpHeaders,string} $last */
                 $code = $last['code'] ?? $last[0] ?? 200;
@@ -1319,7 +1318,7 @@ class Curler implements CurlerInterface, Buildable
                         // but cookie handling is still enabled"
                         curl_setopt(self::$Handle, \CURLOPT_COOKIEFILE, '');
                         /** @var non-empty-string[] */
-                        $cookies = $this->getCache()->getArray($this->CookiesCacheKey);
+                        $cookies = $this->getCacheInstance()->getArray($this->CookiesCacheKey);
                         if ($cookies) {
                             foreach ($cookies as $cookie) {
                                 curl_setopt(self::$Handle, \CURLOPT_COOKIELIST, $cookie);
@@ -1356,7 +1355,7 @@ class Curler implements CurlerInterface, Buildable
                 Event::dispatch(new CurlResponseEvent($this, self::$Handle, $request, $response));
 
                 if ($this->CookiesCacheKey !== null) {
-                    $this->getCache()->set(
+                    $this->getCacheInstance()->set(
                         $this->CookiesCacheKey,
                         curl_getinfo(self::$Handle, \CURLINFO_COOKIELIST)
                     );
@@ -1366,7 +1365,7 @@ class Curler implements CurlerInterface, Buildable
                     $ttl = $this->CacheLifetime === 0
                         ? null
                         : $this->CacheLifetime;
-                    $this->getCache()->set($cacheKey, [
+                    $this->getCacheInstance()->set($cacheKey, [
                         'code' => $code,
                         'body' => (string) $bodyIn,
                         'headers' => $headersIn->jsonSerialize(),
@@ -1440,7 +1439,7 @@ class Curler implements CurlerInterface, Buildable
             }
 
             $after = max(1, $after);
-            Console::debug(Inflect::format($after, 'Sleeping for {{#}} {{#:second}}'));
+            $this->debug(Inflect::format($after, 'Sleeping for {{#}} {{#:second}}'));
             sleep($after);
             $retrying = true;
         } while (true);
@@ -1475,7 +1474,6 @@ class Curler implements CurlerInterface, Buildable
                 $request = $request->withoutHeader(HttpHeader::HOST);
             }
         }
-
         return $request;
     }
 
@@ -1493,10 +1491,9 @@ class Curler implements CurlerInterface, Buildable
         }
         $headers = $this->getHttpHeaders();
         $request = new HttpRequest($method, $uri, null, $headers);
-        if ($data !== false) {
-            return $this->applyData($request, $data);
-        }
-        return $request;
+        return $data !== false
+            ? $this->applyData($request, $data)
+            : $request;
     }
 
     /**
@@ -1506,7 +1503,7 @@ class Curler implements CurlerInterface, Buildable
     {
         if ($data === null) {
             if ($this->PostJson) {
-                Console::debug(sprintf(
+                $this->debug(sprintf(
                     'JSON message bodies cannot be empty; falling back to %s',
                     MimeType::FORM,
                 ));
@@ -1521,7 +1518,7 @@ class Curler implements CurlerInterface, Buildable
                 $body = HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter, true);
                 $mediaType = MimeType::JSON;
             } catch (StreamEncapsulationException $ex) {
-                Console::debug(sprintf(
+                $this->debug(sprintf(
                     '%s; falling back to %s',
                     $ex->getMessage(),
                     MimeType::FORM_MULTIPART,
@@ -1607,9 +1604,9 @@ class Curler implements CurlerInterface, Buildable
         return Arr::implode(':', [self::class, 'cookies', $cacheKey], '');
     }
 
-    private function getCache(): CacheInterface
+    private function getCacheInstance(): CacheInterface
     {
-        return $this->CacheStore ?? Cache::getInstance();
+        return $this->Cache ?? Cache::getInstance();
     }
 
     private function getDefaultUserAgent(): string
@@ -1622,8 +1619,7 @@ class Curler implements CurlerInterface, Buildable
      */
     private function getUnstableHeaders(): array
     {
-        return self::$UnstableHeaders ??=
-            array_fill_keys(HttpHeaderGroup::UNSTABLE, true);
+        return self::$UnstableHeaders ??= array_fill_keys(HttpHeaderGroup::UNSTABLE, true);
     }
 
     /**
@@ -1637,13 +1633,18 @@ class Curler implements CurlerInterface, Buildable
         ) {
             return [];
         }
-
         foreach ($info as &$value) {
             if (is_string($value)) {
                 $value = trim($value);
             }
         }
-
         return $info;
+    }
+
+    private function debug(string $msg1): void
+    {
+        if (Console::isLoaded()) {
+            Console::debug($msg1);
+        }
     }
 }

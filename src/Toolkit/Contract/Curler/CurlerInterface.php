@@ -376,15 +376,26 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function withMediaType(?string $type);
 
     /**
-     * Get the current user agent string
+     * Check if the instance has a custom user agent string
+     */
+    public function hasUserAgent(): bool;
+
+    /**
+     * Get the user agent string applied to request headers
+     *
+     * Returns the default user agent string if the instance doesn't have a
+     * custom one.
      */
     public function getUserAgent(): string;
 
     /**
      * Get an instance with the given user agent string
      *
-     * If `$userAgent` is `null`, the default user agent string is applied.
-     *
+     * @param string|null $userAgent - `null` (default): apply the default user
+     * agent string to requests with no `User-Agent` header
+     * - empty string: do not apply `User-Agent` headers to requests
+     * - non-empty string: apply the given user agent string to requests,
+     *   replacing any existing `User-Agent` headers
      * @return static
      */
     public function withUserAgent(?string $userAgent);
@@ -498,19 +509,19 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function withPager(?CurlerPagerInterface $pager, bool $alwaysPaginate = false);
 
     /**
-     * Get the endpoint's cache store
+     * Get the endpoint's cache
      */
-    public function getCacheStore(): ?CacheInterface;
+    public function getCache(): ?CacheInterface;
 
     /**
-     * Get an instance with the given cache store
+     * Get an instance with the given cache
      *
-     * If no `$store` is given, cookies and responses are cached in the global
+     * If no `$cache` is given, cookies and responses are stored in the global
      * cache as needed.
      *
      * @return static
      */
-    public function withCacheStore(?CacheInterface $store = null);
+    public function withCache(?CacheInterface $cache = null);
 
     /**
      * Check if the instance handles cookies

@@ -313,7 +313,7 @@ EOF,
 
         $curler = $this
             ->getCurler('/foo')
-            ->withCacheStore($cache)
+            ->withCache($cache)
             ->withResponseCache();
         $this->assertSame(self::OUTPUT, $curler->get(self::QUERY));
         $this->assertSameHttpMessage(
@@ -400,7 +400,7 @@ EOF,
         $output = [];
         $curler = $this
             ->getCurler()
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->assertCallbackThrowsException(
@@ -444,7 +444,7 @@ EOF;
         $curler = $this
             ->getCurler()
             ->withThrowHttpErrors(false)
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->assertSame('502 bad gateway', $curler->get());
@@ -489,7 +489,7 @@ EOF;
             ->getCurler()
             ->withFollowRedirects()
             ->withMaxRedirects(3)
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->ListenerId = Event::getInstance()->listen(
@@ -548,7 +548,7 @@ EOF,
             ->getCurler()
             ->withFollowRedirects()
             ->withMaxRedirects(3)
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->ListenerId = Event::getInstance()->listen(
