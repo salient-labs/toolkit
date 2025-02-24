@@ -5,6 +5,7 @@ namespace Salient\Contract\Http;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Stringable;
 
 /**
@@ -171,7 +172,7 @@ interface HttpHeadersInterface extends
     /**
      * Get the only value of a header after splitting any comma-separated values
      *
-     * An exception is thrown if the header has more than one value.
+     * @throws InvalidHeaderException if the header has more than one value.
      */
     public function getOnlyHeaderValue(string $name, bool $orSame = false): string;
 
