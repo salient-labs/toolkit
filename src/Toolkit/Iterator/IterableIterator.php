@@ -5,12 +5,11 @@ namespace Salient\Iterator;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Iterator\Concern\FluentIteratorTrait;
 use ArrayIterator;
-use Generator;
 use IteratorIterator;
 use Traversable;
 
 /**
- * Iterates over an array or Traversable
+ * Iterates over an iterable
  *
  * @api
  *
@@ -26,15 +25,15 @@ class IterableIterator extends IteratorIterator implements FluentIteratorInterfa
     use FluentIteratorTrait;
 
     /**
+     * @api
+     *
      * @param iterable<TKey,TValue> $iterable
      */
-    public function __construct(iterable $iterable)
+    final public function __construct(iterable $iterable)
     {
-        if (is_array($iterable)) {
-            $iterable = new ArrayIterator($iterable);
-        }
-
-        parent::__construct($iterable);
+        parent::__construct(is_array($iterable)
+            ? new ArrayIterator($iterable)
+            : $iterable);
     }
 
     /**
@@ -42,35 +41,36 @@ class IterableIterator extends IteratorIterator implements FluentIteratorInterfa
      * @template T1
      *
      * @param iterable<T0,T1> $iterable
-     * @return self<T0,T1>
+     * @return static<T0,T1>
      */
     public static function from(iterable $iterable): self
     {
-        if ($iterable instanceof self) {
-            return $iterable;
-        }
-
-        return new self($iterable);
+        // @phpstan-ignore return.type
+        return $iterable instanceof static
+            ? $iterable
+            : new static($iterable);
     }
 
     /**
      * @template T
      *
      * @param iterable<T> $iterable
-     * @return self<int,T>
+     * @return static<int,T>
      */
     public static function fromValues(iterable $iterable): self
     {
-        return new self(self::yieldValues($iterable));
+        return new static(is_array($iterable)
+            ? array_values($iterable)
+            : self::generateValues($iterable));
     }
 
     /**
      * @template T
      *
      * @param iterable<T> $iterable
-     * @return Generator<int,T>
+     * @return iterable<int,T>
      */
-    private static function yieldValues(iterable $iterable): Generator
+    private static function generateValues(iterable $iterable): iterable
     {
         foreach ($iterable as $value) {
             yield $value;

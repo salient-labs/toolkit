@@ -3,74 +3,55 @@
 namespace Salient\Iterator;
 
 use Iterator;
-use LogicException;
+use OutOfRangeException;
 use ReturnTypeWillChange;
-use Traversable;
 
 /**
- * Iterates over the properties of an object or the elements of an array
- *
  * @api
  *
  * @implements Iterator<array-key,mixed>
  */
 class GraphIterator implements Iterator
 {
-    /** @var object|mixed[] */
-    protected $Graph;
-    /** @var array<array-key> */
-    protected array $Keys = [];
-    protected bool $IsObject = true;
+    protected object $Object;
+    /** @var mixed[] */
+    protected array $Array;
+    protected bool $IsObject;
+    /** @var array-key[] */
+    protected array $Keys;
 
     /**
-     * @param object|mixed[] $graph
+     * @api
+     *
+     * @param mixed[]|object $value
      */
-    public function __construct($graph)
+    public function __construct(&$value)
     {
-        $this->doConstruct($graph);
-    }
-
-    /**
-     * @param object|mixed[] $graph
-     */
-    protected function doConstruct(&$graph): void
-    {
-        if (is_array($graph)) {
-            $this->Graph = &$graph;
-            $this->Keys = array_keys($graph);
+        if (is_object($value)) {
+            $this->Object = $value;
+            $this->IsObject = true;
+        } else {
+            $this->Array = &$value;
             $this->IsObject = false;
-            return;
-        }
-
-        if ($graph instanceof Traversable) {
-            throw new LogicException('Traversable objects are not supported');
-        }
-
-        $this->Graph = $graph;
-        // @phpstan-ignore foreach.nonIterable
-        foreach ($graph as $key => $value) {
-            $this->Keys[] = $key;
         }
     }
 
     /**
-     * @return mixed|false
+     * @return mixed
      * @disregard P1038
      */
     #[ReturnTypeWillChange]
     public function current()
     {
-        $key = current($this->Keys);
-        if ($key === false) {
-            // @codeCoverageIgnoreStart
-            return false;
-            // @codeCoverageIgnoreEnd
+        if (
+            !isset($this->Keys)
+            || ($key = current($this->Keys)) === false
+        ) {
+            throw new OutOfRangeException('Invalid position');
         }
-
         return $this->IsObject
-            ? $this->Graph->{$key}
-            // @phpstan-ignore offsetAccess.nonOffsetAccessible
-            : $this->Graph[$key];
+            ? $this->Object->{$key}
+            : $this->Array[$key];
     }
 
     /**
@@ -80,13 +61,10 @@ class GraphIterator implements Iterator
     #[ReturnTypeWillChange]
     public function key()
     {
-        $key = current($this->Keys);
-        if ($key === false) {
-            // @codeCoverageIgnoreStart
-            return null;
-            // @codeCoverageIgnoreEnd
-        }
-        return $key;
+        return !isset($this->Keys)
+            || ($key = current($this->Keys)) === false
+                ? null
+                : $key;
     }
 
     /**
@@ -94,7 +72,9 @@ class GraphIterator implements Iterator
      */
     public function next(): void
     {
-        next($this->Keys);
+        if (isset($this->Keys)) {
+            next($this->Keys);
+        }
     }
 
     /**
@@ -102,6 +82,9 @@ class GraphIterator implements Iterator
      */
     public function rewind(): void
     {
+        $this->Keys = $this->IsObject
+            ? array_keys(get_object_vars($this->Object))
+            : array_keys($this->Array);
         reset($this->Keys);
     }
 
@@ -110,6 +93,7 @@ class GraphIterator implements Iterator
      */
     public function valid(): bool
     {
-        return current($this->Keys) !== false;
+        return isset($this->Keys)
+            && current($this->Keys) !== false;
     }
 }

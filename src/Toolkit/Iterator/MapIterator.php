@@ -2,48 +2,53 @@
 
 namespace Salient\Iterator;
 
-use Salient\Utility\Get;
-use Closure;
 use IteratorIterator;
 use ReturnTypeWillChange;
 use Traversable;
 
 /**
- * Iterates over an iterator, applying a callback to values as they are returned
+ * Iterates over an iterator, applying a callback to each value returned
  *
  * @api
  *
  * @template TKey
- * @template TInput
- * @template TOutput
+ * @template TValue
+ * @template TIterator of Traversable<TKey,TValue>
+ * @template TReturn of TValue
  *
- * @extends IteratorIterator<TKey,TOutput,Traversable<TKey,TInput>>
+ * @extends IteratorIterator<TKey,TValue,TIterator>
  */
 class MapIterator extends IteratorIterator
 {
-    /** @var Closure(TInput, TKey, Traversable<TKey,TInput>): TOutput */
-    private Closure $Callback;
+    /** @var TIterator */
+    private Traversable $Iterator;
+    /** @var callable(TValue, TKey, TIterator): TReturn */
+    private $Callback;
 
     /**
-     * @param Traversable<TKey,TInput> $iterator
-     * @param callable(TInput, TKey, Traversable<TKey,TInput>): TOutput $callback
+     * @api
+     *
+     * @param TIterator $iterator
+     * @param callable(TValue, TKey, TIterator): TReturn $callback
      */
     public function __construct(Traversable $iterator, callable $callback)
     {
-        $this->Callback = Get::closure($callback);
-
+        $this->Iterator = $iterator;
+        $this->Callback = $callback;
         parent::__construct($iterator);
     }
 
     /**
-     * @return TOutput
+     * @return TReturn
      * @disregard P1038
      */
     #[ReturnTypeWillChange]
     public function current()
     {
-        /** @var TInput */
-        $current = parent::current();
-        return ($this->Callback)($current, $this->key(), $this);
+        return ($this->Callback)(
+            parent::current(),
+            $this->key(),
+            $this->Iterator,
+        );
     }
 }
