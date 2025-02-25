@@ -294,12 +294,12 @@ final class RecursiveFilesystemIteratorTest extends TestCase
     }
 
     /**
-     * @dataProvider nextWithValueProvider
+     * @dataProvider getFirstWithProvider
      *
      * @param string|bool|null $expected
      * @param mixed $value
      */
-    public function testNextWithValue(
+    public function testGetFirstWith(
         $expected,
         string $dir,
         string $key,
@@ -314,7 +314,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
             (new RecursiveFilesystemIterator())
                 ->in($dir)
                 ->dirs()
-                ->nextWithValue($key, $value, $strict);
+                ->getFirstWith($key, $value, $strict);
 
         if ($file instanceof SplFileInfo) {
             $file = (string) $file;
@@ -326,7 +326,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
     /**
      * @return array<array{string|bool|null,string,string,mixed,4?:bool}>
      */
-    public static function nextWithValueProvider(): array
+    public static function getFirstWithProvider(): array
     {
         $dir = self::getFixturesPath(__CLASS__);
         return [

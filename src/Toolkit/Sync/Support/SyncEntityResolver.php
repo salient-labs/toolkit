@@ -63,6 +63,6 @@ final class SyncEntityResolver implements SyncEntityResolverInterface
         return $this
             ->EntityProvider
             ->getList(...$args)
-            ->nextWithValue($this->NameProperty, $name, true);
+            ->getFirstWith($this->NameProperty, $name, true);
     }
 }

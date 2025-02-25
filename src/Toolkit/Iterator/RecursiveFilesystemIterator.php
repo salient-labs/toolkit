@@ -439,7 +439,7 @@ class RecursiveFilesystemIterator implements
     /**
      * @inheritDoc
      */
-    public function nextWithValue($key, $value, bool $strict = false)
+    public function getFirstWith($key, $value, bool $strict = false)
     {
         if (!is_string($key)) {
             return null;

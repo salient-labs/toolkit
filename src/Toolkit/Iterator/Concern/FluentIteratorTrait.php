@@ -5,10 +5,6 @@ namespace Salient\Iterator\Concern;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 
 /**
- * Implements FluentIteratorInterface
- *
- * @see FluentIteratorInterface
- *
  * @api
  *
  * @template TKey of array-key
@@ -38,25 +34,9 @@ trait FluentIteratorTrait
     /**
      * @inheritDoc
      */
-    public function forEach(callable $callback)
+    public function getFirstWith($key, $value, bool $strict = false)
     {
-        foreach ($this as $key => $value) {
-            $callback($value, $key);
-        }
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function nextWithValue($key, $value, bool $strict = false)
-    {
-        $found = null;
         foreach ($this as $current) {
-            // Move forward-only iterators to the next element
-            if ($found) {
-                break;
-            }
             if (is_array($current)) {
                 if (array_key_exists($key, $current)) {
                     $_value = $current[$key];
@@ -64,19 +44,22 @@ trait FluentIteratorTrait
                     continue;
                 }
             } elseif (is_object($current)) {
-                $_value = $current->$key;
+                if (property_exists($current, (string) $key)) {
+                    $_value = $current->{$key};
+                } else {
+                    continue;
+                }
             } else {
                 continue;
             }
             if ($strict) {
                 if ($_value === $value) {
-                    $found = $current;
+                    return $current;
                 }
             } elseif ($_value == $value) {
-                $found = $current;
+                return $current;
             }
         }
-        // @phpstan-ignore return.type
-        return $found;
+        return null;
     }
 }

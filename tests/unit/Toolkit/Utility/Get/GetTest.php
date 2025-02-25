@@ -414,7 +414,7 @@ final class GetTest extends TestCase
             'Arrayable' => [
                 4,
                 new class implements Arrayable {
-                    public function toArray(): array
+                    public function toArray(bool $preserveKeys = true): array
                     {
                         return ['i', 'j', 'k', 'l'];
                     }

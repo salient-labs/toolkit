@@ -433,7 +433,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
                 function (SyncContextInterface $ctx, $id, ...$args) use ($closure) {
                     $entity = $this
                         ->getFluentIterator($closure($ctx, ...$args))
-                        ->nextWithValue('Id', $id);
+                        ->getFirstWith('Id', $id);
                     if ($entity === null) {
                         throw new SyncEntityNotFoundException($this->Provider, $this->Entity, $id);
                     }

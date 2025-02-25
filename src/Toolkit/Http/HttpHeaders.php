@@ -652,9 +652,11 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function toArray(bool $preserveKeys = true): array
     {
-        return $this->Items;
+        return $preserveKeys
+            ? $this->Items
+            : array_values($this->Items);
     }
 
     /**

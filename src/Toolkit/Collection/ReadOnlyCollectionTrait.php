@@ -179,12 +179,17 @@ trait ReadOnlyCollectionTrait
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function toArray(bool $preserveKeys = true): array
     {
         foreach ($this->Items as $key => $value) {
-            $array[$key] = $value instanceof Arrayable
-                ? $value->toArray()
-                : $value;
+            if ($value instanceof Arrayable) {
+                $value = $value->toArray($preserveKeys);
+            }
+            if ($preserveKeys) {
+                $array[$key] = $value;
+            } else {
+                $array[] = $value;
+            }
         }
         return $array ?? [];
     }
