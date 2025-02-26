@@ -198,6 +198,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
         if ($dirs) {
             $dirs = array_values($dirs);
             $finder = File::find()
+                ->files()
                 ->in(...$dirs)
                 ->include('/\.php$/')
                 ->exclude($this->Exclude);

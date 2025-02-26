@@ -6,6 +6,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
 use Salient\Iterator\Concern\FluentIteratorTrait;
 use Salient\Utility\Exception\FilesystemErrorException;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use AppendIterator;
 use CallbackFilterIterator;
@@ -22,7 +24,9 @@ use SplFileInfo;
 use Traversable;
 
 /**
- * Iterates over files and directories
+ * Iterates over filesystem entries
+ *
+ * @api
  *
  * @implements IteratorAggregate<string,SplFileInfo>
  * @implements FluentIteratorInterface<string,SplFileInfo>
@@ -30,220 +34,193 @@ use Traversable;
 class RecursiveFilesystemIterator implements
     IteratorAggregate,
     FluentIteratorInterface,
-    Immutable,
-    Countable
+    Countable,
+    Immutable
 {
     /** @use FluentIteratorTrait<string,SplFileInfo> */
     use FluentIteratorTrait;
 
-    private bool $GetFiles = true;
-    private bool $GetDirs = false;
-    private bool $DirsFirst = true;
-    private bool $Recurse = true;
-    private bool $MatchRelative = false;
     /** @var string[] */
-    private array $Dirs = [];
-    /** @var array<string|callable(SplFileInfo, string, FilesystemIterator): bool> */
-    private array $Exclude = [];
-    /** @var array<string|callable(SplFileInfo, string, FilesystemIterator, RecursiveIteratorIterator<RecursiveDirectoryIterator|RecursiveCallbackFilterIterator<string,SplFileInfo,RecursiveDirectoryIterator>>|null=): bool> */
-    private array $Include = [];
+    private array $Directories = [];
+    private bool $ReturnFiles = true;
+    private bool $ReturnDirectories = true;
+    private bool $ReturnDirectoriesFirst = true;
+    private bool $Recurse = true;
+    /** @var array<callable(SplFileInfo $file, string $path, int $depth): bool> */
+    private array $ExcludeCallback = [];
+    /** @var string[] */
+    private array $ExcludeRegex = [];
+    private bool $Exclude = false;
+    /** @var array<callable(SplFileInfo $file, string $path, int $depth): bool> */
+    private array $IncludeCallback = [];
+    /** @var string[] */
+    private array $IncludeRegex = [];
+    private bool $Include = false;
+    private bool $Relative = false;
 
     /**
-     * Search in one or more directories
+     * Get an instance that iterates over entries in the given directories
      *
-     * @return $this
+     * @return static
      */
-    public function in(string ...$dirs)
+    public function in(string ...$directory)
     {
-        if (!$dirs) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        array_push($clone->Dirs, ...$dirs);
-        return $clone;
+        return $this->with('Directories', Arr::push($this->Directories, ...$directory));
     }
 
     /**
-     * Find files?
+     * Get an instance that only returns files, not directories
      *
-     * Files are returned by default.
+     * The default behaviour is to return files and directories.
      *
-     * @return $this
+     * @return static
      */
-    public function files(bool $value = true)
+    public function files()
     {
-        if ($this->GetFiles === $value) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        $clone->GetFiles = $value;
-        return $clone;
+        return $this->with('ReturnFiles', true)->with('ReturnDirectories', false);
     }
 
     /**
-     * Do not find directories, only files
+     * Get an instance that only returns directories, not files
      *
-     * This is the default.
+     * The default behaviour is to return files and directories.
      *
-     * @return $this
+     * @return static
      */
-    public function noDirs()
+    public function directories()
     {
-        return $this->dirs(false)->files();
+        return $this->with('ReturnFiles', false)->with('ReturnDirectories', true);
     }
 
     /**
-     * Find directories?
+     * Get an instance that returns directories before their children
      *
-     * Directories are not returned by default.
+     * This is the default behaviour.
      *
-     * @return $this
+     * @return static
      */
-    public function dirs(bool $value = true)
+    public function directoriesFirst()
     {
-        if ($this->GetDirs === $value) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        $clone->GetDirs = $value;
-        return $clone;
+        return $this->with('ReturnDirectoriesFirst', true);
     }
 
     /**
-     * Do not find files, only directories
+     * Get an instance that returns directories after their children
      *
-     * @return $this
+     * The default behaviour is to return directories before their children.
+     *
+     * @return static
      */
-    public function noFiles()
+    public function directoriesLast()
     {
-        return $this->files(false)->dirs();
+        return $this->with('ReturnDirectoriesFirst', false);
     }
 
     /**
-     * Return directories before their children?
+     * Get an instance that recurses into directories
      *
-     * Directories are returned before their children by default.
+     * This is the default behaviour.
      *
-     * Ignored unless directories are returned.
-     *
-     * @return $this
+     * @return static
      */
-    public function dirsFirst(bool $value = true)
+    public function recurse()
     {
-        if ($this->DirsFirst === $value) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        $clone->DirsFirst = $value;
-        return $clone;
+        return $this->with('Recurse', true);
     }
 
     /**
-     * Return directories after their children
+     * Get an instance that does not recurse into directories
      *
-     * Ignored unless directories are returned.
+     * The default behaviour is to recurse into directories.
      *
-     * @return $this
-     */
-    public function dirsLast()
-    {
-        return $this->dirsFirst(false);
-    }
-
-    /**
-     * Recurse into directories?
-     *
-     * Recursion into directories is enabled by default.
-     *
-     * @return $this
-     */
-    public function recurse(bool $value = true)
-    {
-        if ($this->Recurse === $value) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        $clone->Recurse = $value;
-        return $clone;
-    }
-
-    /**
-     * Do not recurse into directories
-     *
-     * @return $this
+     * @return static
      */
     public function doNotRecurse()
     {
-        return $this->recurse(false);
+        return $this->with('Recurse', false);
     }
 
     /**
-     * Exclude files that match a regular expression or satisfy a callback
+     * Get an instance that does not return entries that match a regular
+     * expression or satisfy a callback
      *
-     * @param string|callable(SplFileInfo, string, FilesystemIterator): bool $value
-     * @return $this
+     * Regular expressions are tested against:
+     *
+     * - pathname (all entries)
+     * - pathname with trailing `/` (directory entries)
+     * - pathname with leading `/` (all entries if pathname is relative)
+     * - pathname with leading and trailing `/` (directory entries if pathname
+     *   is relative)
+     *
+     * Pathnames are relative after calling {@see relative()}.
+     *
+     * @param string|callable(SplFileInfo $file, string $path, int $depth): bool $value
+     * @return static
      */
     public function exclude($value)
     {
-        $this->Exclude[] = $value;
-        return $this;
+        return (is_callable($value)
+                ? $this->with('ExcludeCallback', Arr::push($this->ExcludeCallback, $value))
+                : $this->with('ExcludeRegex', Arr::push($this->ExcludeRegex, $value)))
+            ->with('Exclude', true);
     }
 
     /**
-     * Include files that match a regular expression or satisfy a callback
+     * Get an instance that only returns entries that match a regular expression
+     * or satisfy a callback
      *
-     * If no regular expressions or callbacks are passed to
-     * {@see RecursiveFilesystemIterator::include()}, all files are included.
+     * The default behaviour is to return all entries.
      *
-     * @param string|callable(SplFileInfo, string, FilesystemIterator, RecursiveIteratorIterator<RecursiveDirectoryIterator|RecursiveCallbackFilterIterator<string,SplFileInfo,RecursiveDirectoryIterator>>|null=): bool $value
-     * @return $this
+     * Regular expressions are tested against:
+     *
+     * - pathname (all entries)
+     * - pathname with trailing `/` (directory entries)
+     * - pathname with leading `/` (all entries if pathname is relative)
+     * - pathname with leading and trailing `/` (directory entries if pathname
+     *   is relative)
+     *
+     * Pathnames are relative after calling {@see relative()}.
+     *
+     * @param string|callable(SplFileInfo $file, string $path, int $depth): bool $value
+     * @return static
      */
     public function include($value)
     {
-        $this->Include[] = $value;
-        return $this;
+        return (is_callable($value)
+                ? $this->with('IncludeCallback', Arr::push($this->IncludeCallback, $value))
+                : $this->with('IncludeRegex', Arr::push($this->IncludeRegex, $value)))
+            ->with('Include', true);
     }
 
     /**
-     * Match files to exclude and include by their path relative to the
-     * directory being searched?
+     * Get an instance where entries to return are matched by pathname relative
+     * to the directory being iterated over
      *
-     * Full pathnames, starting with directory names passed to
-     * {@see RecursiveFilesystemIterator::in()}, are used for file matching
-     * purposes by default.
+     * The default behaviour is to use full pathnames, starting with directory
+     * names passed to {@see in()}, when matching entries.
      *
-     * @return $this
+     * @return static
      */
-    public function matchRelative(bool $value = true)
+    public function relative()
     {
-        if ($this->MatchRelative === $value) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        $clone->MatchRelative = $value;
-        return $clone;
+        return $this->with('Relative', true);
     }
 
     /**
-     * Do not match files to exclude and include by relative path
+     * Get an instance where entries to return are matched by full pathname,
+     * starting with the name of the directory being iterated over
      *
-     * @see RecursiveFilesystemIterator::matchRelative()
+     * This is the default behaviour.
      *
-     * @return $this
+     * @return static
      */
-    public function doNotMatchRelative()
+    public function notRelative()
     {
-        return $this->matchRelative(false);
+        return $this->with('Relative', false);
     }
 
     /**
-     * @inheritDoc
+     * Get the number of entries the instance would return
      */
     public function count(): int
     {
@@ -251,172 +228,93 @@ class RecursiveFilesystemIterator implements
     }
 
     /**
-     * @return Traversable<string,SplFileInfo>
+     * @internal
      */
     public function getIterator(): Traversable
     {
-        if (!$this->Dirs || (!$this->GetFiles && !$this->GetDirs)) {
+        if (!$this->Directories) {
             return new EmptyIterator();
         }
 
-        $flags =
-            FilesystemIterator::KEY_AS_PATHNAME
+        $flags = FilesystemIterator::KEY_AS_PATHNAME
             | FilesystemIterator::CURRENT_AS_FILEINFO
             | FilesystemIterator::SKIP_DOTS
             | FilesystemIterator::UNIX_PATHS;
 
-        $excludeFilter =
-            $this->Exclude
-                ? function (
-                    SplFileInfo $file,
-                    string $path,
-                    FilesystemIterator $iterator
-                ): bool {
-                    $path = $this->getPath($path, $iterator);
-
-                    foreach ($this->Exclude as $exclude) {
-                        if (is_callable($exclude)) {
-                            if ($exclude($file, $path, $iterator)) {
-                                return true;
-                            }
-                            continue;
-                        }
-                        if (
-                            Regex::match($exclude, $path)
-                            || ($this->MatchRelative
-                                && Regex::match($exclude, "/{$path}"))
-                        ) {
-                            return true;
-                        }
-                        if (
-                            $file->isDir()
-                            && (Regex::match($exclude, "{$path}/")
-                                || ($this->MatchRelative
-                                    && Regex::match($exclude, "/{$path}/")))
-                        ) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-                : null;
-
-        $includeFilter =
-            $this->Include
-                ? function (
-                    SplFileInfo $file,
-                    string $path,
-                    FilesystemIterator $iterator,
-                    ?RecursiveIteratorIterator $recursiveIterator = null
-                ): bool {
-                    $path = $this->getPath($path, $iterator);
-
-                    foreach ($this->Include as $include) {
-                        if (is_callable($include)) {
-                            if ($include($file, $path, $iterator, $recursiveIterator)) {
-                                return true;
-                            }
-                            continue;
-                        }
-                        if (
-                            Regex::match($include, $path)
-                            || ($this->MatchRelative
-                                && Regex::match($include, "/{$path}"))
-                        ) {
-                            return true;
-                        }
-                        if (
-                            $file->isDir()
-                            && (Regex::match($include, "$path/")
-                                || ($this->MatchRelative
-                                    && Regex::match($include, "/{$path}/")))
-                        ) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                }
-                : null;
-
-        foreach ($this->Dirs as $directory) {
+        foreach ($this->Directories as $directory) {
             if (!is_dir($directory)) {
-                throw new FilesystemErrorException(sprintf('Not a directory: %s', $directory));
+                throw new FilesystemErrorException(sprintf(
+                    'Not a directory: %s',
+                    $directory,
+                ));
             }
 
             if (!$this->Recurse) {
                 $iterator = new FilesystemIterator($directory, $flags);
 
-                if ($excludeFilter || $includeFilter) {
+                if ($this->Exclude || $this->Include) {
                     $iterator = new CallbackFilterIterator(
                         $iterator,
-                        fn(SplFileInfo $file, string $path, FilesystemIterator $iterator): bool =>
-                            (!$excludeFilter || !$excludeFilter($file, $path, $iterator))
-                            && (!$includeFilter || $includeFilter($file, $path, $iterator))
+                        ($this->Exclude && $this->Include)
+                            ? fn(SplFileInfo $file, string $path, FilesystemIterator $iterator) =>
+                                !$this->checkExclude($file, $path, $iterator)
+                                && $this->checkInclude($file, $path, $iterator)
+                            : ($this->Exclude
+                                ? fn(SplFileInfo $file, string $path, FilesystemIterator $iterator) =>
+                                    !$this->checkExclude($file, $path, $iterator)
+                                : fn(SplFileInfo $file, string $path, FilesystemIterator $iterator) =>
+                                    $this->checkInclude($file, $path, $iterator))
                     );
                 }
 
-                if (!$this->GetDirs) {
+                if (!$this->ReturnFiles || !$this->ReturnDirectories) {
                     $iterator = new CallbackFilterIterator(
                         $iterator,
-                        fn(SplFileInfo $file): bool => !$file->isDir(),
-                    );
-                }
-
-                if (!$this->GetFiles) {
-                    $iterator = new CallbackFilterIterator(
-                        $iterator,
-                        fn(SplFileInfo $file): bool => !$file->isFile(),
+                        !$this->ReturnFiles
+                            ? fn(SplFileInfo $file) => !$file->isFile()
+                            : fn(SplFileInfo $file) => !$file->isDir(),
                     );
                 }
 
                 /** @var Iterator<string,SplFileInfo> $iterator */
                 $iterators[] = $iterator;
-
                 continue;
             }
 
-            $mode =
-                $this->GetDirs
-                    ? ($this->DirsFirst
-                        ? RecursiveIteratorIterator::SELF_FIRST
-                        : RecursiveIteratorIterator::CHILD_FIRST)
-                    : RecursiveIteratorIterator::LEAVES_ONLY;
+            $mode = $this->ReturnDirectories
+                ? ($this->ReturnDirectoriesFirst
+                    ? RecursiveIteratorIterator::SELF_FIRST
+                    : RecursiveIteratorIterator::CHILD_FIRST)
+                : RecursiveIteratorIterator::LEAVES_ONLY;
 
             $iterator = new RecursiveDirectoryIterator($directory, $flags);
 
-            // Apply exclude filter early to prevent recursion into excluded
+            // Apply exclusions early to prevent recursion into excluded
             // directories
-            if ($excludeFilter) {
+            if ($this->Exclude) {
                 $iterator = new RecursiveCallbackFilterIterator(
                     $iterator,
-                    fn(SplFileInfo $file, string $path, RecursiveDirectoryIterator $iterator): bool =>
-                        !$excludeFilter($file, $path, $iterator)
+                    fn(SplFileInfo $file, string $path, RecursiveDirectoryIterator $iterator) =>
+                        !$this->checkExclude($file, $path, $iterator),
                 );
             }
 
             $iterator = new RecursiveIteratorIterator($iterator, $mode);
 
-            // Apply include filter after recursion to ensure every possible
-            // match is found
-            if ($includeFilter) {
+            // Apply inclusions after recursion to ensure every possible match
+            // is found
+            if ($this->Include) {
                 $iterator = new CallbackFilterIterator(
                     $iterator,
-                    function (SplFileInfo $file, string $path, RecursiveIteratorIterator $iterator) use ($includeFilter): bool {
-                        $recursiveIterator = $iterator;
-                        do {
-                            $iterator = $iterator->getInnerIterator();
-                        } while (!$iterator instanceof RecursiveDirectoryIterator);
-                        return $includeFilter($file, $path, $iterator, $recursiveIterator);
-                    }
+                    fn(SplFileInfo $file, string $path, RecursiveIteratorIterator $iterator) =>
+                        $this->checkInclude($file, $path, $iterator),
                 );
             }
 
-            if (!$this->GetFiles) {
+            if (!$this->ReturnFiles) {
                 $iterator = new CallbackFilterIterator(
                     $iterator,
-                    fn(SplFileInfo $file): bool => !$file->isFile(),
+                    fn(SplFileInfo $file) => !$file->isFile(),
                 );
             }
 
@@ -442,7 +340,7 @@ class RecursiveFilesystemIterator implements
     public function getFirstWith($key, $value, bool $strict = false)
     {
         if (!is_string($key)) {
-            return null;
+            throw new InvalidArgumentTypeException(1, 'key', 'string', $key);
         }
 
         $key = Regex::replace('/^(?:get|is)/i', '', $key);
@@ -472,16 +370,98 @@ class RecursiveFilesystemIterator implements
         return null;
     }
 
-    private function getPath(string $path, FilesystemIterator $iterator): string
+    private function checkExclude(SplFileInfo $file, string $path, FilesystemIterator $iterator): bool
     {
-        if (!$this->MatchRelative) {
-            return $path;
+        [$path, $depth] = $this->getCallbackArgs($path, $iterator);
+        foreach ($this->ExcludeCallback as $exclude) {
+            if ($exclude($file, $path, $depth)) {
+                return true;
+            }
         }
-
-        if ($iterator instanceof RecursiveDirectoryIterator) {
-            return $iterator->getSubPathname();
+        foreach ($this->ExcludeRegex as $exclude) {
+            if (
+                Regex::match($exclude, $path) || (
+                    $this->Relative
+                    && Regex::match($exclude, "/{$path}")
+                ) || (
+                    $file->isDir() && (
+                        Regex::match($exclude, "{$path}/") || (
+                            $this->Relative
+                            && Regex::match($exclude, "/{$path}/")
+                        )
+                    )
+                )
+            ) {
+                return true;
+            }
         }
+        return false;
+    }
 
-        return basename($path);
+    /**
+     * @param RecursiveIteratorIterator<RecursiveDirectoryIterator|RecursiveCallbackFilterIterator<string,SplFileInfo,RecursiveDirectoryIterator>>|FilesystemIterator $iterator
+     */
+    private function checkInclude(SplFileInfo $file, string $path, Iterator $iterator): bool
+    {
+        [$path, $depth] = $this->getCallbackArgs($path, $iterator);
+        foreach ($this->IncludeCallback as $include) {
+            if ($include($file, $path, $depth)) {
+                return true;
+            }
+        }
+        foreach ($this->IncludeRegex as $include) {
+            if (
+                Regex::match($include, $path) || (
+                    $this->Relative
+                    && Regex::match($include, "/{$path}")
+                ) || (
+                    $file->isDir() && (
+                        Regex::match($include, "{$path}/")
+                        || ($this->Relative
+                            && Regex::match($include, "/{$path}/"))
+                    )
+                )
+            ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param RecursiveIteratorIterator<RecursiveDirectoryIterator|RecursiveCallbackFilterIterator<string,SplFileInfo,RecursiveDirectoryIterator>>|FilesystemIterator $iterator
+     * @return array{string,int}
+     */
+    private function getCallbackArgs(string $path, Iterator $iterator): array
+    {
+        if ($iterator instanceof RecursiveIteratorIterator) {
+            $depth = $iterator->getDepth();
+            $iterator = $iterator->getInnerIterator();
+            if ($iterator instanceof RecursiveCallbackFilterIterator) {
+                $iterator = $iterator->getInnerIterator();
+            }
+        } else {
+            $depth = 0;
+        }
+        if ($this->Relative) {
+            $path = $iterator instanceof RecursiveDirectoryIterator
+                ? $iterator->getSubPathname()
+                : basename($path);
+        }
+        return [$path, $depth];
+    }
+
+    /**
+     * @param mixed $value
+     * @return static
+     */
+    private function with(string $property, $value)
+    {
+        if ($value === $this->$property) {
+            return $this;
+        }
+        $clone = clone $this;
+        $clone->$property = $value;
+        return $clone;
     }
 }

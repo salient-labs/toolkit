@@ -145,12 +145,6 @@ parameters:
 			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
 
 		-
-			message: '#^Cannot call method getDepth\(\) on RecursiveIteratorIterator\<RecursiveCallbackFilterIterator\<string, SplFileInfo, RecursiveDirectoryIterator\>\|RecursiveDirectoryIterator\>\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: tests/unit/Toolkit/Iterator/RecursiveFilesystemIteratorTest.php
-
-		-
 			message: '#^Parameter &\$actualCode @param\-out type of method Salient\\Tests\\Sli\\SliTestCase\:\:serializeTokens\(\) expects array\<array\{int, string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\>, non\-empty\-array\<array\{int, int\|non\-falsy\-string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\> given\.$#'
 			identifier: paramOut.type
 			count: 1

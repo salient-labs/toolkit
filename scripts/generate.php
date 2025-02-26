@@ -256,6 +256,7 @@ foreach ($data as $file => $uri) {
 
 foreach (
     File::find()
+        ->files()
         ->in($dir)
         ->include('%/phpstan-baseline.*\.neon$%')
         ->doNotRecurse() as $file

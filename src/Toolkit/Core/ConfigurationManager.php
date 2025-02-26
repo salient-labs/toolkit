@@ -40,6 +40,7 @@ final class ConfigurationManager implements ArrayAccess, Instantiable
     public function loadDirectory(string $directory): self
     {
         $files = File::find()
+            ->files()
             ->in($directory)
             ->include('/\.php$/')
             ->doNotRecurse();
