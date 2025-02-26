@@ -10,6 +10,90 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.76] - 2025-02-26
+
+### Added
+
+#### `Http`
+
+- Add and implement exception interfaces:
+  - `HttpException`
+  - `InvalidHeaderException`
+  - `StreamException`
+  - `StreamEncapsulationException`
+
+#### `Sli`
+
+- Add `--constructor` option to "generate builder" command
+
+### Changed
+
+- Rename methods across all `Http` and `Curler` classes:
+  - `getFirstHeaderLine()` -> `getFirstHeaderValue()`
+  - `getLastHeaderLine()` -> `getLastHeaderValue()`
+  - `getOneHeaderLine()` -> `getOnlyHeaderValue()`
+
+#### `Collection`
+
+- Extend `Traversable` instead of `IteratorAggregate` from `CollectionInterface` so inheritors can implement `Iterator`
+- Allow `CollectionInterface::map()` to return a collection of items of a different type
+- Return `static<TKey|int,TValue>` from `CollectionInterface` methods that add items without explicit keys
+
+#### `Core`
+
+- Add `$preserveKeys` parameter to `Arrayable::toArray()`
+
+#### `Curler`
+
+- In `Curler` (and `CurlerInterface`, if applicable):
+  - Simplify `__construct()` and include it in the API
+  - Don't replace user agent headers by default
+  - Add `hasUserAgent()` method
+  - In `getPublicHttpHeaders()`, always treat access token headers as sensitive
+  - Only call `Console::debug()` if the global console service is loaded
+  - Rename methods:
+    - `getCacheStore()` -> `getCache()`
+    - `withCacheStore()` -> `withCache()`
+- Rename event-related abstractions for consistency with exceptions:
+  - `CurlEventInterface` -> `CurlEvent`
+  - `CurlRequestEventInterface` -> `CurlRequestEvent`
+  - `CurlResponseEventInterface` -> `CurlResponseEvent`
+  - `CurlerEventInterface` -> `CurlerEvent`
+  - `ResponseCacheHitEventInterface` -> `ResponseCacheHitEvent`
+  - `AbstractCurlerEvent` -> `CurlerEvent`
+  - `AbstractCurlEvent` -> `CurlEvent`
+
+#### `Iterator`
+
+- Rename `FluentIteratorInterface::nextWithValue()` to `getFirstWith()`
+- In `FluentIteratorTrait::getFirstWith()`:
+  - Check properties exist before accessing them
+  - Do not move to the next element after finding a match
+- Rename `RecursiveFilesystemIterator` to `FileIterator` and refactor
+  - **Return files and directories by default** (previous behaviour was to return files, not directories)
+  - Remove optional parameters and adopt one callback signature
+  - Rename methods:
+    - **`noDirs()` -> `files()`** (the previous `files()` method has been removed)
+    - `noFiles()` -> `directories()`
+    - `matchRelative()` -> `relative()`
+    - `doNotMatchRelative()` -> `notRelative()`
+
+#### `Utility`
+
+- In `Get::array()` and `Get::list()`, prefer `iterator_to_array()` when value is both `Traversable` and `Arrayable`
+- In `Get::list()` and `Get::count()`, use `$preserveKeys = false` with `Arrayable` values instead of `array_values()`
+
+### Removed
+
+#### `Iterator`
+
+- **Remove `FileIterator` methods `dirs()` and `files()`**
+- Remove redundant `FluentIteratorInterface::forEach()` method
+- Remove unused `MutableIterator` interface
+- Remove unused `MutableGraphIterator` class
+- Remove unused `RecursiveMutableGraphIterator` class
+- Remove unnecessary `RecursiveGraphIteratorTrait`
+
 ## [v0.99.75] - 2025-02-22
 
 Achieved with the changes detailed below:
@@ -4649,6 +4733,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.76]: https://github.com/salient-labs/toolkit/compare/v0.99.75...v0.99.76
 [v0.99.75]: https://github.com/salient-labs/toolkit/compare/v0.99.74...v0.99.75
 [v0.99.74]: https://github.com/salient-labs/toolkit/compare/v0.99.73...v0.99.74
 [v0.99.73]: https://github.com/salient-labs/toolkit/compare/v0.99.72...v0.99.73
