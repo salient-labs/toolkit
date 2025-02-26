@@ -5,6 +5,8 @@ namespace Salient\Iterator;
 use RecursiveIterator;
 
 /**
+ * Iterates over nested arrays and objects
+ *
  * @api
  *
  * @implements RecursiveIterator<array-key,mixed>

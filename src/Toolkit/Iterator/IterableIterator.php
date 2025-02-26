@@ -3,7 +3,6 @@
 namespace Salient\Iterator;
 
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use Salient\Iterator\Concern\FluentIteratorTrait;
 use ArrayIterator;
 use IteratorIterator;
 use Traversable;

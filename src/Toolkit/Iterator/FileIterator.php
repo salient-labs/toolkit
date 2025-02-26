@@ -4,7 +4,6 @@ namespace Salient\Iterator;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Iterator\FluentIteratorInterface;
-use Salient\Iterator\Concern\FluentIteratorTrait;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
@@ -31,7 +30,7 @@ use Traversable;
  * @implements IteratorAggregate<string,SplFileInfo>
  * @implements FluentIteratorInterface<string,SplFileInfo>
  */
-class RecursiveFilesystemIterator implements
+class FileIterator implements
     IteratorAggregate,
     FluentIteratorInterface,
     Countable,

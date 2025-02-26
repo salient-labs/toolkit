@@ -7,8 +7,8 @@ use RecursiveCallbackFilterIterator;
 use RecursiveIterator;
 
 /**
- * Iterates over a recursive iterator, using a callback to check which elements
- * to descend into
+ * Iterates over a recursive iterator, using a callback to determine which
+ * elements to descend into
  *
  * Similar to {@see RecursiveCallbackFilterIterator}, but the callback is only
  * used to filter the return value of {@see RecursiveIterator::hasChildren()}.

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Iterator\Concern;
+namespace Salient\Iterator;
 
 use Salient\Contract\Iterator\FluentIteratorInterface;
 

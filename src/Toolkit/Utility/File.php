@@ -3,7 +3,7 @@
 namespace Salient\Utility;
 
 use Salient\Core\Process;
-use Salient\Iterator\RecursiveFilesystemIterator;
+use Salient\Iterator\FileIterator;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Exception\UnreadDataException;
@@ -334,9 +334,9 @@ final class File extends AbstractUtility
     /**
      * Iterate over filesystem entries
      */
-    public static function find(): RecursiveFilesystemIterator
+    public static function find(): FileIterator
     {
-        return new RecursiveFilesystemIterator();
+        return new FileIterator();
     }
 
     /**
@@ -382,7 +382,7 @@ final class File extends AbstractUtility
      */
     public static function pruneDir(string $directory, bool $delete = false, bool $setPermissions = false): void
     {
-        $files = (new RecursiveFilesystemIterator())->in($directory);
+        $files = (new FileIterator())->in($directory);
 
         if ($setPermissions) {
             clearstatcache();

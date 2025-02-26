@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\Iterator;
+namespace Salient\Tests\Iterator\FileIterator;
 
-use Salient\Iterator\RecursiveFilesystemIterator;
+use Salient\Iterator\FileIterator;
 use Salient\Tests\TestCase;
 use LogicException;
 use SplFileInfo;
 
 /**
- * @covers \Salient\Iterator\RecursiveFilesystemIterator
+ * @covers \Salient\Iterator\FileIterator
  */
-final class RecursiveFilesystemIteratorTest extends TestCase
+final class FileIteratorTest extends TestCase
 {
     /**
      * @dataProvider iteratorProvider
@@ -19,7 +19,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
      */
     public function testIterator(
         array $expected,
-        RecursiveFilesystemIterator $iterator,
+        FileIterator $iterator,
         string $replace,
         bool $sort = true
     ): void {
@@ -35,11 +35,11 @@ final class RecursiveFilesystemIteratorTest extends TestCase
     }
 
     /**
-     * @return array<array{string[],RecursiveFilesystemIterator,string,3?:bool}>
+     * @return array<array{string[],FileIterator,string,3?:bool}>
      */
     public static function iteratorProvider(): array
     {
-        $dir = self::getFixturesPath(__CLASS__);
+        $dir = __DIR__ . '/data';
         $files = [
             '/.hidden',
             '/dir1/.hidden',
@@ -61,7 +61,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
         return [
             [
                 $files,
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->files()
                     ->in($dir),
                 $dir,
@@ -88,7 +88,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/file1',
                     '/file2.ext',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir),
                 $dir,
             ],
@@ -99,14 +99,14 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir2',
                     '/dir2/dir3',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->directories()
                     ->in($dir),
                 $dir,
             ],
             [
                 $files,
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->directories()
                     ->files()
                     ->in($dir),
@@ -124,7 +124,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir2/file5',
                     '/dir2/file6.ext',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->files()
                     ->in($dir)
                     ->include('/\/dir2\//'),
@@ -138,7 +138,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir2/.hidden',
                     '/dir2/dir3/.hidden',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->include('/\/\.hidden$/'),
                 $dir,
@@ -148,7 +148,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir2',
                     '/dir2/dir3',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->directories()
                     ->directoriesFirst()
@@ -162,7 +162,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir2/dir3',
                     '/dir2',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->directories()
                     ->directoriesLast()
@@ -176,7 +176,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir1/dir2',
                     '/dir2',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->directories()
                     ->include('/\/dir2$/'),
@@ -188,7 +188,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/file1',
                     '/file2.ext',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->files()
                     ->in($dir)
                     ->doNotRecurse(),
@@ -202,7 +202,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/file1',
                     '/file2.ext',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->doNotRecurse(),
                 $dir,
@@ -214,7 +214,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/file1',
                     '/file2.ext',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->doNotRecurse()
                     ->exclude('/\/\.hidden$/'),
@@ -226,7 +226,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir1',
                     '/dir2',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->doNotRecurse()
                     ->exclude('/^file[0-9]+/')
@@ -249,7 +249,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
                     '/dir2/dir3/file8.ext',
                     '/dir2/file6.ext',
                 ],
-                (new RecursiveFilesystemIterator())
+                (new FileIterator())
                     ->in($dir)
                     ->exclude('/^file[0-9]+/')
                     ->include('/\/[^\/]*\.[^\/]*$/')
@@ -280,7 +280,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
             $this->expectException(LogicException::class);
         }
 
-        $file = (new RecursiveFilesystemIterator())
+        $file = (new FileIterator())
             ->in($dir)
             ->getFirstWith($key, $value, $strict);
 
@@ -296,7 +296,7 @@ final class RecursiveFilesystemIteratorTest extends TestCase
      */
     public static function getFirstWithProvider(): array
     {
-        $dir = self::getFixturesPath(__CLASS__);
+        $dir = __DIR__ . '/data';
         return [
             [
                 "{$dir}/dir2/file5",

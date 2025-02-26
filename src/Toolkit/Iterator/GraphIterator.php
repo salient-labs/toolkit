@@ -7,6 +7,8 @@ use OutOfRangeException;
 use ReturnTypeWillChange;
 
 /**
+ * Iterates over arrays and objects
+ *
  * @api
  *
  * @implements Iterator<array-key,mixed>
