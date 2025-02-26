@@ -6,9 +6,9 @@ use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Jsonable;
 use ArrayAccess;
 use Countable;
-use IteratorAggregate;
 use JsonSerializable;
 use OutOfRangeException;
+use Traversable;
 
 /**
  * @api
@@ -17,15 +17,15 @@ use OutOfRangeException;
  * @template TValue
  *
  * @extends ArrayAccess<TKey,TValue>
+ * @extends Traversable<TKey,TValue>
  * @extends Arrayable<TKey,TValue|mixed[]>
- * @extends IteratorAggregate<TKey,TValue>
  */
 interface CollectionInterface extends
     ArrayAccess,
-    Arrayable,
     Countable,
-    IteratorAggregate,
     JsonSerializable,
+    Traversable,
+    Arrayable,
     Jsonable
 {
     /**
@@ -107,7 +107,7 @@ interface CollectionInterface extends
      * Add an item
      *
      * @param TValue $value
-     * @return static
+     * @return static<TKey|int,TValue>
      */
     public function add($value);
 
@@ -159,18 +159,19 @@ interface CollectionInterface extends
      * collection with its return values
      *
      * @template TMode of int-mask-of<CollectionInterface::*>
+     * @template TReturn of TValue
      *
-     * @param (callable(TValue, TValue|null $next, TValue|null $prev): TValue)|(callable(TKey, TKey|null $next, TKey|null $prev): TValue)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TValue) $callback
+     * @param (callable(TValue, TValue|null $next, TValue|null $prev): TReturn)|(callable(TKey, TKey|null $next, TKey|null $prev): TReturn)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TReturn) $callback
      * @phpstan-param (
      *     TMode is 3|11|19
-     *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TValue)
+     *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TReturn)
      *     : (TMode is 2|10|18
-     *         ? (callable(TKey, TKey|null $next, TKey|null $prev): TValue)
-     *         : (callable(TValue, TValue|null $next, TValue|null $prev): TValue)
+     *         ? (callable(TKey, TKey|null $next, TKey|null $prev): TReturn)
+     *         : (callable(TValue, TValue|null $next, TValue|null $prev): TReturn)
      *     )
      * ) $callback
      * @param TMode $mode
-     * @return static
+     * @return static<TKey,TReturn>
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 
@@ -316,7 +317,7 @@ interface CollectionInterface extends
      * Push items onto the end of the collection
      *
      * @param TValue ...$items
-     * @return static
+     * @return static<TKey|int,TValue>
      */
     public function push(...$items);
 
@@ -344,7 +345,7 @@ interface CollectionInterface extends
      * Items are added in one operation and stay in the given order.
      *
      * @param TValue ...$items
-     * @return static
+     * @return static<TKey|int,TValue>
      */
     public function unshift(...$items);
 }

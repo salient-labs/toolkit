@@ -9,7 +9,7 @@ use Psr\Http\Message\RequestInterface;
  *
  * @api
  */
-interface CurlRequestEventInterface extends CurlEventInterface
+interface CurlRequestEvent extends CurlEvent
 {
     /**
      * Get the request being sent to the endpoint

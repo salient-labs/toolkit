@@ -13,6 +13,8 @@ use stdClass;
 
 /**
  * @covers \Salient\Iterator\RecursiveCallbackIterator
+ * @covers \Salient\Iterator\RecursiveGraphIterator
+ * @covers \Salient\Iterator\GraphIterator
  */
 final class RecursiveCallbackIteratorTest extends TestCase
 {

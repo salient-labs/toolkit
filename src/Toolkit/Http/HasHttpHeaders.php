@@ -46,14 +46,6 @@ trait HasHttpHeaders
     /**
      * @inheritDoc
      */
-    public function getHeaderValues(string $name): array
-    {
-        return $this->Headers->getHeaderValues($name);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getHeaderLine(string $name): string
     {
         return $this->Headers->getHeaderLine($name);
@@ -62,25 +54,33 @@ trait HasHttpHeaders
     /**
      * @inheritDoc
      */
-    public function getFirstHeaderLine(string $name): string
+    public function getHeaderValues(string $name): array
     {
-        return $this->Headers->getFirstHeaderLine($name);
+        return $this->Headers->getHeaderValues($name);
     }
 
     /**
      * @inheritDoc
      */
-    public function getLastHeaderLine(string $name): string
+    public function getFirstHeaderValue(string $name): string
     {
-        return $this->Headers->getLastHeaderLine($name);
+        return $this->Headers->getFirstHeaderValue($name);
     }
 
     /**
      * @inheritDoc
      */
-    public function getOneHeaderLine(string $name, bool $orSame = false): string
+    public function getLastHeaderValue(string $name): string
     {
-        return $this->Headers->getOneHeaderLine($name, $orSame);
+        return $this->Headers->getLastHeaderValue($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOnlyHeaderValue(string $name, bool $orSame = false): string
+    {
+        return $this->Headers->getOnlyHeaderValue($name, $orSame);
     }
 
     /**

@@ -357,7 +357,7 @@ final class FormDataTest extends TestCase
     {
         return [
             'Arrayable' => new class implements Arrayable {
-                public function toArray(): array
+                public function toArray(bool $preserveKeys = true): array
                 {
                     return ['foo', 'bar', 'baz'];
                 }

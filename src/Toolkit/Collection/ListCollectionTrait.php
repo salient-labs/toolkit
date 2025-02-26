@@ -10,12 +10,13 @@ use Salient\Contract\Core\Arrayable;
  *
  * @template TKey of int
  * @template TValue
+ * @template TKeyless
  *
  * @phpstan-require-implements CollectionInterface
  */
 trait ListCollectionTrait
 {
-    /** @use CollectionTrait<int,TValue> */
+    /** @use CollectionTrait<int,TValue,TKeyless> */
     use CollectionTrait {
         getItems as private doGetItems;
         replaceItems as private doReplaceItems;
@@ -47,8 +48,6 @@ trait ListCollectionTrait
         $first = array_shift($items);
         return $this->replaceItems($items, true);
     }
-
-    // --
 
     /**
      * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items

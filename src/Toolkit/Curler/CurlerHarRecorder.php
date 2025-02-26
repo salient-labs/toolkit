@@ -3,9 +3,9 @@
 namespace Salient\Curler;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Curler\Event\CurlRequestEventInterface;
-use Salient\Contract\Curler\Event\CurlResponseEventInterface;
-use Salient\Contract\Curler\Event\ResponseCacheHitEventInterface;
+use Salient\Contract\Curler\Event\CurlRequestEvent;
+use Salient\Contract\Curler\Event\CurlResponseEvent;
+use Salient\Contract\Curler\Event\ResponseCacheHitEvent;
 use Salient\Core\Facade\Event;
 use Salient\Http\HttpRequest;
 use Salient\Utility\File;
@@ -107,7 +107,7 @@ class CurlerHarRecorder
     /**
      * Start recording requests, optionally with an initial event
      *
-     * @param CurlRequestEventInterface|ResponseCacheHitEventInterface|null $event
+     * @param CurlRequestEvent|ResponseCacheHitEvent|null $event
      * @throws LogicException if the instance is already recording.
      */
     public function start($event = null): void
@@ -127,9 +127,9 @@ class CurlerHarRecorder
             $dispatcher->listen(Closure::fromCallable([$this, 'handleResponseCacheHit'])),
         ];
 
-        if ($event instanceof CurlRequestEventInterface) {
+        if ($event instanceof CurlRequestEvent) {
             $this->handleCurlRequest($event);
-        } elseif ($event instanceof ResponseCacheHitEventInterface) {
+        } elseif ($event instanceof ResponseCacheHitEvent) {
             $this->handleResponseCacheHit($event);
         }
     }
@@ -151,7 +151,7 @@ class CurlerHarRecorder
         $this->IsRecording = false;
     }
 
-    protected function handleCurlRequest(CurlRequestEventInterface $event): void
+    protected function handleCurlRequest(CurlRequestEvent $event): void
     {
         $this->assertIsValid();
 
@@ -159,7 +159,7 @@ class CurlerHarRecorder
         $this->LastRequestTime = microtime(true);
     }
 
-    protected function handleCurlResponse(CurlResponseEventInterface $event): void
+    protected function handleCurlResponse(CurlResponseEvent $event): void
     {
         $this->assertIsValid();
 
@@ -255,7 +255,7 @@ class CurlerHarRecorder
         return $value;
     }
 
-    protected function handleResponseCacheHit(ResponseCacheHitEventInterface $event): void
+    protected function handleResponseCacheHit(ResponseCacheHitEvent $event): void
     {
         $this->assertIsValid();
 

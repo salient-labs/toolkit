@@ -7,7 +7,7 @@ use CurlHandle;
 /**
  * @api
  */
-interface CurlEventInterface extends CurlerEventInterface
+interface CurlEvent extends CurlerEvent
 {
     /**
      * Get the cURL handle associated with the event

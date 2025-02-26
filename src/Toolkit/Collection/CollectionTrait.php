@@ -9,6 +9,7 @@ use Salient\Contract\Collection\CollectionInterface;
  *
  * @template TKey of array-key
  * @template TValue
+ * @template TKeyless
  *
  * @phpstan-require-implements CollectionInterface
  */
@@ -47,6 +48,7 @@ trait CollectionTrait
     {
         $items = $this->Items;
         $items[] = $value;
+        /** @var TKeyless */
         return $this->replaceItems($items, true);
     }
 
@@ -95,7 +97,6 @@ trait CollectionTrait
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
-        $items = [];
         $prev = null;
         $item = null;
         $key = null;
@@ -116,7 +117,7 @@ trait CollectionTrait
         }
 
         // @phpstan-ignore argument.type, return.type
-        return $this->maybeReplaceItems($items, true);
+        return $this->maybeReplaceItems($items ?? [], true);
     }
 
     /**
@@ -124,7 +125,6 @@ trait CollectionTrait
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE)
     {
-        $items = [];
         $prev = null;
         $item = null;
         $key = null;
@@ -132,12 +132,10 @@ trait CollectionTrait
 
         foreach ($this->Items as $nextKey => $nextValue) {
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($item !== null) {
-                if ($callback($item, $next, $prev)) {
-                    /** @var TKey $key */
-                    /** @var TValue $value */
-                    $items[$key] = $value;
-                }
+            if ($item !== null && $callback($item, $next, $prev)) {
+                /** @var TKey $key */
+                /** @var TValue $value */
+                $items[$key] = $value;
             }
             $prev = $item;
             $item = $next;
@@ -150,7 +148,7 @@ trait CollectionTrait
             $items[$key] = $value;
         }
 
-        return $this->maybeReplaceItems($items);
+        return $this->maybeReplaceItems($items ?? []);
     }
 
     /**
@@ -204,10 +202,12 @@ trait CollectionTrait
     public function push(...$items)
     {
         if (!$items) {
+            /** @var TKeyless */
             return $this;
         }
         $_items = $this->Items;
         array_push($_items, ...$items);
+        /** @var TKeyless */
         return $this->replaceItems($_items, true);
     }
 
@@ -246,14 +246,14 @@ trait CollectionTrait
     public function unshift(...$items)
     {
         if (!$items) {
+            /** @var TKeyless */
             return $this;
         }
         $_items = $this->Items;
         array_unshift($_items, ...$items);
+        /** @var TKeyless */
         return $this->replaceItems($_items, true);
     }
-
-    // Partial implementation of `ArrayAccess`:
 
     /**
      * @param TKey|null $offset
@@ -280,8 +280,6 @@ trait CollectionTrait
         unset($items[$offset]);
         $this->maybeReplaceItems($items, false, false);
     }
-
-    // --
 
     /**
      * @param array<TKey,TValue> $items

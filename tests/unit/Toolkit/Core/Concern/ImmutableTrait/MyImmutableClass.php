@@ -7,6 +7,7 @@ use Salient\Collection\ReadOnlyArrayAccessTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\ImmutableTrait;
+use IteratorAggregate;
 use stdClass;
 
 class MyImmutableClass implements Immutable
@@ -51,10 +52,11 @@ class MyImmutableClass implements Immutable
 
 /**
  * @implements CollectionInterface<array-key,stdClass>
+ * @implements IteratorAggregate<array-key,stdClass>
  */
-class MyImmutableCollection implements CollectionInterface, Immutable
+class MyImmutableCollection implements CollectionInterface, IteratorAggregate, Immutable
 {
-    /** @use CollectionTrait<array-key,stdClass> */
+    /** @use CollectionTrait<array-key,stdClass,static> */
     use CollectionTrait;
     /** @use ReadOnlyArrayAccessTrait<array-key,stdClass> */
     use ReadOnlyArrayAccessTrait {

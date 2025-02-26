@@ -35,7 +35,7 @@ interface CurlerPagerInterface
      * @param mixed $data
      * @param TPage $previousPage
      * @param mixed[]|null $query The query applied to `$request` or returned by
-     * {@see CurlerPageRequestInterface::getNextQuery()}, if applicable.
+     * {@see CurlerPageRequestInterface::getQuery()}, if applicable.
      * @return (TPage is null ? CurlerPageInterface : TPage)
      */
     public function getPage(

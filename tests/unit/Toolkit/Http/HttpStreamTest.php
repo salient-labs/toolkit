@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Http;
 
+use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Contract\Http\FormDataFlag;
 use Salient\Core\Date\DateFormatter;
 use Salient\Http\Exception\StreamDetachedException;
-use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;

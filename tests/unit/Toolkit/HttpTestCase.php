@@ -86,7 +86,9 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
      */
     protected static function getCurler(string $endpoint = ''): Curler
     {
-        return new Curler(self::HTTP_SERVER_URI . $endpoint);
+        return Curler::build()
+            ->uri(self::HTTP_SERVER_URI . $endpoint)
+            ->build();
     }
 
     /**

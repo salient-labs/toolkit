@@ -15,15 +15,17 @@ use stdClass;
 final class IterableIteratorTest extends TestCase
 {
     /**
-     * @dataProvider nextWithValueProvider
+     * @dataProvider getFirstWithProvider
      *
      * @param mixed $expected
+     * @param array-key|null $expectedKey
      * @param mixed[] $array
      * @param array-key $key
      * @param mixed $value
      */
-    public function testNextWithValue(
+    public function testGetFirstWith(
         $expected,
+        $expectedKey,
         array $array,
         $key,
         $value,
@@ -32,16 +34,19 @@ final class IterableIteratorTest extends TestCase
     ): void {
         $iterator = new IterableIterator(new NoRewindIterator(new ArrayIterator($array)));
         while ($runs > 1) {
-            $iterator->nextWithValue($key, $value, $strict);
+            $iterator->getFirstWith($key, $value, $strict);
+            $iterator->next();
             $runs--;
         }
-        $this->assertSame($expected, $iterator->nextWithValue($key, $value, $strict));
+        $this->assertSame($expected, $iterator->getFirstWith($key, $value, $strict));
+        $this->assertSame($expected, $iterator->current());
+        $this->assertSame($expectedKey, $iterator->key());
     }
 
     /**
-     * @return array<array{mixed,mixed[],array-key,mixed,4?:int,5?:bool}>
+     * @return array<array{mixed,array-key|null,mixed[],array-key,mixed,5?:int,6?:bool}>
      */
-    public static function nextWithValueProvider(): array
+    public static function getFirstWithProvider(): array
     {
         $data = [
             ['id' => 10, 'name' => 'foo'],
@@ -49,17 +54,19 @@ final class IterableIteratorTest extends TestCase
             ['id' => 8, 'name' => 'qux'],
             ['id' => 71, 'name' => 'qux'],
             ['id' => 72, 'name' => 'quux'],
-            ['id' => 21, 'name' => 'quuux'],
+            'foo' => ['id' => 21, 'name' => 'quuux'],
         ];
 
         return [
             [
                 ['id' => 10, 'name' => 'foo'],
+                0,
                 $data,
                 'id',
                 10,
             ],
             [
+                null,
                 null,
                 $data,
                 'id',
@@ -68,24 +75,28 @@ final class IterableIteratorTest extends TestCase
             ],
             [
                 ['id' => 27, 'name' => 'bar'],
+                1,
                 $data,
                 'id',
                 27,
             ],
             [
                 ['id' => 8, 'name' => 'qux'],
+                2,
                 $data,
                 'name',
                 'qux',
             ],
             [
                 ['id' => 71, 'name' => 'qux'],
+                3,
                 $data,
                 'name',
                 'qux',
                 2,
             ],
             [
+                null,
                 null,
                 $data,
                 'name',
@@ -94,11 +105,13 @@ final class IterableIteratorTest extends TestCase
             ],
             [
                 ['id' => 21, 'name' => 'quuux'],
+                'foo',
                 $data,
                 'id',
                 21,
             ],
             [
+                null,
                 null,
                 $data,
                 'id',

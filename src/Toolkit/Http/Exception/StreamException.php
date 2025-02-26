@@ -2,4 +2,6 @@
 
 namespace Salient\Http\Exception;
 
-class StreamException extends HttpException {}
+use Salient\Contract\Http\Exception\StreamException as StreamExceptionInterface;
+
+class StreamException extends HttpException implements StreamExceptionInterface {}

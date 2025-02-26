@@ -4,6 +4,7 @@ namespace Salient\Http;
 
 use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Contract\Http\HttpResponseInterface;
@@ -11,7 +12,6 @@ use Salient\Contract\Http\HttpServerRequestInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
-use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
@@ -399,7 +399,7 @@ class HttpServer implements Immutable
             $uri = implode('', [
                 $this->getScheme(),
                 '://',
-                Str::coalesce($headers->getOneHeaderLine(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
+                Str::coalesce($headers->getOnlyHeaderValue(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
             ]);
             if (!Regex::match('/:[0-9]++$/', $uri)) {
                 $uri .= ':' . ($this->ProxyPort ?? $this->Port);

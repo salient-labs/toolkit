@@ -24,6 +24,9 @@
     "provide": {
         "psr/event-dispatcher-implementation": "^1"
     },
+    "suggest": {
+        "ext-sqlite3": "Required by Store"
+    },
     "autoload": {
         "psr-4": {
             "Salient\\Core\\": ""

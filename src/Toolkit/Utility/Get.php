@@ -10,6 +10,7 @@ use Countable;
 use InvalidArgumentException;
 use ReflectionClass;
 use Stringable;
+use Traversable;
 
 /**
  * Extract, convert and generate data
@@ -211,10 +212,10 @@ final class Get extends AbstractUtility
         if (is_array($value)) {
             return $value;
         }
-        if ($value instanceof Arrayable) {
-            return $value->toArray();
+        if ($value instanceof Traversable) {
+            return iterator_to_array($value);
         }
-        return iterator_to_array($value);
+        return $value->toArray();
     }
 
     /**
@@ -230,10 +231,10 @@ final class Get extends AbstractUtility
         if (is_array($value)) {
             return array_values($value);
         }
-        if ($value instanceof Arrayable) {
-            return array_values($value->toArray());
+        if ($value instanceof Traversable) {
+            return iterator_to_array($value, false);
         }
-        return iterator_to_array($value, false);
+        return $value->toArray(false);
     }
 
     /**
@@ -250,7 +251,7 @@ final class Get extends AbstractUtility
             return count($value);
         }
         if ($value instanceof Arrayable) {
-            return count($value->toArray());
+            return count($value->toArray(false));
         }
         return iterator_count($value);
     }

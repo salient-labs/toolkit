@@ -5,7 +5,7 @@ namespace Salient\Tests\Curler;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Http\Message\RequestInterface;
 use Salient\Cache\CacheStore;
-use Salient\Contract\Curler\Event\CurlResponseEventInterface;
+use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Exception\CurlErrorException;
 use Salient\Contract\Curler\Exception\HttpErrorException;
 use Salient\Contract\Curler\Exception\TooManyRedirectsException;
@@ -313,7 +313,7 @@ EOF,
 
         $curler = $this
             ->getCurler('/foo')
-            ->withCacheStore($cache)
+            ->withCache($cache)
             ->withResponseCache();
         $this->assertSame(self::OUTPUT, $curler->get(self::QUERY));
         $this->assertSameHttpMessage(
@@ -400,7 +400,7 @@ EOF,
         $output = [];
         $curler = $this
             ->getCurler()
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->assertCallbackThrowsException(
@@ -444,7 +444,7 @@ EOF;
         $curler = $this
             ->getCurler()
             ->withThrowHttpErrors(false)
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->assertSame('502 bad gateway', $curler->get());
@@ -489,11 +489,11 @@ EOF;
             ->getCurler()
             ->withFollowRedirects()
             ->withMaxRedirects(3)
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->ListenerId = Event::getInstance()->listen(
-            function (CurlResponseEventInterface $event) use ($server, &$output) {
+            function (CurlResponseEvent $event) use ($server, &$output) {
                 $output[] = $server->getNewOutput();
             }
         );
@@ -548,11 +548,11 @@ EOF,
             ->getCurler()
             ->withFollowRedirects()
             ->withMaxRedirects(3)
-            ->withCacheStore(new CacheStore())
+            ->withCache(new CacheStore())
             ->withResponseCache();
 
         $this->ListenerId = Event::getInstance()->listen(
-            function (CurlResponseEventInterface $event) use ($server, &$output) {
+            function (CurlResponseEvent $event) use ($server, &$output) {
                 $output[] = $server->getNewOutput();
             }
         );

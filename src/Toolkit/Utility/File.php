@@ -3,7 +3,7 @@
 namespace Salient\Utility;
 
 use Salient\Core\Process;
-use Salient\Iterator\RecursiveFilesystemIterator;
+use Salient\Iterator\FileIterator;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\Exception\UnreadDataException;
@@ -332,11 +332,11 @@ final class File extends AbstractUtility
     }
 
     /**
-     * Iterate over files in one or more directories
+     * Iterate over filesystem entries
      */
-    public static function find(): RecursiveFilesystemIterator
+    public static function find(): FileIterator
     {
-        return new RecursiveFilesystemIterator();
+        return new FileIterator();
     }
 
     /**
@@ -382,9 +382,7 @@ final class File extends AbstractUtility
      */
     public static function pruneDir(string $directory, bool $delete = false, bool $setPermissions = false): void
     {
-        $files = (new RecursiveFilesystemIterator())
-            ->in($directory)
-            ->dirs();
+        $files = (new FileIterator())->in($directory);
 
         if ($setPermissions) {
             clearstatcache();
@@ -394,7 +392,7 @@ final class File extends AbstractUtility
             // - On Windows, they can be deleted if they are writable, whether
             //   their parent directory is writable or not
             if (!Sys::isWindows()) {
-                foreach ($files->noFiles() as $dir) {
+                foreach ($files->directories() as $dir) {
                     if (
                         $dir->isReadable()
                         && $dir->isWritable()
@@ -414,7 +412,7 @@ final class File extends AbstractUtility
             }
         }
 
-        foreach ($files->dirsLast() as $file) {
+        foreach ($files->directoriesLast() as $file) {
             $filename = (string) $file;
             if ($setPermissions && !$file->isWritable()) {
                 // This will only ever run on Windows

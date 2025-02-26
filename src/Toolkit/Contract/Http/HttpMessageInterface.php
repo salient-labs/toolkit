@@ -49,13 +49,13 @@ interface HttpMessageInterface extends
      * Get the first value of a message header after splitting any
      * comma-separated values
      */
-    public function getFirstHeaderLine(string $name): string;
+    public function getFirstHeaderValue(string $name): string;
 
     /**
      * Get the last value of a message header after splitting any
      * comma-separated values
      */
-    public function getLastHeaderLine(string $name): string;
+    public function getLastHeaderValue(string $name): string;
 
     /**
      * Get the only value of a message header after splitting any
@@ -63,7 +63,7 @@ interface HttpMessageInterface extends
      *
      * An exception is thrown if the header has more than one value.
      */
-    public function getOneHeaderLine(string $name, bool $orSame = false): string;
+    public function getOnlyHeaderValue(string $name, bool $orSame = false): string;
 
     /**
      * Get the message as an HTTP payload

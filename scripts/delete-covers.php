@@ -20,6 +20,7 @@ $args = array_slice($args, 1);
 $check = !in_array('--force', $args);
 
 $files = File::find()
+    ->files()
     ->in(dirname(__DIR__) . '/tests/unit')
     ->include('/Test\.php$/')
     ->toArray();

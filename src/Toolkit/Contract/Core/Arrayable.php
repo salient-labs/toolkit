@@ -13,7 +13,7 @@ interface Arrayable
     /**
      * Get the object as an array
      *
-     * @return array<TKey,TValue>
+     * @return ($preserveKeys is true ? array<TKey,TValue> : list<TValue>)
      */
-    public function toArray(): array;
+    public function toArray(bool $preserveKeys = true): array;
 }

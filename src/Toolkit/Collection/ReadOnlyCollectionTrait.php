@@ -6,9 +6,11 @@ use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Comparable;
 use Salient\Contract\Core\Jsonable;
+use Salient\Utility\Arr;
 use Salient\Utility\Json;
 use ArrayIterator;
 use InvalidArgumentException;
+use IteratorAggregate;
 use JsonSerializable;
 use OutOfRangeException;
 use ReturnTypeWillChange;
@@ -21,11 +23,12 @@ use Traversable;
  * @template TValue
  *
  * @phpstan-require-implements CollectionInterface
+ * @phpstan-require-implements IteratorAggregate
  */
 trait ReadOnlyCollectionTrait
 {
     /** @var array<TKey,TValue> */
-    protected $Items = [];
+    protected array $Items;
 
     /**
      * @inheritDoc
@@ -97,13 +100,11 @@ trait ReadOnlyCollectionTrait
 
         foreach ($this->Items as $nextKey => $nextValue) {
             $next = $this->getCallbackValue($mode, $nextKey, $nextValue);
-            if ($item !== null) {
-                if ($callback($item, $next, $prev)) {
-                    /** @var TKey $key */
-                    /** @var TValue $value */
-                    // @phpstan-ignore return.type
-                    return $this->getReturnValue($mode, $key, $value);
-                }
+            if ($item !== null && $callback($item, $next, $prev)) {
+                /** @var TKey $key */
+                /** @var TValue $value */
+                // @phpstan-ignore return.type
+                return $this->getReturnValue($mode, $key, $value);
             }
             $prev = $item;
             $item = $next;
@@ -134,7 +135,6 @@ trait ReadOnlyCollectionTrait
                 return true;
             }
         }
-
         return false;
     }
 
@@ -144,10 +144,7 @@ trait ReadOnlyCollectionTrait
     public function keyOf($value, bool $strict = false)
     {
         if ($strict) {
-            $key = array_search($value, $this->Items, true);
-            return $key === false
-                ? null
-                : $key;
+            return Arr::search($this->Items, $value, true);
         }
 
         foreach ($this->Items as $key => $item) {
@@ -155,7 +152,6 @@ trait ReadOnlyCollectionTrait
                 return $key;
             }
         }
-
         return null;
     }
 
@@ -183,12 +179,17 @@ trait ReadOnlyCollectionTrait
     /**
      * @inheritDoc
      */
-    public function toArray(): array
+    public function toArray(bool $preserveKeys = true): array
     {
         foreach ($this->Items as $key => $value) {
-            $array[$key] = $value instanceof Arrayable
-                ? $value->toArray()
-                : $value;
+            if ($value instanceof Arrayable) {
+                $value = $value->toArray($preserveKeys);
+            }
+            if ($preserveKeys) {
+                $array[$key] = $value;
+            } else {
+                $array[] = $value;
+            }
         }
         return $array ?? [];
     }
@@ -250,16 +251,11 @@ trait ReadOnlyCollectionTrait
             $keys = array_reverse($keys);
             $n = -$n;
         }
-
         $key = $keys[$n - 1] ?? null;
-        if ($key === null) {
-            return null;
-        }
-
-        return $this->Items[$key];
+        return $key === null
+            ? null
+            : $this->Items[$key];
     }
-
-    // Implementation of `IteratorAggregate`:
 
     /**
      * @return Traversable<TKey,TValue>
@@ -268,8 +264,6 @@ trait ReadOnlyCollectionTrait
     {
         return new ArrayIterator($this->Items);
     }
-
-    // Partial implementation of `ArrayAccess`:
 
     /**
      * @param TKey $offset
@@ -289,14 +283,10 @@ trait ReadOnlyCollectionTrait
         return $this->Items[$offset];
     }
 
-    // Implementation of `Countable`:
-
     public function count(): int
     {
         return count($this->Items);
     }
-
-    // --
 
     /**
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
@@ -367,12 +357,11 @@ trait ReadOnlyCollectionTrait
     protected function getCallbackValue(int $mode, $key, $value)
     {
         $mode &= CollectionInterface::CALLBACK_USE_BOTH;
-        if ($mode === CollectionInterface::CALLBACK_USE_KEY) {
-            return $key;
-        }
-        return $mode === CollectionInterface::CALLBACK_USE_BOTH
-            ? [$key, $value]
-            : $value;
+        return $mode === CollectionInterface::CALLBACK_USE_KEY
+            ? $key
+            : ($mode === CollectionInterface::CALLBACK_USE_BOTH
+                ? [$key, $value]
+                : $value);
     }
 
     /**
