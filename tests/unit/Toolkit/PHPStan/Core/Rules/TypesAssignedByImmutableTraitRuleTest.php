@@ -5,19 +5,19 @@ namespace Salient\Tests\PHPStan\Core\Rules;
 use PHPStan\Rules\Rule;
 use Salient\Container\Container;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule;
+use Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule;
 use Salient\Tests\PHPStan\RuleTestCase;
 
 /**
- * @covers \Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule
+ * @covers \Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule
  *
- * @extends RuleTestCase<TypesAssignedByHasMutatorRule>
+ * @extends RuleTestCase<TypesAssignedByImmutableTraitRule>
  */
-class TypesAssignedByHasMutatorRuleTest extends RuleTestCase
+class TypesAssignedByImmutableTraitRuleTest extends RuleTestCase
 {
     protected function getRule(): Rule
     {
-        return (new Container())->get(TypesAssignedByHasMutatorRule::class);
+        return (new Container())->get(TypesAssignedByImmutableTraitRule::class);
     }
 
     /**
@@ -51,6 +51,6 @@ class TypesAssignedByHasMutatorRuleTest extends RuleTestCase
             }
             $expectedErrors[] = $error;
         }
-        $this->analyse([__DIR__ . '/TypesAssignedByHasMutatorRuleFailures.php'], $expectedErrors);
+        $this->analyse([__DIR__ . '/TypesAssignedByImmutableTraitRuleFailures.php'], $expectedErrors);
     }
 }

@@ -1,11 +1,11 @@
 services:
 	-
-		class: Salient\PHPStan\Core\Rules\HasMutatorReadWritePropertiesExtension
+		class: Salient\PHPStan\Core\Rules\ImmutableTraitReadWritePropertiesExtension
 		tags:
 			- phpstan.properties.readWriteExtension
 
 	-
-		class: Salient\PHPStan\Core\Rules\TypesAssignedByHasMutatorRule
+		class: Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule
 		tags:
 			- phpstan.rules.rule
 

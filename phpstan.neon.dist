@@ -48,15 +48,15 @@ parameters:
 		-
 			identifier: salient.property.notFound
 			paths:
-				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByImmutableTraitRuleFailures.php
 		-
 			identifier: salient.property.private
 			paths:
-				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByImmutableTraitRuleFailures.php
 		-
 			identifier: salient.property.type
 			paths:
-				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByHasMutatorRuleFailures.php
+				- tests/unit/Toolkit/PHPStan/Core/Rules/TypesAssignedByImmutableTraitRuleFailures.php
 		-
 			identifier: arguments.count
 			paths:

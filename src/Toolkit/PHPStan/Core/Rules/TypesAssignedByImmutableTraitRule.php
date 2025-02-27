@@ -17,7 +17,7 @@ use Salient\Core\Concern\ImmutableTrait;
 /**
  * @implements Rule<MethodCall>
  */
-class TypesAssignedByHasMutatorRule implements Rule
+class TypesAssignedByImmutableTraitRule implements Rule
 {
     public function getNodeType(): string
     {

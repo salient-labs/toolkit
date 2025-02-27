@@ -9,7 +9,7 @@ use Salient\Core\Concern\ImmutableTrait;
 /**
  * @codeCoverageIgnore
  */
-class HasMutatorReadWritePropertiesExtension implements ReadWritePropertiesExtension
+class ImmutableTraitReadWritePropertiesExtension implements ReadWritePropertiesExtension
 {
     public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
     {
