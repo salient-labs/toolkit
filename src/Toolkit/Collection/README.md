@@ -15,7 +15,7 @@
 values to be accessed via array-like objects with chainable methods.
 
 - Collections are immutable except when array syntax is used to set or unset
-  items[^immutable]
+  items
 - Use `Collection<TKey of array-key,TValue>` or `ListCollection<TValue>` with
   values of any type, or extend them to add type-specific behaviour
 - Remix `CollectionTrait`, `ListCollectionTrait`, `ReadOnlyCollectionTrait` and
@@ -48,10 +48,6 @@ Output:
 - qux
 Items in collection: 3
 ```
-
-[^immutable]:
-    Methods other than `offsetSet()` and `offsetUnset()` return a modified
-    instance if the state of the collection changes.
 
 ## Documentation
 

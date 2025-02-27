@@ -17,8 +17,8 @@
   `DELETE` requests
 - Flexible query string and payload handling
 - Uses generators to iterate over data from endpoints that use pagination
-- Response cache for `HEAD`, `GET` and optionally `POST` requests[^cache]
-- Cookie handling and persistence
+- Optional response cache for `HEAD`, `GET` and repeatable `POST` requests
+- Optional cookie handling and persistence
 - Uses [PSR-7][] request, response and stream interfaces
 - Implements [PSR-18 (HTTP Client)][PSR-18]
 - Behaviour can be customised via stackable middleware
@@ -29,8 +29,6 @@
 $curler = new \Salient\Curler\Curler('https://api.github.com/repos/salient-labs/toolkit/releases/latest');
 echo 'Latest release: ' . $curler->get()['tag_name'] . \PHP_EOL;
 ```
-
-[^cache]: HTTP caching headers are ignored. USE RESPONSIBLY.
 
 [har]: http://www.softwareishard.com/blog/har-12-spec/
 [PSR-18]: https://www.php-fig.org/psr/psr-18/
