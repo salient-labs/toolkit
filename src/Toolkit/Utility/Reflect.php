@@ -148,25 +148,113 @@ final class Reflect extends AbstractUtility
     }
 
     /**
+     * Check if a method is declared in a class
+     *
+     * Returns `false` if the method:
+     *
+     * - does not belong to the given class
+     * - is declared in a parent of the given class
+     * - is inserted by a trait
+     *
+     * Returns `null` if the check cannot be performed, e.g. if the class is
+     * internal.
+     *
+     * @param ReflectionClass<*> $class
+     * @throws ReflectionException if the check cannot be completed because
+     * there are multiple declarations on the same line.
+     */
+    public static function isMethodInClass(
+        ReflectionMethod $method,
+        ReflectionClass $class,
+        ?string $name = null
+    ): ?bool {
+        if (
+            $method->getDeclaringClass()->getName() !== $class->getName()
+            || ($method->isInternal() && !$class->isInternal())  // e.g. `UnitEnum::cases()`
+        ) {
+            return false;
+        }
+
+        if (!($traits = $class->getTraits())) {
+            return true;
+        }
+
+        if (
+            ($file = $method->getFileName()) === false
+            || ($line = $method->getStartLine()) === false
+            || ($start = $class->getStartLine()) === false
+            || ($end = $class->getEndLine()) === false
+        ) {
+            return null;
+        }
+
+        if (
+            $file !== $class->getFileName()
+            || $line < $start
+            || $line > $end
+        ) {
+            return false;
+        }
+
+        if ($line > $start && $line < $end) {
+            return true;
+        }
+
+        // Check if the method belongs to an adjacent trait on the same line
+        $name ??= $method->getName();
+        if ($inserted = Reflect::getTraitAliases($class)[$name] ?? null) {
+            $traits = array_intersect_key($traits, [$inserted[0] => null]);
+            $name = $inserted[1];
+        }
+        foreach ($traits as $trait) {
+            if (
+                $trait->hasMethod($name)
+                && ($traitMethod = $trait->getMethod($name))->getFileName() === $file
+                && $traitMethod->getStartLine() === $line
+            ) {
+                throw new ReflectionException(sprintf(
+                    'Unable to check location of %s::%s(): %s::%s() declared on same line',
+                    $class->getName(),
+                    $method->getName(),
+                    $traitMethod->getDeclaringClass()->getName(),
+                    $name,
+                ));
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Get the trait method inserted into a class with the given name
      *
      * @param ReflectionClass<*> $class
      */
     public static function getTraitMethod(
         ReflectionClass $class,
-        string $methodName
+        string $methodName,
+        bool $recursive = false
     ): ?ReflectionMethod {
-        if ($inserted = self::getTraitAliases($class)[$methodName] ?? null) {
-            return new ReflectionMethod(...$inserted);
-        }
-
-        foreach ($class->getTraits() as $trait) {
-            if ($trait->hasMethod($methodName)) {
-                return $trait->getMethod($methodName);
+        $lastMethod = null;
+        $method = null;
+        do {
+            if ($inserted = self::getTraitAliases($class)[$methodName] ?? null) {
+                $method = new ReflectionMethod(...$inserted);
+            } else {
+                foreach ($class->getTraits() as $trait) {
+                    if ($trait->hasMethod($methodName)) {
+                        $method = $trait->getMethod($methodName);
+                        break;
+                    }
+                }
             }
-        }
-
-        return null;
+            if (!$recursive || !$method || $method === $lastMethod) {
+                return $method;
+            }
+            $class = $method->getDeclaringClass();
+            $methodName = $inserted ? $inserted[1] : $methodName;
+            $lastMethod = $method;
+        } while (true);
     }
 
     /**
@@ -228,6 +316,29 @@ final class Reflect extends AbstractUtility
         }
 
         return null;
+    }
+
+    /**
+     * Get traits inserted by a class, including any traits they insert
+     *
+     * If `$recursive` is `true`, traits inserted by parent classes are also
+     * returned.
+     *
+     * @param ReflectionClass<*> $class
+     * @return array<string,ReflectionClass<*>>
+     */
+    public static function getAllTraits(ReflectionClass $class, bool $recursive = false): array
+    {
+        $traits = $class->getTraits();
+        foreach ($traits as $trait) {
+            $traits = array_merge($traits, self::getAllTraits($trait));
+        }
+        if ($recursive) {
+            while ($class = $class->getParentClass()) {
+                $traits = array_merge($traits, self::getAllTraits($class));
+            }
+        }
+        return $traits;
     }
 
     /**

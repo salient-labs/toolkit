@@ -3,12 +3,17 @@
 namespace Salient\Tests\Utility\Reflect;
 
 use Salient\Tests\Reflection\MyBaseClass;
+use Salient\Tests\Reflection\MyBaseTrait;
 use Salient\Tests\Reflection\MyClass;
 use Salient\Tests\Reflection\MyClassWithDnfTypes;
 use Salient\Tests\Reflection\MyClassWithUnionsAndIntersections;
 use Salient\Tests\Reflection\MyDict;
 use Salient\Tests\Reflection\MyEnum;
 use Salient\Tests\Reflection\MyInterface;
+use Salient\Tests\Reflection\MyOneLineClass;
+use Salient\Tests\Reflection\MyOneLineTrait;
+use Salient\Tests\Reflection\MyReusedTrait;
+use Salient\Tests\Reflection\MySubclass;
 use Salient\Tests\Reflection\MyTrait;
 use Salient\Tests\TestCase;
 use Salient\Utility\Internal\NamedType;
@@ -17,6 +22,7 @@ use Generator;
 use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionClassConstant;
+use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use ReflectionParameter;
@@ -49,6 +55,65 @@ final class ReflectTest extends TestCase
             'MyDocumentedProperty' => new ReflectionProperty(MyClass::class, 'MyDocumentedProperty'),
         ]));
         $this->assertSame(array_values($output), Reflect::getNames($input, false));
+    }
+
+    public function testIsMethodInClassWithOneLineClass(): void
+    {
+        $this->expectException(ReflectionException::class);
+        $this->expectExceptionMessage(sprintf(
+            'Unable to check location of %s::%s(): %s::%s() declared on same line',
+            MyOneLineClass::class,
+            'MyOneLineMethod',
+            MyOneLineTrait::class,
+            'MyMethod',
+        ));
+        $class = new ReflectionClass(MyOneLineClass::class);
+        $method = $class->getMethod('MyOneLineMethod');
+        Reflect::isMethodInClass($method, $class);
+    }
+
+    /**
+     * @dataProvider getAllTraitsProvider
+     *
+     * @param class-string[] $expected
+     * @param ReflectionClass<*> $class
+     */
+    public function testGetAllTraits(
+        array $expected,
+        ReflectionClass $class,
+        bool $recursive = false
+    ): void {
+        $this->assertSame($expected, array_keys(Reflect::getAllTraits($class, $recursive)));
+    }
+
+    /**
+     * @return array<array{class-string[],ReflectionClass<*>,2?:bool}>
+     */
+    public static function getAllTraitsProvider(): array
+    {
+        return [
+            [
+                [
+                    MyTrait::class,
+                    MyReusedTrait::class,
+                    MyBaseTrait::class,
+                ],
+                new ReflectionClass(MyClass::class),
+            ],
+            [
+                [],
+                new ReflectionClass(MySubclass::class),
+            ],
+            [
+                [
+                    MyTrait::class,
+                    MyReusedTrait::class,
+                    MyBaseTrait::class,
+                ],
+                new ReflectionClass(MySubclass::class),
+                true,
+            ],
+        ];
     }
 
     public function testGetAllProperties(): void

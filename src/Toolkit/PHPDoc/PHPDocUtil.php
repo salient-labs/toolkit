@@ -10,7 +10,6 @@ use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
-use LogicException;
 use ReflectionClass;
 use ReflectionClassConstant;
 use ReflectionIntersectionType;
@@ -1034,23 +1033,9 @@ final class PHPDocUtil extends AbstractUtility
         ReflectionClass $class,
         string $name
     ): bool {
-        if ($method->isInternal() && !$class->isInternal()) {
-            return false;
-        }
+        $result = Reflect::isMethodInClass($method, $class, $name);
 
-        $traits = $class->getTraits();
-        if (!$traits) {
-            return true;
-        }
-
-        $location = [
-            $method->getFileName(),
-            $method->getStartLine(),
-            $class->getStartLine(),
-            $class->getEndLine(),
-        ];
-
-        if (in_array(false, $location, true)) {
+        if ($result === null) {
             // @codeCoverageIgnoreStart
             throw new ShouldNotHappenException(sprintf(
                 'Unable to check method location: %s::%s()',
@@ -1060,44 +1045,7 @@ final class PHPDocUtil extends AbstractUtility
             // @codeCoverageIgnoreEnd
         }
 
-        [$file, $line, $start, $end] = $location;
-
-        if (
-            $file !== $class->getFileName()
-            || $line < $start
-            || $line > $end
-        ) {
-            return false;
-        }
-
-        if ($line > $start && $line < $end) {
-            return true;
-        }
-
-        // Check if the method belongs to an adjacent trait on the same line
-        if ($inserted = Reflect::getTraitAliases($class)[$name] ?? null) {
-            $traits = array_intersect_key($traits, [$inserted[0] => null]);
-            $name = $inserted[1];
-        }
-        foreach ($traits as $trait) {
-            if (
-                $trait->hasMethod($name)
-                && ($traitMethod = $trait->getMethod($name))->getFileName() === $file
-                && $traitMethod->getStartLine() === $line
-            ) {
-                throw new LogicException(sprintf(
-                    'Unable to check location of %s::%s(): %s::%s() declared on same line',
-                    $class->getName(),
-                    $method->getName(),
-                    $traitMethod->getDeclaringClass()->getName(),
-                    $name,
-                ));
-            }
-        }
-
-        // @codeCoverageIgnoreStart
-        return true;
-        // @codeCoverageIgnoreEnd
+        return $result;
     }
 
     /**
