@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Utility\Type;
-
 use Salient\Utility\Str;
 
 use function PHPStan\Testing\assertType;

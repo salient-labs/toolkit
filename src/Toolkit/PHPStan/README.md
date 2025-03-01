@@ -13,10 +13,23 @@
 
 `salient/phpstan` provides PHPStan extensions for the Salient toolkit.
 
-For classes that use `ImmutableTrait` to return modified instances:
+- `ArrExtendReturnTypeExtension` provides dynamic [Arr::extend()][] return types
+- `ArrFlattenReturnTypeExtension` provides dynamic [Arr::flatten()][] return
+  types
+- `ArrWhereNotEmptyReturnTypeExtension` provides dynamic
+  [Arr::whereNotEmpty()][] return types
+- `ArrWhereNotNullReturnTypeExtension` provides dynamic [Arr::whereNotNull()][]
+  return types
+- `GetCoalesceRule` reports unnecessary use of [Get::coalesce()][]
+- `GetCoalesceReturnTypeExtension` provides dynamic [Get::coalesce()][] return
+  types
+- `StrCoalesceReturnTypeExtension` provides dynamic [Str::coalesce()][] return
+  types
 
-- `TypesAssignedByImmutableTraitRule` reports the following errors in calls to
-  `with()` and `without()`:
+For classes that use [ImmutableTrait][] to return modified instances:
+
+- `ImmutableTraitRule` reports the following errors in calls to `with()` and
+  `without()`:
   - `salient.property.notFound` for undefined properties
   - `salient.property.private` for inaccessible properties
   - `salient.property.type` for properties that do not accept the value applied
@@ -31,4 +44,18 @@ be found.
 
 [api-docs]:
   https://salient-labs.github.io/toolkit/namespace-Salient.PHPStan.html
+[Arr::extend()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_extend
+[Arr::flatten()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_flatten
+[Arr::whereNotEmpty()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_whereNotEmpty
+[Arr::whereNotNull()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_whereNotNull
+[Get::coalesce()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Get.html#_coalesce
+[ImmutableTrait]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Concern.ImmutableTrait.html
+[Str::coalesce()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Str.html#_coalesce
 [toolkit]: https://github.com/salient-labs/toolkit

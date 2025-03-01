@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPStan\Utility\Rules;
+namespace Salient\PHPStan\Utility;
 
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;

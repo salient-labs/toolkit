@@ -1,45 +1,45 @@
 services:
 	-
-		class: Salient\PHPStan\Core\Rules\ImmutableTraitReadWritePropertiesExtension
+		class: Salient\PHPStan\Core\ImmutableTraitReadWritePropertiesExtension
 		tags:
 			- phpstan.properties.readWriteExtension
 
 	-
-		class: Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule
+		class: Salient\PHPStan\Core\ImmutableTraitRule
 		tags:
 			- phpstan.rules.rule
 
 	-
-		class: Salient\PHPStan\Utility\Rules\GetCoalesceRule
+		class: Salient\PHPStan\Utility\GetCoalesceRule
 		tags:
 			- phpstan.rules.rule
 
 	-
-		class: Salient\PHPStan\Utility\Type\ArrExtendReturnTypeExtension
+		class: Salient\PHPStan\Utility\ArrExtendReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Utility\Type\ArrFlattenReturnTypeExtension
+		class: Salient\PHPStan\Utility\ArrFlattenReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Utility\Type\ArrWhereNotEmptyReturnTypeExtension
+		class: Salient\PHPStan\Utility\ArrWhereNotEmptyReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Utility\Type\ArrWhereNotNullReturnTypeExtension
+		class: Salient\PHPStan\Utility\ArrWhereNotNullReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Utility\Type\GetCoalesceReturnTypeExtension
+		class: Salient\PHPStan\Utility\GetCoalesceReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension
 
 	-
-		class: Salient\PHPStan\Utility\Type\StrCoalesceReturnTypeExtension
+		class: Salient\PHPStan\Utility\StrCoalesceReturnTypeExtension
 		tags:
 			- phpstan.broker.dynamicStaticMethodReturnTypeExtension

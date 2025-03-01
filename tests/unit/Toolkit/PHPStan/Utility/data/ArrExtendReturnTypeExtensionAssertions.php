@@ -1,15 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Utility\Type;
-
 use Salient\Utility\Arr;
-use ReflectionClass;
-use ReflectionFunction;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
-use ReflectionObject;
-use Reflector;
-use Stringable;
 
 use function PHPStan\Testing\assertType;
 

@@ -1,23 +1,23 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Core\Rules;
+namespace Salient\Tests\PHPStan\Core;
 
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule;
+use Salient\PHPStan\Core\ImmutableTraitRule;
 use Salient\Tests\PHPStan\RuleTestCase;
 
 /**
- * @covers \Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule
+ * @covers \Salient\PHPStan\Core\ImmutableTraitRule
  *
- * @extends RuleTestCase<TypesAssignedByImmutableTraitRule>
+ * @extends RuleTestCase<ImmutableTraitRule>
  */
-class TypesAssignedByImmutableTraitRuleTest extends RuleTestCase
+class ImmutableTraitRuleTest extends RuleTestCase
 {
     protected function getRule(): Rule
     {
-        return new TypesAssignedByImmutableTraitRule(
+        return new ImmutableTraitRule(
             self::getContainer()->getByType(ReflectionProvider::class),
         );
     }
@@ -57,6 +57,6 @@ class TypesAssignedByImmutableTraitRuleTest extends RuleTestCase
             }
             $expectedErrors[] = $error;
         }
-        $this->analyse([__DIR__ . '/TypesAssignedByImmutableTraitRuleFailures.php'], $expectedErrors);
+        $this->analyse([__DIR__ . '/ImmutableTraitRuleFailures.php'], $expectedErrors);
     }
 }

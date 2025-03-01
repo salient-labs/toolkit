@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Core\Rules;
+namespace Salient\Tests\PHPStan\Core;
 
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\ImmutableTrait;

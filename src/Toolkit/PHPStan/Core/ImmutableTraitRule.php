@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPStan\Core\Rules;
+namespace Salient\PHPStan\Core;
 
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node;
@@ -10,12 +10,12 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\VerbosityLevel;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\PHPStan\RuleTrait;
+use Salient\PHPStan\Internal\RuleTrait;
 
 /**
  * @implements Rule<MethodCall>
  */
-class TypesAssignedByImmutableTraitRule implements Rule
+class ImmutableTraitRule implements Rule
 {
     use RuleTrait;
 

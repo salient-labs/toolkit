@@ -1,12 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPStan;
+namespace Salient\PHPStan\Internal;
 
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use Salient\PHPStan\Internal\TraitMethodCall;
 use Salient\Utility\Reflect;
 use ReflectionException;
 

@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\PHPStan\Core\Rules;
+namespace Salient\PHPStan\Core;
 
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;

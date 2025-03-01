@@ -1,9 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Utility\Type;
-
 use Salient\Utility\Arr;
-use Stringable;
 
 use function PHPStan\Testing\assertType;
 
