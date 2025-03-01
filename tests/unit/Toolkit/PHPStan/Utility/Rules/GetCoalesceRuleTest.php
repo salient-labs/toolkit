@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\PHPStan\Utility\Rules;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
-use Salient\Container\Container;
 use Salient\PHPStan\Utility\Rules\GetCoalesceRule;
 use Salient\Tests\PHPStan\RuleTestCase;
 
@@ -16,7 +16,9 @@ class GetCoalesceRuleTest extends RuleTestCase
 {
     protected function getRule(): Rule
     {
-        return (new Container())->get(GetCoalesceRule::class);
+        return new GetCoalesceRule(
+            self::getContainer()->getByType(ExprPrinter::class),
+        );
     }
 
     /**

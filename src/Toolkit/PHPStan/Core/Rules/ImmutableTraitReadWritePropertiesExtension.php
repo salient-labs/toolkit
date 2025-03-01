@@ -5,6 +5,7 @@ namespace Salient\PHPStan\Core\Rules;
 use PHPStan\Reflection\PropertyReflection;
 use PHPStan\Rules\Properties\ReadWritePropertiesExtension;
 use Salient\Core\Concern\ImmutableTrait;
+use Salient\Utility\Reflect;
 
 /**
  * @codeCoverageIgnore
@@ -13,25 +14,30 @@ class ImmutableTraitReadWritePropertiesExtension implements ReadWritePropertiesE
 {
     public function isAlwaysRead(PropertyReflection $property, string $propertyName): bool
     {
-        return $this->classHasMutator($property);
+        return $this->propertyIsMutable($property);
     }
 
     public function isAlwaysWritten(PropertyReflection $property, string $propertyName): bool
     {
-        return $this->classHasMutator($property);
+        return $this->propertyIsMutable($property);
     }
 
     public function isInitialized(PropertyReflection $property, string $propertyName): bool
     {
-        return $this->classHasMutator($property);
+        return $this->propertyIsMutable($property);
     }
 
-    public function classHasMutator(PropertyReflection $property): bool
+    private function propertyIsMutable(PropertyReflection $property): bool
     {
-        $classReflection = $property->getDeclaringClass();
-        foreach ($classReflection->getTraits(true) as $traitReflection) {
-            if ($traitReflection->getName() === ImmutableTrait::class) {
-                return true;
+        if (!$property->isStatic()) {
+            $traits = Reflect::getAllTraits(
+                $property->getDeclaringClass()->getNativeReflection(),
+                !$property->isPrivate(),
+            );
+            foreach (array_keys($traits) as $trait) {
+                if ($trait === ImmutableTrait::class) {
+                    return true;
+                }
             }
         }
         return false;

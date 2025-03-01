@@ -13,6 +13,16 @@
 
 `salient/phpstan` provides PHPStan extensions for the Salient toolkit.
 
+For classes that use `ImmutableTrait` to return modified instances:
+
+- `TypesAssignedByImmutableTraitRule` reports the following errors in calls to
+  `with()` and `without()`:
+  - `salient.property.notFound` for undefined properties
+  - `salient.property.private` for inaccessible properties
+  - `salient.property.type` for properties that do not accept the value applied
+- `ImmutableTraitReadWritePropertiesExtension` tells PHPStan that properties
+  visible to `with()` and `without()` are always read and written
+
 ## Documentation
 
 [API documentation][api-docs] for `salient/phpstan` tracks the `main` branch of

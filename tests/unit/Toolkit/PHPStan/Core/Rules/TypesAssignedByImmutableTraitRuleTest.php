@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\PHPStan\Core\Rules;
 
+use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Rules\Rule;
-use Salient\Container\Container;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\PHPStan\Core\Rules\TypesAssignedByImmutableTraitRule;
 use Salient\Tests\PHPStan\RuleTestCase;
@@ -17,7 +17,9 @@ class TypesAssignedByImmutableTraitRuleTest extends RuleTestCase
 {
     protected function getRule(): Rule
     {
-        return (new Container())->get(TypesAssignedByImmutableTraitRule::class);
+        return new TypesAssignedByImmutableTraitRule(
+            self::getContainer()->getByType(ReflectionProvider::class),
+        );
     }
 
     /**
@@ -30,18 +32,22 @@ class TypesAssignedByImmutableTraitRuleTest extends RuleTestCase
         $private = 'Access to an inaccessible property %s::$%s.';
         $privateTip = sprintf('Insert %s or change the visibility of the property.', ImmutableTrait::class);
         $tips = [
-            112 => $privateTip,
-            120 => $privateTip,
+            118 => $privateTip,
+            126 => $privateTip,
         ];
         foreach ([
-            26 => [$doesNotAccept, sprintf('$this(%s)', MyClassWithMutator::class), 'Foo', '(int|string)', 'mixed'],
-            27 => [$doesNotAccept, sprintf('static(%s)', MyClassWithMutator::class), 'Bar', 'bool', '0'],
-            51 => [$undefined, sprintf('$this(%s)', MyClassWithMutator::class), 'qux'],
-            52 => [$undefined, sprintf('static(%s)', MyClassWithMutator::class), 'bar'],
-            70 => [$doesNotAccept, sprintf('$this(%s)', MyClassWithMutatorAlias::class), 'Foo', 'int', 'string'],
-            112 => [$private, sprintf('$this(%s)', MyClassWithInheritedMutator::class), 'Foo'],
-            120 => [$private, sprintf('$this(%s)', MyClassWithInheritedMutator::class), 'Foo'],
-        ] as $line => $replacement) {
+            [26, [$doesNotAccept, sprintf('static(%s)', MyClassWithImmutable::class), 'Bar', 'bool', '0']],
+            [26, [$doesNotAccept, sprintf('$this(%s)', MyClassWithImmutable::class), 'Foo', '(int|string)', 'mixed']],
+            [52, [$undefined, sprintf('static(%s)', MyClassWithImmutable::class), 'bar']],
+            [52, [$undefined, sprintf('$this(%s)', MyClassWithImmutable::class), 'qux']],
+            [72, [$doesNotAccept, sprintf('$this(%s)', MyClassWithImmutableAlias::class), 'Foo', 'int', 'string']],
+            [118, [$private, sprintf('$this(%s)', MyClassWithInheritedImmutable::class), 'Foo']],
+            [126, [$private, sprintf('$this(%s)', MyClassWithInheritedImmutable::class), 'Foo']],
+            [177, [$doesNotAccept, sprintf('$this(%s)', MyClassWithReusedImmutable::class), 'Bar', 'int', 'bool']],
+            [185, [$undefined, sprintf('$this(%s)', MyClassWithReusedImmutable::class), 'Qux']],
+            // [225, [$doesNotAccept, sprintf('$this(%s)', MyClassWithMyImmutable::class), 'Bar', 'int', 'bool']],
+            // [233, [$undefined, sprintf('$this(%s)', MyClassWithMyImmutable::class), 'Qux']],
+        ] as [$line, $replacement]) {
             $error = [
                 sprintf(...$replacement),
                 $line,
