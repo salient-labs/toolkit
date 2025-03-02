@@ -6,19 +6,16 @@ use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
-use Salient\Utility\Arr;
+use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Get;
 
 class GetCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
-    /**
-     * @codeCoverageIgnore
-     */
+    use ReturnTypeExtensionTrait;
+
     public function getClass(): string
     {
         return Get::class;
@@ -35,53 +32,18 @@ class GetCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
         StaticCall $methodCall,
         Scope $scope
     ): ?Type {
-        $null = new NullType();
-
-        $args = $methodCall->getArgs();
-
-        if ($args === []) {
-            return $null;
-        }
-
-        $types = [];
-        $last = null;
+        $args = $this->getArgTypes($methodCall, $scope);
+        $arg = new NullType();
         foreach ($args as $arg) {
-            $type = $scope->getType($arg->value);
-
-            // Unpack variadic arguments
-            if ($arg->unpack) {
-                $type = $type->getIterableValueType();
-
-                if ($type instanceof NeverType) {
-                    continue;
-                }
-
-                if ($type instanceof UnionType) {
-                    $type = $type->getTypes();
-                }
-            }
-
-            foreach (Arr::wrap($type) as $type) {
-                $last = $type;
-                $isNull = $null->isSuperTypeOf($type);
-                if ($isNull->yes()) {
-                    continue;
-                }
-                if ($isNull->no()) {
-                    break 2;
-                }
-                $types[] = TypeCombinator::removeNull($type);
+            $isNull = $arg->isNull();
+            if ($isNull->maybe()) {
+                $types[] = TypeCombinator::removeNull($arg);
+            } elseif ($isNull->no()) {
+                $types[] = $arg;
+                break;
             }
         }
-
-        if ($last) {
-            $types[] = $last;
-        }
-
-        if ($types === []) {
-            return $null;
-        }
-
+        $types[] = $arg;
         return TypeCombinator::union(...$types);
     }
 }

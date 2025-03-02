@@ -10,10 +10,11 @@ $c = [3, 2, null];
 
 $empty = Get::coalesce();
 $null = Get::coalesce(null);
-$nulls = Get::coalesce(null, null);
+$nulls = Get::COALESCE(null, null);
 $unpacked1 = Get::coalesce(...[null, null]);
 $scalar = Get::coalesce($a, null);
 $scalars = Get::coalesce($b, $a, null);
 $array = Get::coalesce($c, null);
 $unpacked2 = Get::coalesce(...$c);
 $unpacked3 = Get::coalesce(...[...$c, null]);
+$unrelated = Get::boolean($a);

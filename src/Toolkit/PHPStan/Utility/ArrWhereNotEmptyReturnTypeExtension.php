@@ -5,24 +5,16 @@ namespace Salient\PHPStan\Utility;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\NullType;
-use PHPStan\Type\ObjectType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
+use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Arr;
-use Stringable;
 
 class ArrWhereNotEmptyReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
-    /**
-     * @codeCoverageIgnore
-     */
+    use ReturnTypeExtensionTrait;
+
     public function getClass(): string
     {
         return Arr::class;
@@ -39,57 +31,11 @@ class ArrWhereNotEmptyReturnTypeExtension implements DynamicStaticMethodReturnTy
         StaticCall $methodCall,
         Scope $scope
     ): ?Type {
-        $args = $methodCall->getArgs();
-
-        if ($args === []) {
-            return null;
-        }
-
-        $type = $scope->getType($args[0]->value);
-
-        if ($type->isIterable()->no()) {
-            return null;
-        }
-
-        $empty = new UnionType([
-            new ConstantStringType(''),
-            new ConstantBooleanType(false),
-            new NullType(),
-        ]);
-
-        if (!$type->isConstantArray()->yes()) {
-            $valueType = $type->getIterableValueType();
-            if ($valueType->isSuperTypeOf($empty)->no()) {
-                return $type;
-            }
-            $keyType = $type->getIterableKeyType();
-            $valueType = TypeCombinator::remove($valueType, $empty);
-            return new ArrayType($keyType, $valueType);
-        }
-
-        $stringable = new ObjectType(Stringable::class);
-
-        $arrays = $type->getConstantArrays();
-        $types = [];
-        foreach ($arrays as $array) {
-            $builder = ConstantArrayTypeBuilder::createEmpty();
-            $keyTypes = $array->getKeyTypes();
-            $valueTypes = $array->getValueTypes();
-            foreach ($keyTypes as $i => $keyType) {
-                $valueType = $valueTypes[$i];
-                $isEmpty = $empty->isSuperTypeOf($valueType);
-                if ($isEmpty->yes()) {
-                    continue;
-                }
-                $valueType = TypeCombinator::remove($valueType, $empty);
-                $optional = $array->isOptionalKey($i)
-                    || $isEmpty->maybe()
-                    || !$valueType->isSuperTypeOf($stringable)->no();
-                $builder->setOffsetValueType($keyType, $valueType, $optional);
-            }
-            $types[] = $builder->getArray();
-        }
-
-        return TypeCombinator::union(...$types);
+        return ($args = $this->getArgTypes($methodCall, $scope))
+            && ($arg = $args[0])->isIterable()->yes()
+                ? ($arg->isConstantArray()->yes()
+                    ? $this->getArrayTypeFromConstantArrayType($arg, $this->getEmptyType(), $this->getMaybeEmptyType())
+                    : $this->getArrayTypeFromIterableType($arg, $this->getEmptyType()))
+                : new NeverType();
     }
 }

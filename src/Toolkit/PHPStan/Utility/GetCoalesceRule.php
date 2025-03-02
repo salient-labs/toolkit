@@ -24,9 +24,6 @@ class GetCoalesceRule implements Rule
         $this->Printer = $printer;
     }
 
-    /**
-     * @codeCoverageIgnore
-     */
     public function getNodeType(): string
     {
         return StaticCall::class;
@@ -34,37 +31,37 @@ class GetCoalesceRule implements Rule
 
     public function processNode(Node $node, Scope $scope): array
     {
-        /** @var StaticCall $node */
-        if (!(
+        if (
             $node->class instanceof Name
             && $node->name instanceof Identifier
             && $node->class->toString() === Get::class
-            && $node->name->toString() === 'coalesce'
-        )) {
-            // @codeCoverageIgnoreStart
-            return [];
-            // @codeCoverageIgnoreEnd
-        }
-
-        $expr = [];
-        foreach ($node->getArgs() as $arg) {
-            if ($arg->unpack) {
-                return [];
+            && $node->name->toLowerString() === 'coalesce'
+        ) {
+            $values = [];
+            foreach ($node->getArgs() as $arg) {
+                // Don't report an error if there is a variadic argument
+                if ($arg->unpack) {
+                    return [];
+                }
+                $values[] = $arg->value;
             }
-            $expr[] = $arg->value;
+            if ($values) {
+                foreach ($values as $value) {
+                    $expr[] = $this->Printer->printExpr($value);
+                }
+            } else {
+                $expr[] = 'null';
+            }
+            return [
+                RuleErrorBuilder::message('Unnecessary use of Get::coalesce().')
+                    ->identifier('salient.needless.coalesce')
+                    ->tip(sprintf(
+                        'Use a variadic argument or replace with: %s',
+                        implode(' ?? ', $expr),
+                    ))
+                    ->build(),
+            ];
         }
-
-        if ($expr) {
-            $expr = array_map([$this->Printer, 'printExpr'], $expr);
-        } else {
-            $expr = ['null'];
-        }
-
-        return [
-            RuleErrorBuilder::message('Unnecessary use of Get::coalesce().')
-                ->identifier('salient.needless.coalesce')
-                ->tip(sprintf('Use a variadic argument or replace with: %s', implode(' ?? ', $expr)))
-                ->build(),
-        ];
+        return [];
     }
 }

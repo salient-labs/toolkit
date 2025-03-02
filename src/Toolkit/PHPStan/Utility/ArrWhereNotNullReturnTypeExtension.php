@@ -5,19 +5,17 @@ namespace Salient\PHPStan\Utility;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
-use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
-use PHPStan\Type\TypeCombinator;
+use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Arr;
 
 class ArrWhereNotNullReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
-    /**
-     * @codeCoverageIgnore
-     */
+    use ReturnTypeExtensionTrait;
+
     public function getClass(): string
     {
         return Arr::class;
@@ -34,50 +32,11 @@ class ArrWhereNotNullReturnTypeExtension implements DynamicStaticMethodReturnTyp
         StaticCall $methodCall,
         Scope $scope
     ): ?Type {
-        $args = $methodCall->getArgs();
-
-        if ($args === []) {
-            return null;
-        }
-
-        $type = $scope->getType($args[0]->value);
-
-        if ($type->isIterable()->no()) {
-            return null;
-        }
-
-        $null = new NullType();
-
-        if (!$type->isConstantArray()->yes()) {
-            $valueType = $type->getIterableValueType();
-            if ($valueType->isSuperTypeOf($null)->no()) {
-                return $type;
-            }
-            $keyType = $type->getIterableKeyType();
-            $valueType = TypeCombinator::remove($valueType, $null);
-            return new ArrayType($keyType, $valueType);
-        }
-
-        $arrays = $type->getConstantArrays();
-        $types = [];
-        foreach ($arrays as $array) {
-            $builder = ConstantArrayTypeBuilder::createEmpty();
-            $keyTypes = $array->getKeyTypes();
-            $valueTypes = $array->getValueTypes();
-            foreach ($keyTypes as $i => $keyType) {
-                $valueType = $valueTypes[$i];
-                $isNull = $null->isSuperTypeOf($valueType);
-                if ($isNull->yes()) {
-                    continue;
-                }
-                $valueType = TypeCombinator::remove($valueType, $null);
-                $optional = $array->isOptionalKey($i)
-                    || $isNull->maybe();
-                $builder->setOffsetValueType($keyType, $valueType, $optional);
-            }
-            $types[] = $builder->getArray();
-        }
-
-        return TypeCombinator::union(...$types);
+        return ($args = $this->getArgTypes($methodCall, $scope))
+            && ($arg = $args[0])->isIterable()->yes()
+                ? ($arg->isConstantArray()->yes()
+                    ? $this->getArrayTypeFromConstantArrayType($arg, new NullType())
+                    : $this->getArrayTypeFromIterableType($arg, new NullType()))
+                : new NeverType();
     }
 }
