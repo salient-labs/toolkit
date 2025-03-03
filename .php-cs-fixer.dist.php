@@ -75,6 +75,7 @@ return (new PhpCsFixer\Config())
             'param-out',
             'return',
             'throws',
+            'codeCoverageIgnore',
         ]],
         // 'phpdoc_param_order' => true,
         'phpdoc_separation' => ['groups' => [
@@ -87,6 +88,7 @@ return (new PhpCsFixer\Config())
             ['phpstan-require-extends', 'phpstan-require-implements'],
             ['readonly', 'var', 'param', 'param-out', 'return', 'throws', 'phpstan-var', 'phpstan-param', 'phpstan-return', 'phpstan-assert*', 'phpstan-ignore*', 'disregard'],
             ['phpstan-*'],
+            ['codeCoverageIgnore'],
         ]],
         'phpdoc_tag_casing' => true,
         'phpdoc_trim_consecutive_blank_line_separation' => true,
