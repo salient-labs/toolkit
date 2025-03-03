@@ -29,11 +29,13 @@ $g = [
         ],
     ],
 ];
+/** @var iterable<object|class-string,array<class-string,array<string,mixed>>> */
+$h = [];
 
-assertType('array<mixed>', Arr::flatten());
-assertType('array<mixed>', Arr::flatten('foo'));
+assertType('*NEVER*', Arr::flatten());
+assertType('*NEVER*', Arr::flatten('foo'));
 assertType('array<mixed>', Arr::flatten([], 'foo'));
-assertType('array<mixed>', Arr::flatten([], 'foo', -1));
+assertType('array<mixed>', Arr::flatten([], -1, 'foo'));
 assertType('array{}', Arr::flatten([]));
 assertType('array{1}', Arr::flatten([1]));
 assertType('array{2}', Arr::flatten([1 => 2]));
@@ -90,3 +92,9 @@ assertType('array{foo: null, bar: null, baz: 2, FOO: 3, BAR: 71}', Arr::flatten(
 assertType('array{foo: 0, bar: 1, baz: 2, 0: array{foo: null, bar: null, baz: array{FOO: 3, BAR: 71}}}', Arr::flatten($g, 0, true));
 assertType('array{foo: null, bar: null, baz: array{FOO: 3, BAR: 71}}', Arr::flatten($g, 1, true));
 assertType('array{foo: null, bar: null, baz: 2, FOO: 3, BAR: 71}', Arr::flatten($g, 2, true));
+assertType('array<mixed>', Arr::flatten($h));
+assertType('array<array<class-string, array<string, mixed>>>', Arr::flatten($h, 0));
+assertType('array<array<string, mixed>>', Arr::flatten($h, 1));
+assertType('array<string, mixed>', Arr::flatten($h, -1, true));
+assertType('array<class-string|int, array<class-string, array<string, mixed>>>', Arr::flatten($h, 0, true));
+assertType('array<class-string, array<string, mixed>>', Arr::flatten($h, 1, true));

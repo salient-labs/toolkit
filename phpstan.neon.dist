@@ -46,6 +46,10 @@ parameters:
 				- tests/unit/Toolkit/PHPStan/Utility/GetCoalesceRuleFailures.php
 				- tests/unit/Toolkit/PHPStan/Utility/data/GetCoalesceReturnTypeExtensionAssertions.php
 		-
+			identifier: method.notFound
+			paths:
+				- tests/unit/Toolkit/PHPStan/Core/ImmutableTraitRuleFailures.php
+		-
 			identifier: property.unused
 			paths:
 				- tests/unit/Toolkit/PHPStan/Core/ImmutableTraitRuleFailures.php

@@ -10,6 +10,7 @@ use Salient\Tests\PHPStan\RuleTestCase;
 
 /**
  * @covers \Salient\PHPStan\Core\ImmutableTraitRule
+ * @covers \Salient\PHPStan\Internal\TraitMethodCall
  *
  * @extends RuleTestCase<ImmutableTraitRule>
  */

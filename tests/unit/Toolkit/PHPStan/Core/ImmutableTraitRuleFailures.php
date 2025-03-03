@@ -233,3 +233,13 @@ class MyClassWithReusedImmutable extends MyClassWithProtectedImmutable
 //         return $this->without('Qux');
 //     }
 // }
+
+class InvalidCallClass
+{
+    public function __construct()
+    {
+        $this->InvalidMethod();
+    }
+}
+
+{ trait OneLineTrait { public function OneLineMethod(): void {} } class OneLineClass { use OneLineTrait; public function __construct() { $this->OneLineMethod(); } } }

@@ -6,6 +6,7 @@ use PhpParser\Node\Expr\CallLike;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\IntegerType;
@@ -58,7 +59,7 @@ trait ReturnTypeExtensionTrait
         Type $iterableType,
         ?Type $removeFromValueType = null
     ): Type {
-        $arrayKey = new UnionType([new IntegerType(), new StringType()]);
+        $arrayKey = $this->getArrayKeyType();
         $keyType = $iterableType->getIterableKeyType();
         $valueType = $iterableType->getIterableValueType();
         $changed = false;
@@ -112,6 +113,14 @@ trait ReturnTypeExtensionTrait
         return TypeCombinator::union(...$arrays);
     }
 
+    private function getArrayKeyType(): Type
+    {
+        return new UnionType([
+            new IntegerType(),
+            new StringType(),
+        ]);
+    }
+
     private function getEmptyType(): Type
     {
         return new UnionType([
@@ -124,5 +133,26 @@ trait ReturnTypeExtensionTrait
     private function getMaybeEmptyType(): Type
     {
         return new ObjectType(Stringable::class);
+    }
+
+    private function getArrKey(Type $type, ?int &$i): Type
+    {
+        if ($type->isConstantScalarValue()->yes()) {
+            if ($type->isInteger()->yes()) {
+                /** @var int */
+                $key = $type->getConstantScalarValues()[0];
+                if ($i === null || $key > $i) {
+                    $i = $key;
+                }
+                return $type;
+            }
+            if ($type->isString()->yes()) {
+                return $type;
+            }
+        }
+        if ($i === null) {
+            return new ConstantIntegerType($i = 0);
+        }
+        return new ConstantIntegerType(++$i);
     }
 }

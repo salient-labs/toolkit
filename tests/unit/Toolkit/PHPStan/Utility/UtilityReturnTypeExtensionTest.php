@@ -11,6 +11,7 @@ use Salient\Tests\PHPStan\ReturnTypeExtensionTestCase;
  * @covers \Salient\PHPStan\Utility\ArrWhereNotNullReturnTypeExtension
  * @covers \Salient\PHPStan\Utility\GetCoalesceReturnTypeExtension
  * @covers \Salient\PHPStan\Utility\StrCoalesceReturnTypeExtension
+ * @covers \Salient\PHPStan\Internal\ArgType
  */
 final class UtilityReturnTypeExtensionTest extends ReturnTypeExtensionTestCase
 {
