@@ -12,6 +12,9 @@ use PHPStan\Type\TypeCombinator;
 use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Str;
 
+/**
+ * @internal
+ */
 class StrCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     use ReturnTypeExtensionTrait;

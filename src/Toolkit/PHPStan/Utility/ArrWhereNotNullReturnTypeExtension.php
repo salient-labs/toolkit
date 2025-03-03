@@ -12,6 +12,9 @@ use PHPStan\Type\Type;
 use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Arr;
 
+/**
+ * @internal
+ */
 class ArrWhereNotNullReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     use ReturnTypeExtensionTrait;

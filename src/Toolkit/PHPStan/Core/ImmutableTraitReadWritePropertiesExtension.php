@@ -8,6 +8,8 @@ use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Reflect;
 
 /**
+ * @internal
+ *
  * @codeCoverageIgnore
  */
 class ImmutableTraitReadWritePropertiesExtension implements ReadWritePropertiesExtension

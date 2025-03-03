@@ -13,6 +13,8 @@ use PHPStan\Rules\RuleErrorBuilder;
 use Salient\Utility\Get;
 
 /**
+ * @internal
+ *
  * @implements Rule<StaticCall>
  */
 class GetCoalesceRule implements Rule

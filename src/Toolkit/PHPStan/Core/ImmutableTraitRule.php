@@ -13,6 +13,8 @@ use Salient\Core\Concern\ImmutableTrait;
 use Salient\PHPStan\Internal\RuleTrait;
 
 /**
+ * @internal
+ *
  * @implements Rule<MethodCall>
  */
 class ImmutableTraitRule implements Rule

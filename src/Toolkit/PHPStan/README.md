@@ -11,30 +11,34 @@
 
 ---
 
-`salient/phpstan` provides PHPStan extensions for the Salient toolkit.
+`salient/phpstan` provides PHPStan extensions for development with the Salient
+toolkit.
 
-- `ArrExtendReturnTypeExtension` provides dynamic [Arr::extend()][] return types
-- `ArrFlattenReturnTypeExtension` provides dynamic [Arr::flatten()][] return
-  types
-- `ArrWhereNotEmptyReturnTypeExtension` provides dynamic
-  [Arr::whereNotEmpty()][] return types
-- `ArrWhereNotNullReturnTypeExtension` provides dynamic [Arr::whereNotNull()][]
-  return types
-- `GetCoalesceRule` reports unnecessary use of [Get::coalesce()][]
-- `GetCoalesceReturnTypeExtension` provides dynamic [Get::coalesce()][] return
-  types
-- `StrCoalesceReturnTypeExtension` provides dynamic [Str::coalesce()][] return
-  types
+## Extensions
 
-For classes that use [ImmutableTrait][] to return modified instances:
+### Dynamic return type
 
-- `ImmutableTraitRule` reports the following errors in calls to `with()` and
-  `without()`:
-  - `salient.property.notFound` for undefined properties
-  - `salient.property.private` for inaccessible properties
-  - `salient.property.type` for properties that do not accept the value applied
-- `ImmutableTraitReadWritePropertiesExtension` tells PHPStan that properties
-  visible to `with()` and `without()` are always read and written
+| Extension                             | Method                   |
+| ------------------------------------- | ------------------------ |
+| `ArrExtendReturnTypeExtension`        | [Arr::extend()][]        |
+| `ArrFlattenReturnTypeExtension`       | [Arr::flatten()][]       |
+| `ArrWhereNotEmptyReturnTypeExtension` | [Arr::whereNotEmpty()][] |
+| `ArrWhereNotNullReturnTypeExtension`  | [Arr::whereNotNull()][]  |
+| `GetCoalesceReturnTypeExtension`      | [Get::coalesce()][]      |
+| `StrCoalesceReturnTypeExtension`      | [Str::coalesce()][]      |
+
+### Custom rule
+
+| Extension            | Description                                                         | Error identifiers                                                                    |
+| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `GetCoalesceRule`    | Checks for unnecessary use of [Get::coalesce()][]                   | `salient.needless.coalesce`                                                          |
+| `ImmutableTraitRule` | Checks calls to [ImmutableTrait][] methods `with()` and `without()` | `salient.property.notFound`<br>`salient.property.private`<br>`salient.property.type` |
+
+### Always-read and written properties
+
+| Extension                                    | Description                                                                  |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ImmutableTraitReadWritePropertiesExtension` | Properties visible to [ImmutableTrait][] methods are always read and written |
 
 ## Documentation
 

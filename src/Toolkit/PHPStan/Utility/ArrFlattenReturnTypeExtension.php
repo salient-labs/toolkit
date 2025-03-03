@@ -18,6 +18,9 @@ use PHPStan\Type\UnionType;
 use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Arr;
 
+/**
+ * @internal
+ */
 class ArrFlattenReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
     use ReturnTypeExtensionTrait;
