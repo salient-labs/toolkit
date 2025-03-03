@@ -34,7 +34,10 @@ class GetCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
     ): ?Type {
         $args = $this->getArgTypes($methodCall, $scope);
         $arg = new NullType();
+        $argsAreOptional = true;
         foreach ($args as $arg) {
+            $argsAreOptional = $argsAreOptional && $arg->IsOptional;
+            $arg = $arg->Type;
             $isNull = $arg->isNull();
             if ($isNull->maybe()) {
                 $types[] = TypeCombinator::removeNull($arg);
@@ -44,6 +47,9 @@ class GetCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
             }
         }
         $types[] = $arg;
+        if ($argsAreOptional) {
+            $types[] = new NullType();
+        }
         return TypeCombinator::union(...$types);
     }
 }

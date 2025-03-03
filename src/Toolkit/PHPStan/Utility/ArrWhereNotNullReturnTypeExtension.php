@@ -32,11 +32,11 @@ class ArrWhereNotNullReturnTypeExtension implements DynamicStaticMethodReturnTyp
         StaticCall $methodCall,
         Scope $scope
     ): ?Type {
-        return ($args = $this->getArgTypes($methodCall, $scope))
+        return ($args = $this->getArgTypes($methodCall, $scope, true))
             && ($arg = $args[0])->isIterable()->yes()
                 ? ($arg->isConstantArray()->yes()
-                    ? $this->getArrayTypeFromConstantArrayType($arg, new NullType())
-                    : $this->getArrayTypeFromIterableType($arg, new NullType()))
+                    ? $this->getArrayTypeFromConstantArrayType($arg->Type, new NullType())
+                    : $this->getArrayTypeFromIterableType($arg->Type, new NullType()))
                 : new NeverType();
     }
 }

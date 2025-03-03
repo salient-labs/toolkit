@@ -23,9 +23,9 @@ use Stringable;
 trait ReturnTypeExtensionTrait
 {
     /**
-     * @return Type[]
+     * @return ArgType[]
      */
-    private function getArgTypes(CallLike $node, Scope $scope, ?Type $emptyVariadicType = null): array
+    private function getArgTypes(CallLike $node, Scope $scope, bool $skipOptional = false): array
     {
         foreach ($node->getArgs() as $arg) {
             $type = $scope->getType($arg->value);
@@ -33,26 +33,23 @@ trait ReturnTypeExtensionTrait
                 if (
                     $type->isConstantArray()->yes()
                     && count($arrays = $type->getConstantArrays()) === 1
-                    && !($array = $arrays[0])->getOptionalKeys()
+                    && (!($array = $arrays[0])->getOptionalKeys() || !$skipOptional)
                 ) {
-                    foreach ($array->getValueTypes() as $type) {
-                        $types[] = $type;
+                    foreach ($array->getValueTypes() as $key => $type) {
+                        $optional = !$skipOptional && $array->isOptionalKey($key);
+                        $types[] = new ArgType($type, $optional, true);
                     }
                     continue;
                 }
-                $isNonEmpty = $type->isIterableAtLeastOnce();
+                $optional = !$type->isIterableAtLeastOnce()->yes();
+                if ($optional && $skipOptional) {
+                    continue;
+                }
                 $type = $type->getIterableValueType();
-                if ($isNonEmpty->maybe()) {
-                    if ($emptyVariadicType) {
-                        $type = TypeCombinator::union($type, $emptyVariadicType);
-                    } else {
-                        continue;
-                    }
-                } elseif ($isNonEmpty->no()) {
-                    continue;
-                }
+            } else {
+                $optional = false;
             }
-            $types[] = $type;
+            $types[] = new ArgType($type, $optional);
         }
         return $types ?? [];
     }

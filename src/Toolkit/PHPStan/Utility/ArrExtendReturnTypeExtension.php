@@ -10,17 +10,17 @@ use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\DynamicStaticMethodReturnTypeExtension;
-use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\IntegerType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use Salient\PHPStan\Internal\ReturnTypeExtensionTrait;
 use Salient\Utility\Arr;
 
 class ArrExtendReturnTypeExtension implements DynamicStaticMethodReturnTypeExtension
 {
-    /**
-     * @codeCoverageIgnore
-     */
+    use ReturnTypeExtensionTrait;
+
     public function getClass(): string
     {
         return Arr::class;
@@ -37,123 +37,58 @@ class ArrExtendReturnTypeExtension implements DynamicStaticMethodReturnTypeExten
         StaticCall $methodCall,
         Scope $scope
     ): ?Type {
-        $args = $methodCall->getArgs();
-
-        if ($args === []) {
-            return null;
-        }
-
-        // Get the `$array` argument and its type
-        $arrayArg = array_shift($args);
-        $arrayType = $scope->getType($arrayArg->value);
-
-        if ($arrayType->isArray()->no()) {
-            return null;
-        }
-
-        // If there are no more arguments, do nothing
-        if ($args === []) {
-            return $arrayType;
-        }
-
-        // Otherwise, check if `$array` and every subsequent argument is a
-        // constant
-        $constant = $arrayType->isConstantArray()->yes()
-            && count($arrayType->getConstantArrays()) === 1;
-
-        $argTypes = [];
-        foreach ($args as $arg) {
-            $type = $scope->getType($arg->value);
-            $argTypes[] = [$type, $arg->unpack];
-
-            if (!$constant) {
-                continue;
-            }
-
-            // Unpack variadic arguments
-            if ($arg->unpack) {
-                $constant = $type->isConstantArray()->yes()
-                    && count($type->getConstantArrays()) === 1;
-                continue;
-            }
-
-            $constant = $type->isConstantValue()->yes();
-        }
-
-        // If so, build a new constant array type by adding elements to `$array`
-        if ($constant) {
-            [$array] = $arrayType->getConstantArrays();
-            $builder = ConstantArrayTypeBuilder::createFromConstantArray($array);
-            $arrayValueType = $array->getIterableValueType();
-
-            // Generalize the array if `$array` has any optional elements with
-            // numeric keys
-            $generalize = false;
-            if ($optionalKeys = $array->getOptionalKeys()) {
-                $keyTypes = $array->getKeyTypes();
-                $int = new IntegerType();
-                foreach ($optionalKeys as $key) {
-                    if (!$int->isSuperTypeOf($keyTypes[$key])->no()) {
-                        $generalize = true;
-                        break;
+        if ($args = $this->getArgTypes($methodCall, $scope)) {
+            $array = array_shift($args);
+            if (!$array->IsOptional && $array->isArray()->yes()) {
+                if (!$args) {
+                    return $array->Type;
+                }
+                if (
+                    $array->isConstantArray()->yes()
+                    && count($constantArrays = $array->getConstantArrays()) === 1
+                ) {
+                    $constant = true;
+                    foreach ($args as $arg) {
+                        if (
+                            !$arg->IsFromUnpackedConstantArray
+                            && !$arg->isConstantValue()->yes()
+                        ) {
+                            $constant = false;
+                            break;
+                        }
+                    }
+                    if ($constant) {
+                        $builder = ConstantArrayTypeBuilder::createFromConstantArray($constantArrays[0]);
+                        $arrayValueType = $array->getIterableValueType();
+                        foreach ($args as $arg) {
+                            if (!$arrayValueType->isSuperTypeOf($arg->Type)->yes()) {
+                                $builder->setOffsetValueType(null, $arg->Type, $arg->IsOptional);
+                            }
+                        }
+                        return $builder->getArray();
                     }
                 }
-            }
-
-            foreach ($argTypes as [$argType, $unpack]) {
-                if ($unpack) {
-                    [$array] = $argType->getConstantArrays();
-                    foreach ($array->getValueTypes() as $i => $valueType) {
-                        // Ignore values already present in `$array`
-                        if ($arrayValueType->isSuperTypeOf($valueType)->yes()) {
-                            continue;
-                        }
-                        // Generalize the array if any variadic arguments after
-                        // `$array` have optional elements
-                        $optional = false;
-                        if ($array->isOptionalKey($i)) {
-                            $optional = true;
-                            $generalize = true;
-                        }
-                        $builder->setOffsetValueType(null, $valueType, $optional);
-                    }
-                    continue;
+                $argsAreOptional = true;
+                foreach ($args as $arg) {
+                    $argsAreOptional = $argsAreOptional && $arg->IsOptional;
+                    $types[] = $arg->Type;
                 }
-
-                if ($arrayValueType->isSuperTypeOf($argType)->yes()) {
-                    continue;
+                $type = new ArrayType(
+                    TypeCombinator::union($array->getIterableKeyType(), new IntegerType()),
+                    TypeCombinator::union($array->getIterableValueType(), ...$types),
+                );
+                $accessoryTypes = [];
+                if (!$argsAreOptional) {
+                    $accessoryTypes[] = new NonEmptyArrayType();
                 }
-                $builder->setOffsetValueType(null, $argType);
+                if ($array->isList()->yes()) {
+                    $accessoryTypes[] = new AccessoryArrayListType();
+                }
+                return $accessoryTypes
+                    ? TypeCombinator::intersect($type, ...$accessoryTypes)
+                    : $type;
             }
-
-            $built = $builder->getArray();
-            return $generalize
-                ? $built->generalize(GeneralizePrecision::lessSpecific())
-                : $built;
         }
-
-        // Otherwise, add `int` to the array's key type, and the types of
-        // subsequent arguments to its value type
-        $keyType = $arrayType->getIterableKeyType();
-        $valueType = $arrayType->getIterableValueType();
-        $nonEmpty = $arrayType->isIterableAtLeastOnce()->yes();
-        $keyType = TypeCombinator::union($keyType, new IntegerType());
-        foreach ($argTypes as [$argType, $unpack]) {
-            if ($unpack) {
-                $nonEmpty = $nonEmpty || $argType->isIterableAtLeastOnce()->yes();
-                $argType = $argType->getIterableValueType();
-            } else {
-                $nonEmpty = true;
-            }
-            $valueType = TypeCombinator::union($valueType, $argType);
-        }
-        $type = new ArrayType($keyType, $valueType);
-        if ($nonEmpty) {
-            $type = TypeCombinator::intersect($type, new NonEmptyArrayType());
-        }
-        if ($arrayType->isList()->yes()) {
-            $type = TypeCombinator::intersect($type, new AccessoryArrayListType());
-        }
-        return $type;
+        return new NeverType();
     }
 }

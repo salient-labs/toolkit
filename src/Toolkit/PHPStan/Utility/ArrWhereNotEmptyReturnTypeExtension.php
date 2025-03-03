@@ -31,11 +31,11 @@ class ArrWhereNotEmptyReturnTypeExtension implements DynamicStaticMethodReturnTy
         StaticCall $methodCall,
         Scope $scope
     ): ?Type {
-        return ($args = $this->getArgTypes($methodCall, $scope))
+        return ($args = $this->getArgTypes($methodCall, $scope, true))
             && ($arg = $args[0])->isIterable()->yes()
                 ? ($arg->isConstantArray()->yes()
-                    ? $this->getArrayTypeFromConstantArrayType($arg, $this->getEmptyType(), $this->getMaybeEmptyType())
-                    : $this->getArrayTypeFromIterableType($arg, $this->getEmptyType()))
+                    ? $this->getArrayTypeFromConstantArrayType($arg->Type, $this->getEmptyType(), $this->getMaybeEmptyType())
+                    : $this->getArrayTypeFromIterableType($arg->Type, $this->getEmptyType()))
                 : new NeverType();
     }
 }

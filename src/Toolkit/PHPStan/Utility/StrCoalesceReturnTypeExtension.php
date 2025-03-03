@@ -33,9 +33,12 @@ class StrCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
         Scope $scope
     ): ?Type {
         $empty = $this->getEmptyType();
-        $args = $this->getArgTypes($methodCall, $scope, new NullType());
+        $args = $this->getArgTypes($methodCall, $scope);
         $arg = new NullType();
+        $argsAreOptional = true;
         foreach ($args as $arg) {
+            $argsAreOptional = $argsAreOptional && $arg->IsOptional;
+            $arg = $arg->Type;
             $isEmpty = $empty->isSuperTypeOf($arg);
             if ($isEmpty->maybe()) {
                 $types[] = TypeCombinator::remove($arg, $empty)->toString();
@@ -51,6 +54,9 @@ class StrCoalesceReturnTypeExtension implements DynamicStaticMethodReturnTypeExt
             $types[] = $arg->toString();
         } else {
             $types[] = $arg;
+        }
+        if ($argsAreOptional) {
+            $types[] = new NullType();
         }
         return TypeCombinator::union(...$types);
     }
