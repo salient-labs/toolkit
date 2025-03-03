@@ -75,6 +75,12 @@ if (\PHP_VERSION_ID < 80000) {
                     'path' => "$dir/src/Toolkit/Core/Reflection/ClassReflection.php",
                 ],
                 [
+                    'message' => '#^Static property Salient\\\\Curler\\\\Curler\:\:\$Handle \(CurlHandle\|resource\|null\) is never assigned CurlHandle so it can be removed from the property type\.$#',
+                    'identifier' => 'property.unusedType',
+                    'count' => 1,
+                    'path' => "$dir/src/Toolkit/Curler/Curler.php",
+                ],
+                [
                     'message' => '#^Method Salient\\\\Utility\\\\Regex\:\:matchAll\(\) should return int but returns int\<0, max\>\|null\.$#',
                     'identifier' => 'return.type',
                     'count' => 1,
@@ -101,6 +107,12 @@ return [
             [
                 'message' => "#^Offset 'uri' on array\{timed_out\: bool, blocked\: bool, eof\: bool, unread_bytes\: int, stream_type\: string, wrapper_type\: string, wrapper_data\: mixed, mode\: string, \.\.\.\} on left side of \?\? always exists and is not nullable\.\$#",
                 'identifier' => 'nullCoalesce.offset',
+            ],
+            [
+                'message' => '#^Static property Salient\\\\Curler\\\\Curler\:\:\$Handle \(CurlHandle\|resource\|null\) is never assigned resource so it can be removed from the property type\.$#',
+                'identifier' => 'property.unusedType',
+                'count' => 1,
+                'path' => "$dir/src/Toolkit/Curler/Curler.php",
             ],
             [
                 'message' => '#^Method Salient\\\\Testing\\\\Core\\\\MockPhpStream\:\:stream_read\(\) never returns false so it can be removed from the return type\.$#',

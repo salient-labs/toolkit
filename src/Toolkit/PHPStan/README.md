@@ -11,7 +11,34 @@
 
 ---
 
-`salient/phpstan` provides PHPStan extensions for the Salient toolkit.
+`salient/phpstan` provides PHPStan extensions for development with the Salient
+toolkit.
+
+## Extensions
+
+### Dynamic return type
+
+| Extension                             | Method                   |
+| ------------------------------------- | ------------------------ |
+| `ArrExtendReturnTypeExtension`        | [Arr::extend()][]        |
+| `ArrFlattenReturnTypeExtension`       | [Arr::flatten()][]       |
+| `ArrWhereNotEmptyReturnTypeExtension` | [Arr::whereNotEmpty()][] |
+| `ArrWhereNotNullReturnTypeExtension`  | [Arr::whereNotNull()][]  |
+| `GetCoalesceReturnTypeExtension`      | [Get::coalesce()][]      |
+| `StrCoalesceReturnTypeExtension`      | [Str::coalesce()][]      |
+
+### Custom rule
+
+| Extension            | Description                                                         | Error identifiers                                                                    |
+| -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `GetCoalesceRule`    | Checks for unnecessary use of [Get::coalesce()][]                   | `salient.needless.coalesce`                                                          |
+| `ImmutableTraitRule` | Checks calls to [ImmutableTrait][] methods `with()` and `without()` | `salient.property.notFound`<br>`salient.property.private`<br>`salient.property.type` |
+
+### Always-read and written properties
+
+| Extension                                    | Description                                                                  |
+| -------------------------------------------- | ---------------------------------------------------------------------------- |
+| `ImmutableTraitReadWritePropertiesExtension` | Properties visible to [ImmutableTrait][] methods are always read and written |
 
 ## Documentation
 
@@ -21,4 +48,18 @@ be found.
 
 [api-docs]:
   https://salient-labs.github.io/toolkit/namespace-Salient.PHPStan.html
+[Arr::extend()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_extend
+[Arr::flatten()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_flatten
+[Arr::whereNotEmpty()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_whereNotEmpty
+[Arr::whereNotNull()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_whereNotNull
+[Get::coalesce()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Get.html#_coalesce
+[ImmutableTrait]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Concern.ImmutableTrait.html
+[Str::coalesce()]:
+  https://salient-labs.github.io/toolkit/Salient.Utility.Str.html#_coalesce
 [toolkit]: https://github.com/salient-labs/toolkit

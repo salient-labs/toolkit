@@ -25,9 +25,9 @@ use Salient\Tests\Reflection\MyUndocumentedClass;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
-use LogicException;
 use ReflectionClass;
 use ReflectionClassConstant;
+use ReflectionException;
 use ReflectionMethod;
 use ReflectionProperty;
 
@@ -526,7 +526,7 @@ final class PHPDocUtilTest extends TestCase
 
     public function testGetAllMethodDocCommentsFromOneLineDeclaration(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(ReflectionException::class);
         $this->expectExceptionMessage(sprintf(
             'Unable to check location of %s::%s(): %s::%s() declared on same line',
             MyOneLineClass::class,

@@ -1,7 +1,5 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Utility\Type;
-
 use Salient\Utility\Str;
 
 use function PHPStan\Testing\assertType;
@@ -35,6 +33,14 @@ $i = [false, null];
 $j = [true];
 $k = [0];
 $l = [0, null];
+/** @var array<string|null> */
+$m = [];
+/** @var array<non-empty-string> */
+$n = [];
+/** @var non-empty-array<string|null> */
+$o = [];
+/** @var non-empty-array<string> */
+$p = [];
 
 assertType('null', Str::coalesce(...$a));
 assertType('null', Str::coalesce(...$a, ...$a));
@@ -50,6 +56,10 @@ assertType('null', Str::coalesce(...$i));
 assertType("'1'", Str::coalesce(...$j));
 assertType("'0'", Str::coalesce(...$k));
 assertType("'0'", Str::coalesce(...$l));
+assertType('string|null', Str::coalesce(...$m));
+assertType('non-empty-string|null', Str::coalesce(...$n));
+assertType('string|null', Str::coalesce(...$o));
+assertType('string', Str::coalesce(...$p));
 
 foreach ($g as $value) {
     assertType("''|'foo'|null", Str::coalesce('', $value));

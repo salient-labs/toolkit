@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Tests\PHPStan\Utility\Rules;
+namespace Salient\Tests\PHPStan\Utility;
 
+use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Rules\Rule;
-use Salient\Container\Container;
-use Salient\PHPStan\Utility\Rules\GetCoalesceRule;
+use Salient\PHPStan\Utility\GetCoalesceRule;
 use Salient\Tests\PHPStan\RuleTestCase;
 
 /**
- * @covers \Salient\PHPStan\Utility\Rules\GetCoalesceRule
+ * @covers \Salient\PHPStan\Utility\GetCoalesceRule
  *
  * @extends RuleTestCase<GetCoalesceRule>
  */
@@ -16,7 +16,9 @@ class GetCoalesceRuleTest extends RuleTestCase
 {
     protected function getRule(): Rule
     {
-        return (new Container())->get(GetCoalesceRule::class);
+        return new GetCoalesceRule(
+            self::getContainer()->getByType(ExprPrinter::class),
+        );
     }
 
     /**

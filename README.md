@@ -52,14 +52,14 @@ a standalone dependency injection container that will be removed when
 | HTTP        | [salient/http][]        | HTTP message and utility classes                                                    |
 | Iterators   | [salient/iterators][]   | Iterator classes and traits                                                         |
 | PHPDoc      | [salient/phpdoc][]      | A PHPDoc extractor and parser                                                       |
-| PHPStan     | [salient/phpstan][][^1] | PHPStan extensions                                                                  |
+| PHPStan     | [salient/phpstan][]\*   | PHPStan extensions for development with the Salient toolkit                         |
 | Polyfills   | [salient/polyfills][]   | Polyfills                                                                           |
-| Sli         | [salient/sli][][^1]     | `sli`, the toolkit's CLI utility                                                    |
+| Sli         | [salient/sli][]\*       | `sli`, the toolkit's CLI utility                                                    |
 | Sync        | [salient/sync][]        | A framework and SQLite-backed store for synchronising data with backends            |
-| Testing     | [salient/testing][][^1] | Classes that are useful in test suites                                              |
+| Testing     | [salient/testing][]\*   | Classes that are useful in test suites                                              |
 | Utils       | [salient/utils][]       | Utility methods via stateless classes                                               |
 
-[^1]: This component should only be installed as a development dependency.
+<small>\* for development only</small>
 
 ## Documentation
 
