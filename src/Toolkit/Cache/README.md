@@ -14,9 +14,9 @@
 `salient/cache` provides a key-value store backed by a SQLite database.
 
 - Implements [PSR-16 (Common Interface for Caching Libraries)][PSR-16]
-- Multiple cache operations can be grouped into an atomic transaction via a
-  [time-bound instance of the cache][asOfNow] that maintains an exclusive lock
-  on the underlying database until it goes out of scope or is explicitly closed
+- Multiple operations can be grouped into an atomic transaction via a
+  [time-bound copy of the cache][asOfNow] that maintains an exclusive lock on
+  the underlying database until it goes out of scope or is explicitly closed
 
 [asOfNow]:
   https://salient-labs.github.io/toolkit/Salient.Cache.CacheStore.html#_asOfNow
