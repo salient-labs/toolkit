@@ -10,6 +10,43 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.77] - 2025-03-04
+
+### Added
+
+#### `Utility`
+
+- Add `Reflect::getAllTraits()`, with optional recursion into parents
+- Add `Reflect::isMethodInClass()`
+
+### Changed
+
+#### `PHPStan`
+
+- Ignore static properties and properties `ImmutableTrait` methods cannot access in `ImmutableTraitReadWritePropertiesExtension`
+- Improve array argument unpacking in `ArrExtendReturnTypeExtension`, `GetCoalesceReturnTypeExtension` and `StrCoalesceReturnTypeExtension`
+
+#### `Utility`
+
+- Optionally recurse into traits in `Reflect::getTraitMethod()`
+
+### Fixed
+
+#### `PHPStan`
+
+- In `ImmutableTraitRule`:
+  - Fix issue where inaccessible properties may not be reported
+  - Fix issue where calls to `ImmutableTrait` methods are not detected when they override inherited methods or when `ImmutableTrait` is inserted by another trait
+- Fix `ArrWhereNotNullReturnTypeExtension` and `ArrWhereNotEmptyReturnTypeExtension` issues where:
+  - `iterable` types may be returned
+  - invalid key types may be returned
+  - variadic arguments are not unpacked
+- Fix `GetCoalesceRule` issue where calls to `Get::coalesce()` are matched case-sensitively
+
+#### `Testing`
+
+- Fix issue where `MockTarget::write()` may fail to write long messages to the (optional) underlying stream
+
 ## [v0.99.76] - 2025-02-26
 
 ### Added
@@ -4733,6 +4770,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.77]: https://github.com/salient-labs/toolkit/compare/v0.99.76...v0.99.77
 [v0.99.76]: https://github.com/salient-labs/toolkit/compare/v0.99.75...v0.99.76
 [v0.99.75]: https://github.com/salient-labs/toolkit/compare/v0.99.74...v0.99.75
 [v0.99.74]: https://github.com/salient-labs/toolkit/compare/v0.99.73...v0.99.74
