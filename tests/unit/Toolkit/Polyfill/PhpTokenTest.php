@@ -9,5 +9,8 @@ use Salient\Polyfill\PhpToken;
  */
 final class PhpTokenTest extends PhpTokenTestCase
 {
-    protected static string $Token = PhpToken::class;
+    protected static function getToken(): string
+    {
+        return PhpToken::class;
+    }
 }
