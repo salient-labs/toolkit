@@ -32,6 +32,7 @@
     </exclude>
     <report>
       <html outputDirectory="build/coverage" />
+      <php outputFile="build/coverage.php" />
     </report>
   </coverage>
   <extensions>

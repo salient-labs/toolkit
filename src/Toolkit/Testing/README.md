@@ -13,6 +13,11 @@
 
 `salient/testing` provides classes that are useful in test suites.
 
+- `MockPhpStream` preserves data written to `php://` streams for subsequent
+  reading via the same URI
+- `MockTarget` records messages logged via the Salient toolkit's [Console
+  API][salient/console]
+
 ## Documentation
 
 [API documentation][api-docs] for `salient/testing` tracks the `main` branch of
@@ -21,4 +26,5 @@ be found.
 
 [api-docs]:
   https://salient-labs.github.io/toolkit/namespace-Salient.Testing.html
+[salient/console]: https://packagist.org/packages/salient/console
 [toolkit]: https://github.com/salient-labs/toolkit

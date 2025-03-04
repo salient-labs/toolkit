@@ -11,9 +11,7 @@
 
 ---
 
-`salient/polyfills` provides the following polyfills:
-
-- `PhpToken` for PHP 7.4
+`salient/polyfills` provides `PhpToken` and `Stringable` on PHP 7.4.
 
 ## Documentation
 

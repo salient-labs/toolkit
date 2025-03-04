@@ -11,5 +11,8 @@ use PhpToken;
  */
 final class NativePhpTokenTest extends PhpTokenTestCase
 {
-    protected static string $Token = PhpToken::class;
+    protected static function getToken(): string
+    {
+        return PhpToken::class;
+    }
 }

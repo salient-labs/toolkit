@@ -80,25 +80,6 @@ final class MockTarget implements ConsoleTargetStreamInterface
     /**
      * @inheritDoc
      */
-    public function close(): void
-    {
-        if (!$this->IsValid) {
-            return;
-        }
-
-        $this->IsStdout = false;
-        $this->IsStderr = false;
-        $this->IsTty = false;
-        $this->Width = null;
-        $this->Stream = null;
-        unset($this->Formatter);
-
-        $this->IsValid = false;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function reopen(): void {}
 
     /**
@@ -129,10 +110,10 @@ final class MockTarget implements ConsoleTargetStreamInterface
         $this->assertIsValid();
 
         if ($this->Stream) {
-            $suffix = $message === '' || $message[-1] !== "\r"
-                ? "\n"
-                : '';
-            File::write($this->Stream, $message . $suffix);
+            $suffix = $message !== '' && $message[-1] === "\r"
+                ? ''
+                : "\n";
+            File::writeAll($this->Stream, $message . $suffix);
         }
 
         $message = [$level, $message];
@@ -140,6 +121,25 @@ final class MockTarget implements ConsoleTargetStreamInterface
             $message[] = $context;
         }
         $this->Messages[] = $message;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function close(): void
+    {
+        if (!$this->IsValid) {
+            return;
+        }
+
+        $this->IsStdout = false;
+        $this->IsStderr = false;
+        $this->IsTty = false;
+        $this->Width = null;
+        $this->Stream = null;
+        unset($this->Formatter);
+
+        $this->IsValid = false;
     }
 
     /**
