@@ -5,4 +5,4 @@ namespace Salient\Contract\Container\Exception;
 /**
  * @api
  */
-interface ArgumentsNotUsedExceptionInterface extends ContainerExceptionInterface {}
+interface InvalidServiceException extends ContainerException {}

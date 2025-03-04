@@ -7,7 +7,7 @@ use Salient\Contract\Container\ContainerInterface;
 /**
  * @api
  */
-interface BeforeGlobalContainerSetEventInterface
+interface BeforeGlobalContainerSetEvent
 {
     /**
      * Get the container that will be set, or null if it will be unset

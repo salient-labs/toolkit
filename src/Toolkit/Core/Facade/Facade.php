@@ -3,7 +3,7 @@
 namespace Salient\Core\Facade;
 
 use Salient\Container\Container;
-use Salient\Contract\Container\Event\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Facade\FacadeInterface;
@@ -158,7 +158,7 @@ abstract class Facade implements FacadeInterface
             }
 
             $listenerId = $dispatcher->listen(
-                static function (BeforeGlobalContainerSetEventInterface $event): void {
+                static function (BeforeGlobalContainerSetEvent $event): void {
                     if ($container = $event->getContainer()) {
                         App::swap($container);
                     }
@@ -170,7 +170,7 @@ abstract class Facade implements FacadeInterface
             }
 
             $listenerId = $dispatcher->listen(
-                static function (BeforeGlobalContainerSetEventInterface $event) use ($name, $instance): void {
+                static function (BeforeGlobalContainerSetEvent $event) use ($name, $instance): void {
                     if (($container = $event->getContainer()) && !$container->hasInstance($name)) {
                         $container->instance($name, $instance);
                     }

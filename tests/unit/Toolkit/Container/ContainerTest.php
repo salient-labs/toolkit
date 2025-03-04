@@ -7,9 +7,9 @@ use Psr\Log\LoggerInterface;
 use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Container\Exception\ArgumentsNotUsedExceptionInterface;
-use Salient\Contract\Container\Exception\InvalidServiceExceptionInterface;
-use Salient\Contract\Container\Exception\ServiceNotFoundExceptionInterface;
+use Salient\Contract\Container\Exception\ArgumentsNotUsedException;
+use Salient\Contract\Container\Exception\InvalidServiceException;
+use Salient\Contract\Container\Exception\ServiceNotFoundException;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
@@ -54,7 +54,7 @@ final class ContainerTest extends TestCase
         $this->assertFalse($container->has($id));
 
         if (interface_exists($id)) {
-            $this->expectException(ServiceNotFoundExceptionInterface::class);
+            $this->expectException(ServiceNotFoundException::class);
             $container->get($id);
         }
     }
@@ -141,7 +141,7 @@ final class ContainerTest extends TestCase
     {
         $container = (new Container())->singleton(stdClass::class);
         $container->get(stdClass::class);
-        $this->expectException(ArgumentsNotUsedExceptionInterface::class);
+        $this->expectException(ArgumentsNotUsedException::class);
         $this->expectExceptionMessage('Cannot apply arguments to shared instance: stdClass');
         $container->get(stdClass::class, ['foo' => 'bar']);
     }
@@ -214,7 +214,7 @@ final class ContainerTest extends TestCase
         );
         $this->assertFalse($container->has(Service1::class));
 
-        $this->expectException(InvalidServiceExceptionInterface::class);
+        $this->expectException(InvalidServiceException::class);
         $this->expectExceptionMessage(sprintf(
             '%s does not implement: %s',
             ProviderB::class,
@@ -281,7 +281,7 @@ final class ContainerTest extends TestCase
         $this->assertInstanceOf(B::class, $o3);
 
         // Without `$ts2`, the container throws an exception
-        $this->expectException(ServiceNotFoundExceptionInterface::class);
+        $this->expectException(ServiceNotFoundException::class);
         $container->get(A::class);
     }
 

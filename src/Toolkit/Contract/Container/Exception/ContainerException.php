@@ -7,4 +7,4 @@ use Psr\Container\ContainerExceptionInterface as PsrContainerExceptionInterface;
 /**
  * @api
  */
-interface ContainerExceptionInterface extends PsrContainerExceptionInterface {}
+interface ContainerException extends PsrContainerExceptionInterface {}

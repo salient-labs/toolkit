@@ -7,4 +7,4 @@ use Psr\Container\NotFoundExceptionInterface;
 /**
  * @api
  */
-interface ServiceNotFoundExceptionInterface extends ContainerExceptionInterface, NotFoundExceptionInterface {}
+interface ServiceNotFoundException extends ContainerException, NotFoundExceptionInterface {}

@@ -2,7 +2,7 @@
 
 namespace Salient\Container\Exception;
 
-use Salient\Contract\Container\Exception\ArgumentsNotUsedExceptionInterface;
+use Salient\Contract\Container\Exception\ArgumentsNotUsedException as ArgumentsNotUsedExceptionInterface;
 use Salient\Core\Exception\Exception;
 
 /**

@@ -2,7 +2,7 @@
 
 namespace Salient\Container\Event;
 
-use Salient\Contract\Container\Event\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Container\Event\BeforeGlobalContainerSetEvent as BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Container\ContainerInterface;
 
 /**
