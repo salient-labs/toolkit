@@ -10,9 +10,9 @@ use Salient\Cache\CacheStore;
 use Salient\Console\Console;
 use Salient\Console\ConsoleLogger;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
-use Salient\Container\Exception\ArgumentsNotUsedException;
 use Salient\Container\Exception\InvalidServiceException;
 use Salient\Container\Exception\ServiceNotFoundException;
+use Salient\Container\Exception\UnusedArgumentsException;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
@@ -205,7 +205,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     {
         $hasInstance = $this->Dice->hasShared($id);
         if ($hasInstance && $args) {
-            throw new ArgumentsNotUsedException(sprintf(
+            throw new UnusedArgumentsException(sprintf(
                 'Cannot apply arguments to shared instance: %s',
                 $id,
             ));

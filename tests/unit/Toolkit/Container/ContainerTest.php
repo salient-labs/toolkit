@@ -7,9 +7,9 @@ use Psr\Log\LoggerInterface;
 use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Container\Exception\ArgumentsNotUsedException;
 use Salient\Contract\Container\Exception\InvalidServiceException;
 use Salient\Contract\Container\Exception\ServiceNotFoundException;
+use Salient\Contract\Container\Exception\UnusedArgumentsException;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
 use Salient\Contract\Container\ContainerInterface;
@@ -141,7 +141,7 @@ final class ContainerTest extends TestCase
     {
         $container = (new Container())->singleton(stdClass::class);
         $container->get(stdClass::class);
-        $this->expectException(ArgumentsNotUsedException::class);
+        $this->expectException(UnusedArgumentsException::class);
         $this->expectExceptionMessage('Cannot apply arguments to shared instance: stdClass');
         $container->get(stdClass::class, ['foo' => 'bar']);
     }
