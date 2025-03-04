@@ -3,6 +3,7 @@
 namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Contract\Container\Exception\ArgumentsNotUsedExceptionInterface;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;

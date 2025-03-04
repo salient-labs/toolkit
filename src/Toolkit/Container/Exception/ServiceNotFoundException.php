@@ -2,7 +2,7 @@
 
 namespace Salient\Container\Exception;
 
-use Salient\Contract\Container\ServiceNotFoundExceptionInterface;
+use Salient\Contract\Container\Exception\ServiceNotFoundExceptionInterface;
 use Salient\Core\Exception\Exception;
 
 /**

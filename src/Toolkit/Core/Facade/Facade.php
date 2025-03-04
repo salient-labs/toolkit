@@ -3,7 +3,7 @@
 namespace Salient\Core\Facade;
 
 use Salient\Container\Container;
-use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Container\Event\BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Facade\FacadeInterface;

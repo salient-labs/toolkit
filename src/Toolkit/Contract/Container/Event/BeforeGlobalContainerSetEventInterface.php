@@ -1,6 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Container;
+namespace Salient\Contract\Container\Event;
+
+use Salient\Contract\Container\ContainerInterface;
 
 /**
  * @api

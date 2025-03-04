@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php declare(strict_types=1);
 
-use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Container\Event\BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Sync\Event\SyncStoreLoadedEventInterface;
 use Salient\Core\Facade\Event;
 use Salient\Tests\Sync\Entity\Provider\CommentProvider;

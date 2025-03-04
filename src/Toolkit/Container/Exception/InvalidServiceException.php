@@ -2,7 +2,7 @@
 
 namespace Salient\Container\Exception;
 
-use Salient\Contract\Container\InvalidServiceExceptionInterface;
+use Salient\Contract\Container\Exception\InvalidServiceExceptionInterface;
 use Salient\Core\Exception\Exception;
 
 /**
