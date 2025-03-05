@@ -425,7 +425,11 @@ final class ContainerTest extends TestCase
         );
 
         // Give each `Department` the same name
-        $container->bind(Department::class, null, ['They Who Shall Not Be Named']);
+        $container->addContextualBinding(
+            Department::class,
+            '$name',
+            fn() => 'They Who Shall Not Be Named',
+        );
 
         // Register `OrgUnit` bindings
         $container->provider(OrgUnit::class);

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "334f505d4968d530c2bfe02cb4ed4fb5",
+    "content-hash": "90f51bbd41fd433ea509ba1bbd93cd29",
     "packages": [
         {
             "name": "lkrms/dice",
-            "version": "v4.1.10",
+            "version": "v4.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lkrms/Dice.git",
-                "reference": "22f0e027e9b037feb0ce75e69a1e434ea7fa6dd0"
+                "reference": "5d1fcf987fa039eca6a9e1d67a57b6a9ac59c476"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lkrms/Dice/zipball/22f0e027e9b037feb0ce75e69a1e434ea7fa6dd0",
-                "reference": "22f0e027e9b037feb0ce75e69a1e434ea7fa6dd0",
+                "url": "https://api.github.com/repos/lkrms/Dice/zipball/5d1fcf987fa039eca6a9e1d67a57b6a9ac59c476",
+                "reference": "5d1fcf987fa039eca6a9e1d67a57b6a9ac59c476",
                 "shasum": ""
             },
             "require": {
@@ -45,9 +45,9 @@
                 "ioc"
             ],
             "support": {
-                "source": "https://github.com/lkrms/Dice/tree/v4.1.10"
+                "source": "https://github.com/lkrms/Dice/tree/v4.1.11"
             },
-            "time": "2024-05-31T05:58:54+00:00"
+            "time": "2025-03-05T07:30:02+00:00"
         },
         {
             "name": "psr/container",

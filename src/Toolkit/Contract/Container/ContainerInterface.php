@@ -3,35 +3,15 @@
 namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Contract\Container\Exception\InvalidServiceException;
+use Salient\Contract\Container\Exception\ServiceNotFoundException;
 use Salient\Contract\Container\Exception\UnusedArgumentsException;
 use Salient\Contract\Core\Chainable;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\Core\Unloadable;
+use Closure;
 
 /**
- * A service container with contextual bindings
- *
- * If a service resolves to a new instance of a class that implements
- * `ContainerAwareInterface`, the container is passed to its
- * {@see ContainerAwareInterface::setContainer()} method.
- *
- * Then, if the resolved instance implements {@see ServiceAwareInterface}, its
- * {@see ServiceAwareInterface::setService()} method is called.
- *
- * A service provider registered via {@see provider()} or {@see providers()} may
- * also implement any combination of the following interfaces:
- *
- * - {@see SingletonInterface} to be instantiated once per container
- * - {@see HasServices} to specify which of its interfaces are services to
- *   register with the container
- * - {@see HasBindings} to bind additional services to the container
- * - {@see HasContextualBindings} to bind services to the container that only
- *   apply in the context of the provider
- *
- * {@see SingletonInterface} is ignored if a lifetime other than
- * {@see ServiceLifetime::INHERIT} is given when the service provider is
- * registered.
- *
  * @api
  */
 interface ContainerInterface extends
@@ -61,7 +41,7 @@ interface ContainerInterface extends
     public static function setGlobalContainer(?ContainerInterface $container): void;
 
     /**
-     * Apply the contextual bindings of a service to a copy of the container
+     * Apply contextual bindings to a copy of the container
      *
      * @param class-string $id
      * @return static
@@ -71,18 +51,18 @@ interface ContainerInterface extends
     /**
      * Resolve a service from the container
      *
-     * Values in `$args` are matched with service dependencies using one or more
-     * of the following strategies:
+     * Values in `$args` are passed to constructor parameters after:
      *
-     * - match objects to parameters by hinted type
-     * - match other values to parameters by name
-     * - match remaining values by type, then position
+     * 1. matching objects to parameters with compatible type declarations
+     * 2. matching keys in `$args` to parameters with the same name
+     * 3. matching values to parameters by type and position
      *
      * @template T
      *
      * @param class-string<T> $id
      * @param mixed[] $args
      * @return T&object
+     * @throws ServiceNotFoundException if `$id` is not instantiable.
      * @throws UnusedArgumentsException if `$args` are given and `$id` resolves
      * to a shared instance.
      */
@@ -91,23 +71,26 @@ interface ContainerInterface extends
     /**
      * Resolve a partially-resolved service from the container
      *
-     * This method resolves `$id` normally but passes `$service` to
+     * `$id` is resolved normally, but `$service` is passed to
      * {@see ServiceAwareInterface::setService()} instead of `$id`.
      *
-     * @template T
      * @template TService
+     * @template T of TService
      *
      * @param class-string<T> $id
      * @param class-string<TService> $service
      * @param mixed[] $args
-     * @return T&TService&object
+     * @return T&object
+     * @throws ServiceNotFoundException if `$id` is not instantiable.
      * @throws UnusedArgumentsException if `$args` are given and `$id` resolves
      * to a shared instance.
      */
     public function getAs(string $id, string $service, array $args = []): object;
 
     /**
-     * Resolve a service to a concrete class name
+     * Resolve a service from the container without returning an instance
+     *
+     * Returns the class name of the object {@see get()} would return.
      *
      * @template T
      *
@@ -124,7 +107,7 @@ interface ContainerInterface extends
     public function has(string $id): bool;
 
     /**
-     * Check if a shared service is bound to the container
+     * Check if a shared service or instance is bound to the container
      *
      * @param class-string $id
      */
@@ -140,33 +123,33 @@ interface ContainerInterface extends
     /**
      * Check if a service provider is registered with the container
      *
-     * @param class-string $id
+     * @param class-string $provider
      */
-    public function hasProvider(string $id): bool;
+    public function hasProvider(string $provider): bool;
+
+    /**
+     * Get a list of service providers registered with the container
+     *
+     * @return array<class-string>
+     */
+    public function getProviders(): array;
 
     /**
      * Bind a service to the container
      *
-     * Subsequent requests for `$id` resolve to `$class`.
+     * Subsequent requests for `$id` resolve to an instance of `$class`, or
+     * `$id` if `$class` is `null`.
      *
-     * If `$class` is `null`, `$id` resolves to itself.
-     *
-     * `$args` are merged with `$args` passed to {@see get()} or {@see getAs()}
-     * when `$id` resolves to a new instance of `$class`.
+     * If `$class` is a closure, it is called every time `$id` is resolved.
      *
      * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
-     * @param class-string<T>|null $class
-     * @param mixed[] $args
+     * @param (Closure(self): T&object)|class-string<T>|null $class
      * @return $this
      */
-    public function bind(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface;
+    public function bind(string $id, $class = null): ContainerInterface;
 
     /**
      * Bind a service to the container if it isn't already bound
@@ -175,35 +158,25 @@ interface ContainerInterface extends
      * @template T of TService
      *
      * @param class-string<TService> $id
-     * @param class-string<T>|null $class
-     * @param mixed[] $args
+     * @param (Closure(self): T&object)|class-string<T>|null $class
      * @return $this
      */
-    public function bindIf(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface;
+    public function bindIf(string $id, $class = null): ContainerInterface;
 
     /**
      * Bind a shared service to the container
      *
-     * Subsequent requests for `$id` resolve to the instance of `$class` created
-     * when `$id` is first requested.
+     * Subsequent requests for `$id` resolve to the shared instance created when
+     * `$id` is first requested.
      *
      * @template TService
      * @template T of TService
      *
      * @param class-string<TService> $id
-     * @param class-string<T>|null $class
-     * @param mixed[] $args
+     * @param (Closure(self): T&object)|class-string<T>|null $class
      * @return $this
      */
-    public function singleton(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface;
+    public function singleton(string $id, $class = null): ContainerInterface;
 
     /**
      * Bind a shared service to the container if it isn't already bound
@@ -212,15 +185,10 @@ interface ContainerInterface extends
      * @template T of TService
      *
      * @param class-string<TService> $id
-     * @param class-string<T>|null $class
-     * @param mixed[] $args
+     * @param (Closure(self): T&object)|class-string<T>|null $class
      * @return $this
      */
-    public function singletonIf(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface;
+    public function singletonIf(string $id, $class = null): ContainerInterface;
 
     /**
      * Bind a shared instance to the container
@@ -232,95 +200,7 @@ interface ContainerInterface extends
      * @param T&object $instance
      * @return $this
      */
-    public function instance(string $id, $instance): ContainerInterface;
-
-    /**
-     * Register a contextual binding with the container
-     *
-     * Subsequent requests from `$context` for `$dependency` resolve to
-     * `$value`.
-     *
-     * If `$dependency` starts with `'$'`, it is matched with dependencies of
-     * `$context` by constructor parameter name, otherwise it is matched by
-     * type.
-     *
-     * If `$value` is a callback, its return value is used.
-     *
-     * @template TValue
-     *
-     * @param class-string[]|class-string $context
-     * @param class-string<TValue>|string $dependency
-     * @param (callable(ContainerInterface): TValue)|class-string<TValue>|TValue $value
-     * @return $this
-     */
-    public function addContextualBinding($context, string $dependency, $value): ContainerInterface;
-
-    /**
-     * Register a service provider with the container, optionally specifying
-     * which of its services to bind or ignore
-     *
-     * For performance reasons, classes bound to the container with
-     * {@see bind()} or {@see singleton()} are not loaded until they are
-     * resolved. Classes registered with {@see provider()} are loaded
-     * immediately, but are not instantiated until they are resolved.
-     *
-     * @param class-string $id
-     * @param class-string[]|null $services Services to bind, or `null` to
-     * include all services.
-     * @param class-string[] $exceptServices Services to ignore.
-     * @param ServiceLifetime::* $lifetime
-     * @return $this
-     */
-    public function provider(
-        string $id,
-        ?array $services = null,
-        array $exceptServices = [],
-        int $lifetime = ServiceLifetime::INHERIT
-    ): ContainerInterface;
-
-    /**
-     * Register a service map with the container
-     *
-     * A service map is an array with entries that map a service (usually an
-     * interface) to a service provider (a class that extends or implements the
-     * service).
-     *
-     * Multiple services may be mapped to the same service provider, and service
-     * providers may be mapped to themselves. For example, to make `BarClass`
-     * discoverable via {@see ContainerInterface::getProviders()} whether it's
-     * bound to a service or not:
-     *
-     * ```php
-     * <?php
-     * $container->providers([
-     *     FooInterface::class => Env::get('foo_provider'),
-     *     BarClass::class => BarClass::class,
-     * ]);
-     * ```
-     *
-     * @param array<class-string,class-string> $serviceMap
-     * @param ServiceLifetime::* $lifetime
-     * @return $this
-     */
-    public function providers(
-        array $serviceMap,
-        int $lifetime = ServiceLifetime::INHERIT
-    ): ContainerInterface;
-
-    /**
-     * Get a list of service providers registered with the container
-     *
-     * @return array<class-string>
-     */
-    public function getProviders(): array;
-
-    /**
-     * Remove a binding from the container
-     *
-     * @param class-string $id
-     * @return $this
-     */
-    public function unbind(string $id): ContainerInterface;
+    public function instance(string $id, object $instance): ContainerInterface;
 
     /**
      * Remove a shared instance from the container
@@ -329,4 +209,75 @@ interface ContainerInterface extends
      * @return $this
      */
     public function removeInstance(string $id): ContainerInterface;
+
+    /**
+     * Add a contextual binding to the container
+     *
+     * Subsequent requests for `$id` from the given contexts resolve to:
+     *
+     * - the return value of `$class` (if it is a closure)
+     * - an instance of `$class` (if it is a string)
+     * - `$class` itself (if it is an object), or
+     * - an instance of `$id` (if `$class` is `null`)
+     *
+     * If `$id` starts with `'$'`, it is matched with constructor parameters of
+     * the same name, and `$class` cannot be `null`.
+     *
+     * @template TService
+     * @template T of TService
+     *
+     * @param class-string[]|class-string $context
+     * @param class-string<TService>|non-empty-string $id
+     * @param (Closure(self): T&object)|class-string<T>|(T&object)|null $class
+     * @return $this
+     */
+    public function addContextualBinding(
+        $context,
+        string $id,
+        $class = null
+    ): ContainerInterface;
+
+    /**
+     * Register a service provider with the container, optionally specifying
+     * which of its services to bind or ignore
+     *
+     * For performance reasons, classes bound to the container with
+     * {@see bind()} or {@see singleton()} are not loaded until they are
+     * resolved. Classes registered with {@see provider()} are loaded
+     * immediately to check for {@see HasServices}, {@see SingletonInterface}
+     * and other implementations.
+     *
+     * @param class-string $provider
+     * @param class-string[]|null $services Services of `$provider` to bind to
+     * the container, or `null` to bind every service returned by
+     * {@see HasServices::getServices()} (if implemented).
+     * @param class-string[] $excludeServices Services of `$provider` to exclude
+     * from binding.
+     * @param ServiceLifetime::* $providerLifetime
+     * @return $this
+     * @throws InvalidServiceException if `$provider` doesn't provide one of the
+     * given `$services`.
+     */
+    public function provider(
+        string $provider,
+        ?array $services = null,
+        array $excludeServices = [],
+        int $providerLifetime = ServiceLifetime::INHERIT
+    ): ContainerInterface;
+
+    /**
+     * Register an array that maps services (usually interfaces) to service
+     * providers (classes that extend or implement the mapped service)
+     *
+     * Multiple services may be mapped to the same service provider. Unmapped
+     * providers are mapped to themselves.
+     *
+     * @param array<class-string|int,class-string> $providers
+     * @param ServiceLifetime::* $providerLifetime
+     * @return $this
+     */
+    public function providers(
+        array $providers,
+        int $providerLifetime = ServiceLifetime::INHERIT
+    ): ContainerInterface;
 }
