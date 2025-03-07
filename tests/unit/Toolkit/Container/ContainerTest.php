@@ -19,7 +19,6 @@ use Salient\Contract\Container\HasContainer;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
-use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
 use Salient\Contract\Core\Chainable;
@@ -242,7 +241,7 @@ final class ContainerTest extends TestCase
         foreach ([Provider1::class, Provider2::class] as $id) {
             $this->doTestGetTransientProvider(
                 (new Container())
-                    ->provider($id, null, [], ServiceLifetime::TRANSIENT),
+                    ->provider($id, null, [], Container::LIFETIME_TRANSIENT),
                 $id,
                 Service1::class,
                 Service2::class,
@@ -252,7 +251,7 @@ final class ContainerTest extends TestCase
         foreach ([Provider1::class, Provider2::class] as $id) {
             $this->doTestGetSingletonProvider(
                 (new Container())
-                    ->provider($id, null, [], ServiceLifetime::SINGLETON),
+                    ->provider($id, null, [], Container::LIFETIME_SINGLETON),
                 $id,
                 Service1::class,
                 Service2::class,
@@ -442,12 +441,12 @@ final class ContainerTest extends TestCase
      *
      * @param string|Closure(Container): mixed $callback
      * @param array<class-string|int,class-string> $providers
-     * @param ServiceLifetime::* $providerLifetime
+     * @param Container::LIFETIME_* $providerLifetime
      */
     public function testProviders(
         $callback,
         array $providers,
-        int $providerLifetime = ServiceLifetime::INHERIT
+        int $providerLifetime = Container::LIFETIME_INHERIT
     ): void {
         $this->maybeExpectException($callback);
         $container = (new Container())->providers($providers, $providerLifetime);
@@ -457,7 +456,7 @@ final class ContainerTest extends TestCase
     }
 
     /**
-     * @return array<array{string|Closure(Container): mixed,array<string|int,string>,2?:ServiceLifetime::*}>
+     * @return array<array{string|Closure(Container): mixed,array<string|int,string>,2?:Container::LIFETIME_*}>
      */
     public static function providersProvider(): array
     {
