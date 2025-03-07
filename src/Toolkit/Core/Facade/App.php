@@ -29,8 +29,8 @@ use Closure;
  * @method static bool hasSingleton(class-string $id) Check if a shared service or instance is bound to the container
  * @method static ContainerInterface inContextOf(class-string $id) Apply contextual bindings to a copy of the container
  * @method static ContainerInterface instance(class-string $id, object $instance) Bind a shared instance to the container
- * @method static ContainerInterface provider(class-string $provider, class-string[]|null $services = null, class-string[] $excludeServices = [], ServiceLifetime::* $providerLifetime = ServiceLifetime::INHERIT) Register a service provider with the container, optionally specifying which of its services to bind or ignore (see {@see ContainerInterface::provider()})
- * @method static ContainerInterface providers(array<class-string|int,class-string> $providers, ServiceLifetime::* $providerLifetime = ServiceLifetime::INHERIT) Register an array that maps services (usually interfaces) to service providers (classes that extend or implement the mapped service) (see {@see ContainerInterface::providers()})
+ * @method static ContainerInterface provider(class-string $provider, class-string[]|null $services = null, class-string[] $excludeServices = [], ContainerInterface::* $providerLifetime = ContainerInterface::LIFETIME_INHERIT) Register a service provider with the container, optionally specifying which of its services to bind or ignore (see {@see ContainerInterface::provider()})
+ * @method static ContainerInterface providers(array<class-string|int,class-string> $providers, ContainerInterface::* $providerLifetime = ContainerInterface::LIFETIME_INHERIT) Register an array that maps services (usually interfaces) to service providers (classes that extend or implement the mapped service) (see {@see ContainerInterface::providers()})
  * @method static ContainerInterface removeInstance(class-string $id) Remove a shared instance from the container
  * @method static void setGlobalContainer(ContainerInterface|null $container) Set or unset the global container (see {@see ContainerInterface::setGlobalContainer()})
  * @method static ContainerInterface singleton(class-string $id, (Closure(ContainerInterface): object)|class-string|null $class = null) Bind a shared service to the container (see {@see ContainerInterface::singleton()})
@@ -42,7 +42,7 @@ use Closure;
  *
  * @generated
  */
-final class App extends Facade
+final class App extends Facade implements ServiceLifetime
 {
     /**
      * @internal

@@ -20,5 +20,5 @@ following interfaces:
 - `HasContextualBindings` to bind services to the container that only apply in
   the context of the provider
 
-`SingletonInterface` is ignored if a lifetime other than
-`ServiceLifetime::INHERIT` is given when the service provider is registered.
+`SingletonInterface` is ignored if a lifetime other than `LIFETIME_INHERIT` is
+given when the service provider is registered.

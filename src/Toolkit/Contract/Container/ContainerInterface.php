@@ -19,7 +19,8 @@ interface ContainerInterface extends
     PsrContainerInterface,
     Chainable,
     Instantiable,
-    Unloadable
+    Unloadable,
+    ServiceLifetime
 {
     /**
      * Creates a new service container
@@ -257,7 +258,7 @@ interface ContainerInterface extends
      * {@see HasServices::getServices()} (if implemented).
      * @param class-string[] $excludeServices Services of `$provider` to exclude
      * from binding.
-     * @param ServiceLifetime::* $providerLifetime
+     * @param ContainerInterface::* $providerLifetime
      * @return $this
      * @throws InvalidServiceException if `$provider` doesn't provide one of the
      * given `$services`.
@@ -266,7 +267,7 @@ interface ContainerInterface extends
         string $provider,
         ?array $services = null,
         array $excludeServices = [],
-        int $providerLifetime = ServiceLifetime::INHERIT
+        int $providerLifetime = ContainerInterface::LIFETIME_INHERIT
     ): ContainerInterface;
 
     /**
@@ -277,11 +278,11 @@ interface ContainerInterface extends
      * providers are mapped to themselves.
      *
      * @param array<class-string|int,class-string> $providers
-     * @param ServiceLifetime::* $providerLifetime
+     * @param ContainerInterface::* $providerLifetime
      * @return $this
      */
     public function providers(
         array $providers,
-        int $providerLifetime = ServiceLifetime::INHERIT
+        int $providerLifetime = ContainerInterface::LIFETIME_INHERIT
     ): ContainerInterface;
 }

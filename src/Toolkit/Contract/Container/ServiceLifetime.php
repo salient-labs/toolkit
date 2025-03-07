@@ -3,31 +3,23 @@
 namespace Salient\Contract\Container;
 
 /**
- * Service lifetimes relative to the container
- *
  * @api
  */
 interface ServiceLifetime
 {
     /**
-     * A new instance of the class is always created
+     * One instance of the service is created if it implements
+     * SingletonInterface, otherwise a new instance is always created
      */
-    public const TRANSIENT = 1;
+    public const LIFETIME_INHERIT = 0;
 
     /**
-     * One instance of the class is created
+     * A new instance of the service is always created
      */
-    public const SINGLETON = 2;
+    public const LIFETIME_TRANSIENT = 1;
 
     /**
-     * Service lifetime interfaces inherited by the class are honoured
-     *
-     * Specifically:
-     *
-     * - If the class does not implement {@see SingletonInterface},
-     *   {@see ServiceLifetime::TRANSIENT} applies.
-     * - If the class implements {@see SingletonInterface},
-     *   {@see ServiceLifetime::SINGLETON} applies.
+     * One instance of the service is created
      */
-    public const INHERIT = 3;
+    public const LIFETIME_SINGLETON = 2;
 }

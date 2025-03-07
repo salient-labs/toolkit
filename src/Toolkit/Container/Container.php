@@ -21,7 +21,6 @@ use Salient\Contract\Container\HasBindings;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
-use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
@@ -58,11 +57,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
     ];
 
     private const DEFAULT_SERVICES = [
-        CacheInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
-        EventDispatcherInterface::class => [EventDispatcher::class, ServiceLifetime::SINGLETON],
-        ConsoleInterface::class => [Console::class, ServiceLifetime::SINGLETON],
-        LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::INHERIT],
-        SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],
+        CacheInterface::class => [CacheStore::class, self::LIFETIME_SINGLETON],
+        EventDispatcherInterface::class => [EventDispatcher::class, self::LIFETIME_SINGLETON],
+        ConsoleInterface::class => [Console::class, self::LIFETIME_SINGLETON],
+        LoggerInterface::class => [ConsoleLogger::class, self::LIFETIME_INHERIT],
+        SyncStoreInterface::class => [SyncStore::class, self::LIFETIME_SINGLETON],
     ];
 
     private static ?ContainerInterface $GlobalContainer = null;
@@ -270,11 +269,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
         $defaultService = self::DEFAULT_SERVICES[$id];
         /** @var class-string */
         $class = $defaultService[0];
-        /** @var ServiceLifetime::* */
+        /** @var self::LIFETIME_* */
         $lifetime = $defaultService[1];
         if (
-            $lifetime === ServiceLifetime::SINGLETON || (
-                $lifetime === ServiceLifetime::INHERIT
+            $lifetime === self::LIFETIME_SINGLETON || (
+                $lifetime === self::LIFETIME_INHERIT
                 && is_a($class, SingletonInterface::class, true)
             )
         ) {
@@ -476,7 +475,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         string $provider,
         ?array $services = null,
         array $excludeServices = [],
-        int $providerLifetime = ServiceLifetime::INHERIT
+        int $providerLifetime = Container::LIFETIME_INHERIT
     ): ContainerInterface {
         $this->applyService($provider, $services, $excludeServices, $providerLifetime);
         $this->Providers[$provider] = true;
@@ -487,22 +486,22 @@ class Container implements ContainerInterface, FacadeAwareInterface
      * @param class-string $provider
      * @param class-string[]|null $services
      * @param class-string[] $excludeServices
-     * @param ServiceLifetime::* $providerLifetime
+     * @param self::LIFETIME_* $providerLifetime
      */
     private function applyService(
         string $provider,
         ?array $services = null,
         array $excludeServices = [],
-        int $providerLifetime = ServiceLifetime::INHERIT
+        int $providerLifetime = self::LIFETIME_INHERIT
     ): void {
-        if ($providerLifetime === ServiceLifetime::INHERIT) {
+        if ($providerLifetime === self::LIFETIME_INHERIT) {
             $providerLifetime = is_a($provider, SingletonInterface::class, true)
-                ? ServiceLifetime::SINGLETON
-                : ServiceLifetime::TRANSIENT;
+                ? self::LIFETIME_SINGLETON
+                : self::LIFETIME_TRANSIENT;
         }
 
         $rule = [];
-        if ($providerLifetime === ServiceLifetime::SINGLETON) {
+        if ($providerLifetime === self::LIFETIME_SINGLETON) {
             $rule['shared'] = true;
         }
 
@@ -621,7 +620,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
      */
     final public function providers(
         array $providers,
-        int $providerLifetime = ServiceLifetime::INHERIT
+        int $providerLifetime = Container::LIFETIME_INHERIT
     ): ContainerInterface {
         $idMap = [];
         foreach ($providers as $id => $class) {
