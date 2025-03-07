@@ -3,6 +3,7 @@
 namespace Salient\Contract\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Contract\Container\Event\BeforeGlobalContainerSetEvent;
 use Salient\Contract\Container\Exception\InvalidServiceException;
 use Salient\Contract\Container\Exception\ServiceNotFoundException;
 use Salient\Contract\Container\Exception\UnusedArgumentsException;
@@ -37,6 +38,9 @@ interface ContainerInterface extends
 
     /**
      * Set or unset the global container
+     *
+     * Dispatches {@see BeforeGlobalContainerSetEvent} if the global container
+     * will change.
      */
     public static function setGlobalContainer(?ContainerInterface $container): void;
 

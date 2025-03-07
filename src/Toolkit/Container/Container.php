@@ -32,7 +32,7 @@ use Salient\Core\Event\EventDispatcher;
 use Salient\Core\Facade\Event;
 use Salient\Sync\SyncStore;
 use Closure;
-use LogicException;
+use InvalidArgumentException;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionParameter;
@@ -188,6 +188,13 @@ class Container implements ContainerInterface, FacadeAwareInterface
      */
     final public function getAs(string $id, string $service, array $args = []): object
     {
+        if (!is_a($id, $service, true)) {
+            throw new InvalidArgumentException(sprintf(
+                '%s does not inherit %s',
+                $id,
+                $service,
+            ));
+        }
         return $this->_get($id, $service, $args);
     }
 
@@ -317,8 +324,12 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @param array<string,mixed> $rule
      */
-    private function addRule(string $id, array $rule): void
+    private function addRule(string $id, array $rule, bool $remove = false): void
     {
+        if ($remove) {
+            $this->Dice = $this->Dice->removeRule($id);
+        }
+
         $this->Dice = $this->Dice->addRule($id, $rule);
     }
 
@@ -405,7 +416,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
             $rule['instanceOf'] = $class;
         }
 
-        $this->addRule($id, $rule);
+        $this->addRule($id, $rule, true);
 
         return $this;
     }
@@ -534,13 +545,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
             $services = array_unique($services);
             $bind = array_intersect($bind, $services);
             if (count($bind) < count($services)) {
-                // @codeCoverageIgnoreStart
                 throw new InvalidServiceException(sprintf(
                     '%s does not implement: %s',
                     $provider,
                     implode(', ', array_diff($services, $bind)),
                 ));
-                // @codeCoverageIgnoreEnd
             }
         }
 
@@ -620,13 +629,13 @@ class Container implements ContainerInterface, FacadeAwareInterface
                 $id = $class;
             }
             if (!class_exists($class)) {
-                throw new LogicException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Not a class: %s',
                     $class,
                 ));
             }
             if (!is_a($class, $id, true)) {
-                throw new LogicException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     '%s does not inherit %s',
                     $class,
                     $id,

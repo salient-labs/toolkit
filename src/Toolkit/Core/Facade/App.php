@@ -32,7 +32,7 @@ use Closure;
  * @method static ContainerInterface provider(class-string $provider, class-string[]|null $services = null, class-string[] $excludeServices = [], ServiceLifetime::* $providerLifetime = ServiceLifetime::INHERIT) Register a service provider with the container, optionally specifying which of its services to bind or ignore (see {@see ContainerInterface::provider()})
  * @method static ContainerInterface providers(array<class-string|int,class-string> $providers, ServiceLifetime::* $providerLifetime = ServiceLifetime::INHERIT) Register an array that maps services (usually interfaces) to service providers (classes that extend or implement the mapped service) (see {@see ContainerInterface::providers()})
  * @method static ContainerInterface removeInstance(class-string $id) Remove a shared instance from the container
- * @method static void setGlobalContainer(ContainerInterface|null $container) Set or unset the global container
+ * @method static void setGlobalContainer(ContainerInterface|null $container) Set or unset the global container (see {@see ContainerInterface::setGlobalContainer()})
  * @method static ContainerInterface singleton(class-string $id, (Closure(ContainerInterface): object)|class-string|null $class = null) Bind a shared service to the container (see {@see ContainerInterface::singleton()})
  * @method static ContainerInterface singletonIf(class-string $id, (Closure(ContainerInterface): object)|class-string|null $class = null) Bind a shared service to the container if it isn't already bound
  *
