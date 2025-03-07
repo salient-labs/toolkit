@@ -5,7 +5,7 @@ namespace Salient\Contract\Container;
 /**
  * @api
  */
-interface ServiceLifetime
+interface HasServiceLifetime
 {
     /**
      * One instance of the service is created if it implements

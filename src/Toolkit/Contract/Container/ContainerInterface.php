@@ -20,7 +20,7 @@ interface ContainerInterface extends
     Chainable,
     Instantiable,
     Unloadable,
-    ServiceLifetime
+    HasServiceLifetime
 {
     /**
      * Creates a new service container

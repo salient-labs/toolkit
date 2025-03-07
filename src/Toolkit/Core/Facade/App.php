@@ -4,7 +4,7 @@ namespace Salient\Core\Facade;
 
 use Salient\Container\Container;
 use Salient\Contract\Container\ContainerInterface;
-use Salient\Contract\Container\ServiceLifetime;
+use Salient\Contract\Container\HasServiceLifetime;
 use Salient\Contract\Core\Chainable;
 use Closure;
 
@@ -42,7 +42,7 @@ use Closure;
  *
  * @generated
  */
-final class App extends Facade implements ServiceLifetime
+final class App extends Facade implements HasServiceLifetime
 {
     /**
      * @internal
