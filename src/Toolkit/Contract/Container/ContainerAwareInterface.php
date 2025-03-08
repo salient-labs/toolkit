@@ -3,14 +3,12 @@
 namespace Salient\Contract\Container;
 
 /**
- * For classes that need to know when they are instantiated by a container
- *
  * @api
  */
 interface ContainerAwareInterface
 {
     /**
-     * Called after the instance is created by a container
+     * Set the container that created the instance
      */
     public function setContainer(ContainerInterface $container): void;
 }

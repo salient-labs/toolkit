@@ -15,7 +15,7 @@
     },
     "require": {
         "php": ">=7.4",
-        "lkrms/dice": "^4.1.10",
+        "lkrms/dice": "^4.1.11",
         "psr/container": "^2",
         "salient/console": "self.version",
         "salient/contracts": "self.version",

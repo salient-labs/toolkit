@@ -2,24 +2,23 @@
 
 namespace Salient\Contract\Container;
 
+use Closure;
+
 /**
- * Implemented by service providers with container bindings that only apply in
- * the context of the class
- *
  * @api
  */
 interface HasContextualBindings
 {
     /**
-     * Get bindings to register with a container in the context of the class
+     * Get bindings to add to the container in the context of the class
      *
-     * Bindings returned by this method apply:
+     * The contextual bindings of the class apply:
      *
-     * - when resolving the class's dependencies
-     * - when using {@see ContainerInterface::inContextOf()} to work with a
+     * - when resolving its dependencies
+     * - when using {@see ContainerInterface::inContextOf()} to work with the
      *   container in the context of the class
      *
-     * @return array<class-string,class-string>
+     * @return array<class-string|non-empty-string|int,(Closure(ContainerInterface): object)|class-string|object>
      */
-    public static function getContextualBindings(): array;
+    public static function getContextualBindings(ContainerInterface $container): array;
 }

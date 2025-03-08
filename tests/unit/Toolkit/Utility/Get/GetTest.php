@@ -1089,7 +1089,7 @@ class SingletonWithContainer implements HasServices, HasContextualBindings, Sing
         return [];
     }
 
-    public static function getContextualBindings(): array
+    public static function getContextualBindings(ContainerInterface $container): array
     {
         return [];
     }
