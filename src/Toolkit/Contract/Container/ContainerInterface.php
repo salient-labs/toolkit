@@ -260,8 +260,8 @@ interface ContainerInterface extends
      * from binding.
      * @param ContainerInterface::* $providerLifetime
      * @return $this
-     * @throws InvalidServiceException if `$provider` doesn't provide one of the
-     * given `$services`.
+     * @throws InvalidServiceException if `$provider` returns invalid container
+     * bindings or doesn't provide one of the given `$services`.
      */
     public function provider(
         string $provider,

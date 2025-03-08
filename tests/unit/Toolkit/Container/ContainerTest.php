@@ -136,8 +136,8 @@ final class ContainerTest extends TestCase
     public function testInContextOf(): void
     {
         $container = new Container();
-        $this->assertSame($container, $container->inContextOf(PlainServiceProvider::class));
-        $this->assertSame($container, $container->inContextOf(ServiceProviderWithInterfaces::class));
+        $this->assertSame($container, $container->inContextOf(PlainProvider::class));
+        $this->assertSame($container, $container->inContextOf(ProviderWithInterfaces::class));
     }
 
     public function testBindIf(): void
@@ -169,9 +169,9 @@ final class ContainerTest extends TestCase
     {
         $container = new Container();
         $console = $container->get(ConsoleInterface::class);
-        $e = $container->get(E::class);
+        $l = $container->get(L::class);
         $this->assertInstanceOf(ConsoleInterface::class, $console);
-        $this->assertInstanceOf(LoggerInterface::class, $e->Logger);
+        $this->assertInstanceOf(LoggerInterface::class, $l->Logger);
     }
 
     public function testGetWithUnusedArguments(): void
@@ -304,12 +304,16 @@ final class ContainerTest extends TestCase
         $container3 = $container2->inContextOf(Provider2::class);
         $a1 = $container->get(A::class);
         $a2 = $container2->get(A::class);
+        $s1 = $container->get(stdClass::class);
+        $s2 = $container2->get(stdClass::class);
 
         $this->assertNotSame($container, $container2);
         $this->assertSame($container2, $container3);
         $this->assertInstanceOf(A::class, $a1);
         $this->assertNotInstanceOf(B::class, $a1);
         $this->assertInstanceOf(B::class, $a2);
+        $this->assertEquals(new stdClass(), $s1);
+        $this->assertSame(Provider2::class . '::getContextualBindings()', $s2->From);
 
         $this->assertSame($service1, $a1->Service1);
         $this->assertSame($service1, $a2->Service1);
@@ -317,6 +321,12 @@ final class ContainerTest extends TestCase
         $this->assertSame($container2, $a2->getContainer());
         $this->assertSame(A::class, $a1->getService());
         $this->assertSame(A::class, $a2->getService());
+
+        $container = (new Container())->provider(ProviderWithContextualBindings::class);
+        $provider = $container->get(ProviderWithContextualBindings::class);
+        $this->assertSame(ProviderWithContextualBindings::class . '::getContextualBindings()', $provider->Object->From);
+        $this->assertSame(71, $provider->Scalar);
+        $this->assertSame('instance', $provider->Instance->From);
 
         // `ProviderB` is only bound to itself, so the container can't inject
         // `Service1` into `A::__construct()` unless it's passed as a parameter
@@ -331,7 +341,9 @@ final class ContainerTest extends TestCase
 
     public function testGetAs(): void
     {
-        $container = (new Container())->provider(Provider2::class);
+        $container = (new Container())
+            ->provider(Provider2::class)
+            ->bind(D::class, E::class);
         $container2 = $container->inContextOf(Provider2::class);
 
         $c = $container->get(C::class);
@@ -341,7 +353,7 @@ final class ContainerTest extends TestCase
         $this->assertNotInstanceOf(B::class, $c->A);
 
         $d = $container->getAs(D::class, C::class);
-        $this->assertInstanceOf(D::class, $d);
+        $this->assertInstanceOf(E::class, $d);
         $this->assertSame(C::class, $d->getService());
         $this->assertInstanceOf(A::class, $d->A);
         $this->assertNotInstanceOf(B::class, $d->A);
@@ -362,6 +374,7 @@ final class ContainerTest extends TestCase
 
         $d2 = $container2->getAs(D::class, C::class);
         $this->assertInstanceOf(D::class, $d2);
+        $this->assertNotInstanceOf(E::class, $d2);
         $this->assertSame(C::class, $d2->getService());
         $this->assertInstanceOf(B::class, $d2->A);
 
@@ -389,26 +402,26 @@ final class ContainerTest extends TestCase
     public function testProvider(): void
     {
         $container = new Container();
-        $this->assertFalse($container->hasProvider(PlainServiceProvider::class));
-        $container->provider(PlainServiceProvider::class);
-        $this->assertTrue($container->hasProvider(PlainServiceProvider::class));
-        $this->assertSame([PlainServiceProvider::class], $container->getProviders());
-        $this->assertFalse($container->has(PlainServiceProvider::class));
+        $this->assertFalse($container->hasProvider(PlainProvider::class));
+        $container->provider(PlainProvider::class);
+        $this->assertTrue($container->hasProvider(PlainProvider::class));
+        $this->assertSame([PlainProvider::class], $container->getProviders());
+        $this->assertFalse($container->has(PlainProvider::class));
 
         $container = new Container();
-        $container->provider(ServiceProviderWithInterfaces::class);
-        $this->assertTrue($container->hasProvider(ServiceProviderWithInterfaces::class));
-        $this->assertSame([ServiceProviderWithInterfaces::class], $container->getProviders());
-        $this->assertTrue($container->has(ServiceProviderWithInterfaces::class));
+        $container->provider(ProviderWithInterfaces::class);
+        $this->assertTrue($container->hasProvider(ProviderWithInterfaces::class));
+        $this->assertSame([ProviderWithInterfaces::class], $container->getProviders());
+        $this->assertTrue($container->has(ProviderWithInterfaces::class));
         $this->assertTrue($container->has(Service1::class));
         $this->assertTrue($container->has(Service2::class));
         $this->assertFalse($container->has(Service3::class));
         $this->assertFalse($container->has(SingletonInterface::class));
 
         $container = new Container();
-        $container->provider(ServiceProviderWithBindings::class);
-        $this->assertSame([ServiceProviderWithBindings::class], $container->getProviders());
-        $this->assertFalse($container->has(ServiceProviderWithBindings::class));
+        $container->provider(ProviderWithBindings::class);
+        $this->assertSame([ProviderWithBindings::class], $container->getProviders());
+        $this->assertFalse($container->has(ProviderWithBindings::class));
         $this->assertTrue($container->has(User::class));
         $this->assertTrue($container->has(Staff::class));
         $this->assertFalse($container->has(DepartmentStaff::class));
@@ -419,21 +432,52 @@ final class ContainerTest extends TestCase
         $this->assertSame($generator, $container->get(IdGenerator::class));
 
         $container = new Container();
-        $container->provider(ServiceProviderWithContextualBindings::class);
-        $this->assertSame([ServiceProviderWithContextualBindings::class], $container->getProviders());
-        $this->assertTrue($container->has(ServiceProviderWithContextualBindings::class));
+        $container->provider(ProviderWithContextualBindings::class);
+        $this->assertSame([ProviderWithContextualBindings::class], $container->getProviders());
+        $this->assertTrue($container->has(ProviderWithContextualBindings::class));
         $this->assertFalse($container->has(Office::class));
         $this->assertFalse($container->has(User::class));
         $this->assertFalse($container->has(Staff::class));
         $this->assertFalse($container->has(PhysicalOffice::class));
         $this->assertFalse($container->has(DepartmentStaff::class));
 
-        $container = $container->inContextOf(ServiceProviderWithContextualBindings::class);
+        $container = $container->inContextOf(ProviderWithContextualBindings::class);
         $this->assertTrue($container->has(Office::class));
         $this->assertTrue($container->has(User::class));
         $this->assertTrue($container->has(Staff::class));
         $this->assertFalse($container->has(PhysicalOffice::class));
         $this->assertFalse($container->has(DepartmentStaff::class));
+    }
+
+    /**
+     * @dataProvider providerWithInvalidBindingsProvider
+     *
+     * @param class-string $provider
+     */
+    public function testProviderWithInvalidBindings(
+        string $expectedMessage,
+        string $provider
+    ): void {
+        $this->expectException(InvalidServiceException::class);
+        $this->expectExceptionMessage($expectedMessage);
+        (new Container())->provider($provider);
+    }
+
+    /**
+     * @return array<array{string,class-string}>
+     */
+    public static function providerWithInvalidBindingsProvider(): array
+    {
+        return [
+            [
+                'Unmapped services must be of type class-string: ' . ProviderWithInvalidBindings::class . '::getSingletons()',
+                ProviderWithInvalidBindings::class,
+            ],
+            [
+                'Unmapped services must be of type class-string: ' . ProviderWithInvalidContextualBindings::class . '::getContextualBindings()',
+                ProviderWithInvalidContextualBindings::class,
+            ],
+        ];
     }
 
     /**
@@ -466,22 +510,22 @@ final class ContainerTest extends TestCase
                     self::assertEqualsCanonicalizing([
                         Provider1::class,
                         Provider2::class,
-                        PlainServiceProvider::class,
+                        PlainProvider::class,
                     ], $container->getProviders());
                     self::assertTrue($container->has(Service1::class));
                     self::assertFalse($container->has(Service2::class));
                     self::assertTrue($container->has(Provider1::class));
                     self::assertTrue($container->has(Provider2::class));
-                    self::assertFalse($container->has(PlainServiceProvider::class));
+                    self::assertFalse($container->has(PlainProvider::class));
                 },
                 [
                     Service1::class => Provider2::class,
                     Provider1::class,
-                    PlainServiceProvider::class,
+                    PlainProvider::class,
                 ],
             ],
             [
-                InvalidServiceException::class,
+                InvalidServiceException::class . ',' . Provider2::class . ' does not implement: ' . Service3::class,
                 [Service3::class => Provider2::class],
             ],
             [
@@ -541,6 +585,20 @@ final class ContainerTest extends TestCase
         $this->assertSame($office2, $container->get(Office::class));
         $this->assertSame($office1, $container->get(Department::class)->MainOffice);
         $this->assertSame($office1, $container->inContextOf(Department::class)->get(Office::class));
+
+        $container = (new Container())->singleton(IdGenerator::class);
+        $office1 = $container->get(Office::class);
+        $office2 = $container->get(Office::class);
+        $container->addContextualBinding(Department::class, '$mainOffice', $office2);
+        $container->addContextualBinding(Department::class, '$mainOffice', $office1);
+        $container->addContextualBinding(Department::class, '$office', $office2);
+        $this->assertNotSame($office1, $container->get(Office::class));
+        $this->assertSame($office1, $container->get(Department::class)->MainOffice);
+        $this->assertNotSame($office1, $container->inContextOf(Department::class)->get(Office::class));
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('$class cannot be null when $id starts with \'$\'');
+        $container->addContextualBinding(Department::class, '$name', null);
     }
 
     public function testContextualSingletons(): void
@@ -687,10 +745,17 @@ class Provider1 implements Service1, Service2, HasServices, HasContextualBinding
         ];
     }
 
-    public static function getContextualBindings(): array
+    public static function getContextualBindings(ContainerInterface $container): array
     {
+        $from = sprintf('%s::%s()', static::class, __FUNCTION__);
         return [
             A::class => B::class,
+            D::class,
+            stdClass::class => function () use ($from) {
+                $obj = new stdClass();
+                $obj->From = $from;
+                return $obj;
+            },
         ];
     }
 }
@@ -725,7 +790,9 @@ class C implements ContainerAwareInterface, ServiceAwareInterface, HasContainer
 
 class D extends C {}
 
-class E
+class E extends D {}
+
+class L
 {
     public LoggerInterface $Logger;
 
@@ -779,13 +846,13 @@ trait TestTrait
 
 // --
 
-class PlainServiceProvider {}
+class PlainProvider {}
 
-class ServiceProviderWithInterfaces implements Service1, Service2, SingletonInterface {}
+class ProviderWithInterfaces implements Service1, Service2, SingletonInterface {}
 
-class ServiceProviderWithBindings implements HasBindings
+class ProviderWithBindings implements HasBindings
 {
-    public static function getBindings(): array
+    public static function getBindings(ContainerInterface $container): array
     {
         return [
             User::class => DepartmentStaff::class,
@@ -793,7 +860,7 @@ class ServiceProviderWithBindings implements HasBindings
         ];
     }
 
-    public static function getSingletons(): array
+    public static function getSingletons(ContainerInterface $container): array
     {
         return [
             IdGenerator::class,
@@ -801,14 +868,58 @@ class ServiceProviderWithBindings implements HasBindings
     }
 }
 
-class ServiceProviderWithContextualBindings implements HasContextualBindings
+class ProviderWithInvalidBindings implements HasBindings
 {
-    public static function getContextualBindings(): array
+    public static function getBindings(ContainerInterface $container): array
     {
+        return [];
+    }
+
+    public static function getSingletons(ContainerInterface $container): array
+    {
+        return [
+            fn() => new stdClass(),
+        ];
+    }
+}
+
+class ProviderWithContextualBindings implements HasContextualBindings
+{
+    public stdClass $Object;
+    public int $Scalar;
+    public stdClass $Instance;
+
+    public function __construct(stdClass $object, int $scalar, stdClass $instance)
+    {
+        $this->Object = $object;
+        $this->Scalar = $scalar;
+        $this->Instance = $instance;
+    }
+
+    public static function getContextualBindings(ContainerInterface $container): array
+    {
+        $from = sprintf('%s::%s()', static::class, __FUNCTION__);
         return [
             Office::class => PhysicalOffice::class,
             User::class => DepartmentStaff::class,
             Staff::class => DepartmentStaff::class,
+            '$scalar' => fn() => 71,
+            '$object' => function () use ($from) {
+                $obj = new stdClass();
+                $obj->From = $from;
+                return $obj;
+            },
+            '$instance' => new class extends stdClass { public string $From = 'instance'; },
+        ];
+    }
+}
+
+class ProviderWithInvalidContextualBindings implements HasContextualBindings
+{
+    public static function getContextualBindings(ContainerInterface $container): array
+    {
+        return [
+            fn() => new stdClass(),
         ];
     }
 }
@@ -828,7 +939,7 @@ class OrgUnit implements HasContextualBindings
         $this->Admin = $admin;
     }
 
-    public static function getContextualBindings(): array
+    public static function getContextualBindings(ContainerInterface $container): array
     {
         return [
             Office::class => PhysicalOffice::class,
