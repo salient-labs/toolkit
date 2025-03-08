@@ -52,7 +52,7 @@ abstract class AbstractSyncProvider extends AbstractProvider implements
      * }
      * ```
      */
-    public static function getContextualBindings(): array
+    public static function getContextualBindings(ContainerInterface $container): array
     {
         return [];
     }

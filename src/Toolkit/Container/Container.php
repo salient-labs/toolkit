@@ -33,8 +33,6 @@ use Salient\Sync\SyncStore;
 use Closure;
 use InvalidArgumentException;
 use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionParameter;
 
 /**
  * A service container with contextual bindings
@@ -372,7 +370,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @param array<class-string,string|object|array<string,mixed>> $subs
+     * @param array<class-string,class-string|object|non-empty-array<Dice::INSTANCE,Closure(): object>> $subs
      */
     private function applyBindings(array $subs): void
     {
@@ -381,19 +379,15 @@ class Container implements ContainerInterface, FacadeAwareInterface
                 if (strcasecmp($this->Dice->getRule($key)['instanceOf'] ?? '', $value)) {
                     $this->addRule($key, ['instanceOf' => $value]);
                 }
-                continue;
-            }
-            if (is_object($value)) {
+            } elseif (is_object($value)) {
                 if (!$this->Dice->hasShared($key) || $this->get($key) !== $value) {
                     $this->Dice = $this->Dice->addShared($key, $value);
                 }
-                continue;
-            }
-            $rule = $this->Dice->getDefaultRule();
-            // If this substitution can't be converted to a standalone rule,
-            // apply it via the default rule
-            if (($rule['substitutions'][ltrim($key, '\\')] ?? null) !== $value) {
-                $this->Dice = $this->Dice->addSubstitution($key, $value);
+            } else {
+                $value = $value[Dice::INSTANCE];
+                if (($this->Dice->getRule($key)['callback'] ?? null) !== $value) {
+                    $this->addRule($key, ['callback' => $value]);
+                }
             }
         }
     }
@@ -507,9 +501,39 @@ class Container implements ContainerInterface, FacadeAwareInterface
 
         if (
             is_a($provider, HasContextualBindings::class, true)
-            && ($bindings = $provider::getContextualBindings())
+            && ($bindings = $provider::getContextualBindings($this))
         ) {
-            $rule['substitutions'] = $bindings;
+            foreach ($bindings as $service => $class) {
+                if (is_int($service)) {
+                    if (!is_string($class)) {
+                        throw new InvalidServiceException(sprintf(
+                            'Unmapped services must be of type class-string: %s::getContextualBindings()',
+                            $provider,
+                        ));
+                    }
+                    $service = $class;
+                }
+
+                if ($class instanceof Closure) {
+                    $class = [Dice::INSTANCE => fn() => $class($this)];
+                }
+
+                if ($service[0] === '$') {
+                    if ($constructor = (new ReflectionClass($provider))->getConstructor()) {
+                        $name = substr($service, 1);
+                        foreach ($constructor->getParameters() as $param) {
+                            if ($param->getName() === $name) {
+                                $rule['constructParams'][$name] = is_object($class)
+                                    ? [Dice::INSTANCE => fn() => $class]
+                                    : $class;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    $rule['substitutions'][$service] = $class;
+                }
+            }
         }
 
         if ($rule) {
@@ -517,14 +541,20 @@ class Container implements ContainerInterface, FacadeAwareInterface
         }
 
         if (is_a($provider, HasBindings::class, true)) {
-            $bindings = $provider::getBindings();
+            $bindings = $provider::getBindings($this);
             foreach ($bindings as $service => $class) {
                 $this->bind($service, $class);
             }
 
-            $singletons = $provider::getSingletons();
+            $singletons = $provider::getSingletons($this);
             foreach ($singletons as $service => $class) {
                 if (is_int($service)) {
+                    if (!is_string($class)) {
+                        throw new InvalidServiceException(sprintf(
+                            'Unmapped services must be of type class-string: %s::getSingletons()',
+                            $provider,
+                        ));
+                    }
                     $service = $class;
                 }
                 $this->singleton($service, $class);
@@ -588,16 +618,28 @@ class Container implements ContainerInterface, FacadeAwareInterface
             $class = [Dice::INSTANCE => fn() => $class($this)];
         }
 
-        if (
-            $id[0] === '$' && (
-                !($type = (new ReflectionParameter([$context, '__construct'], substr($id, 1)))->getType())
-                || !$type instanceof ReflectionNamedType
-                || $type->isBuiltin()
-            )
-        ) {
-            $rule['constructParams'][] = $class;
+        if ($id[0] === '$') {
+            if ($class === null) {
+                throw new InvalidArgumentException('$class cannot be null when $id starts with \'$\'');
+            }
+            $applied = false;
+            if ($constructor = (new ReflectionClass($context))->getConstructor()) {
+                $name = substr($id, 1);
+                foreach ($constructor->getParameters() as $param) {
+                    if ($param->getName() === $name) {
+                        $rule['constructParams'][$name] = is_object($class)
+                            ? [Dice::INSTANCE => fn() => $class]
+                            : $class;
+                        $applied = true;
+                        break;
+                    }
+                }
+            }
+            if (!$applied) {
+                return $this;
+            }
         } else {
-            $rule['substitutions'][$id] = $class;
+            $rule['substitutions'][$id] = $class ?? $id;
         }
 
         $this->addRule($context, $rule);

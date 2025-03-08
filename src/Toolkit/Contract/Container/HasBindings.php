@@ -2,24 +2,24 @@
 
 namespace Salient\Contract\Container;
 
+use Closure;
+
 /**
- * Implemented by service providers with container bindings
- *
  * @api
  */
 interface HasBindings
 {
     /**
-     * Get bindings to register with a container
+     * Get services to bind to the container
      *
-     * @return array<class-string,class-string>
+     * @return array<class-string,(Closure(ContainerInterface): object)|class-string>
      */
-    public static function getBindings(): array;
+    public static function getBindings(ContainerInterface $container): array;
 
     /**
-     * Get shared bindings to register with a container
+     * Get shared services to bind to the container
      *
-     * @return array<class-string|int,class-string>
+     * @return array<class-string|int,(Closure(ContainerInterface): object)|class-string>
      */
-    public static function getSingletons(): array;
+    public static function getSingletons(ContainerInterface $container): array;
 }
