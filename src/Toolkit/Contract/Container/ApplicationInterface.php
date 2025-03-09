@@ -20,11 +20,6 @@ interface ApplicationInterface extends ContainerInterface
     public function getName(): string;
 
     /**
-     * Check if the application is running in a production environment
-     */
-    public function isRunningInProduction(): bool;
-
-    /**
      * Get the application's base path
      */
     public function getBasePath(): string;
@@ -53,6 +48,11 @@ interface ApplicationInterface extends ContainerInterface
      * Get a directory for the application's temporary files
      */
     public function getTempPath(): string;
+
+    /**
+     * Check if the application is running in a production environment
+     */
+    public function isRunningInProduction(): bool;
 
     /**
      * Log console output to the application's log directory
@@ -155,13 +155,6 @@ interface ApplicationInterface extends ContainerInterface
     public function getInitialWorkingDirectory(): string;
 
     /**
-     * Change to the directory in which the application was started
-     *
-     * @return $this
-     */
-    public function restoreWorkingDirectory();
-
-    /**
      * Set the directory in which the application was started
      *
      * @return $this
@@ -169,21 +162,11 @@ interface ApplicationInterface extends ContainerInterface
     public function setInitialWorkingDirectory(string $directory);
 
     /**
-     * Write a summary of the application's runtime performance metrics and
-     * system resource usage to the console when it terminates
+     * Change to the directory in which the application was started
      *
-     * @param Console::LEVEL_* $level
-     * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
-     * reported, otherwise only metrics in the given groups are reported.
      * @return $this
      */
-    public function registerShutdownReport(
-        int $level = Console::LEVEL_INFO,
-        bool $includeResourceUsage = true,
-        bool $includeRunningTimers = true,
-        $groups = null,
-        ?int $limit = 10
-    );
+    public function restoreWorkingDirectory();
 
     /**
      * Write a summary of the application's system resource usage to the console
@@ -204,6 +187,23 @@ interface ApplicationInterface extends ContainerInterface
      */
     public function reportMetrics(
         int $level = Console::LEVEL_INFO,
+        bool $includeRunningTimers = true,
+        $groups = null,
+        ?int $limit = 10
+    );
+
+    /**
+     * Write a summary of the application's runtime performance metrics and
+     * system resource usage to the console when it terminates
+     *
+     * @param Console::LEVEL_* $level
+     * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
+     * reported, otherwise only metrics in the given groups are reported.
+     * @return $this
+     */
+    public function registerShutdownReport(
+        int $level = Console::LEVEL_INFO,
+        bool $includeResourceUsage = true,
         bool $includeRunningTimers = true,
         $groups = null,
         ?int $limit = 10
