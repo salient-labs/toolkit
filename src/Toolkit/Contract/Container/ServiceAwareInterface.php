@@ -3,28 +3,25 @@
 namespace Salient\Contract\Container;
 
 /**
- * For classes that need to know when they are used to resolve a service from a
- * container
- *
  * @api
  */
 interface ServiceAwareInterface
 {
     /**
-     * Called when the instance is used to resolve a service from a container
+     * Set the service resolved to the instance by the container
      *
-     * If the instance also implements {@see ContainerAwareInterface},
-     * {@see ContainerAwareInterface::setContainer()} is called first.
+     * Called every time the instance is used to resolve a service from the
+     * container.
+     *
+     * {@see ContainerAwareInterface::setContainer()} is called first when the
+     * container creates the instance.
      *
      * @param class-string $service
      */
     public function setService(string $service): void;
 
     /**
-     * Get the last service resolved with the instance
-     *
-     * If {@see ServiceAwareInterface::setService()} has not been called, the
-     * instance should return its own class name.
+     * Get the service resolved to the instance by the container
      *
      * @return class-string
      */

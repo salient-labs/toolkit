@@ -3,15 +3,12 @@
 namespace Salient\Contract\Container;
 
 /**
- * Implemented by service providers that specify which of their interfaces can
- * be registered with a container
- *
  * @api
  */
 interface HasServices
 {
     /**
-     * Get a list of services provided by the class
+     * Get services provided by the class
      *
      * @return class-string[]
      */
