@@ -20,6 +20,18 @@ interface ApplicationInterface extends ContainerInterface
     public function getName(): string;
 
     /**
+     * Get the version of the application, optionally including its commit
+     * reference
+     */
+    public function getVersion(bool $withRef = true): string;
+
+    /**
+     * Get the application's name, version and commit reference, followed by the
+     * PHP version
+     */
+    public function getVersionString(): string;
+
+    /**
      * Get the application's base path
      */
     public function getBasePath(): string;
@@ -122,10 +134,9 @@ interface ApplicationInterface extends ContainerInterface
      * If the entity store is filesystem-backed, it is started in the
      * application's data directory.
      *
-     * @param string[]|null $arguments
      * @return $this
      */
-    public function startSync(?string $command = null, ?array $arguments = null);
+    public function startSync();
 
     /**
      * Stop the application's sync entity store if started
@@ -167,6 +178,15 @@ interface ApplicationInterface extends ContainerInterface
      * @return $this
      */
     public function restoreWorkingDirectory();
+
+    /**
+     * Write the application's name, version and commit reference, followed by
+     * the PHP version, to the console
+     *
+     * @param Console::LEVEL_* $level
+     * @return $this
+     */
+    public function reportVersion(int $level = Console::LEVEL_INFO);
 
     /**
      * Write a summary of the application's system resource usage to the console

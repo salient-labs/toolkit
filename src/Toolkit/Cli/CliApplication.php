@@ -322,7 +322,8 @@ class CliApplication extends Application implements CliApplicationInterface
 
             // or version info if it's "--version"
             if ($arg === '--version' && !$args) {
-                return $this->reportVersion(Console::LEVEL_INFO, true);
+                Console::printStdout($this->getVersionString());
+                return $this;
             }
 
             // - If $args was empty before this iteration, print terse usage
@@ -448,37 +449,6 @@ class CliApplication extends Application implements CliApplicationInterface
     public function runAndExit()
     {
         $this->run()->exit();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function reportVersion(int $level = Console::LEVEL_INFO, bool $stdout = false)
-    {
-        $version = $this->getVersionString();
-
-        if ($stdout) {
-            Console::printStdout($version, $level, Console::TYPE_UNFORMATTED);
-        } else {
-            Console::print($version, $level, Console::TYPE_UNFORMATTED);
-        }
-        return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getVersionString(): string
-    {
-        $version = Package::version(true, false);
-        $ref = Package::ref();
-        return Arr::implode(' ', [
-            sprintf('%s %s', $this->getName(), $version),
-            $ref !== null && !Str::startsWith($version, ['dev-' . $ref, $ref])
-                ? "($ref)"
-                : null,
-            sprintf('PHP %s', \PHP_VERSION),
-        ]);
     }
 
     /**

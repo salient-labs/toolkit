@@ -189,7 +189,7 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         if ($this->HasVersionArgument) {
-            $this->App->reportVersion(Console::LEVEL_INFO, true);
+            Console::printStdout($this->App->getVersionString());
             return 0;
         }
 

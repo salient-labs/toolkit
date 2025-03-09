@@ -3,7 +3,6 @@
 namespace Salient\Tests;
 
 use Salient\Cli\CliApplication;
-use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
@@ -18,7 +17,7 @@ abstract class CommandTestCase extends TestCase
      * @param string[] $args
      * @param string[] $name
      * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>|null $consoleMessages
-     * @param (callable(CliApplicationInterface, CliCommandInterface): mixed)|null $callback
+     * @param (callable(CliApplication, CliCommandInterface): mixed)|null $callback
      */
     public function assertCommandProduces(
         string $output,
@@ -84,7 +83,7 @@ abstract class CommandTestCase extends TestCase
         }
     }
 
-    protected function setUpApp(CliApplicationInterface $app): CliApplicationInterface
+    protected function setUpApp(CliApplication $app): CliApplication
     {
         return $app;
     }

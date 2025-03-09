@@ -30,6 +30,7 @@ use Salient\Utility\Inflect;
 use Salient\Utility\Json;
 use Salient\Utility\Package;
 use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use Salient\Utility\Sys;
 use DateTime;
 use DateTimeZone;
@@ -222,6 +223,32 @@ class Application extends Container implements ApplicationInterface
     final public function getName(): string
     {
         return $this->AppName;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVersion(bool $withRef = true): string
+    {
+        $version = Package::version(true, false);
+        return $withRef
+            && ($ref = Package::ref()) !== null
+            && !Str::startsWith($version, ['dev-' . $ref, $ref])
+                ? "$version ($ref)"
+                : $version;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getVersionString(): string
+    {
+        return sprintf(
+            '%s %s PHP %s',
+            $this->AppName,
+            $this->getVersion(),
+            \PHP_VERSION,
+        );
     }
 
     /**
@@ -521,7 +548,7 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @inheritDoc
+     * @param string[]|null $arguments
      */
     final public function startSync(?string $command = null, ?array $arguments = null)
     {
@@ -593,7 +620,7 @@ class Application extends Container implements ApplicationInterface
         ?SyncNamespaceHelperInterface $helper = null
     ) {
         if (!Sync::isLoaded()) {
-            throw new LogicException('Entity store not started');
+            $this->startSync();
         }
         Sync::registerNamespace($prefix, $uri, $namespace, $helper);
 
@@ -625,6 +652,15 @@ class Application extends Container implements ApplicationInterface
     final public function setInitialWorkingDirectory(string $directory)
     {
         $this->WorkingDirectory = $directory;
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function reportVersion(int $level = Console::LEVEL_INFO)
+    {
+        Console::print($this->getVersionString(), $level);
         return $this;
     }
 

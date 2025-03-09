@@ -19,8 +19,8 @@ use Closure;
  * @method static ContainerInterface bindIf(class-string $id, (Closure(ContainerInterface): object)|class-string|null $class = null) Bind a service to the container if it isn't already bound
  * @method static object get(class-string $id, mixed[] $args = []) Resolve a service from the container (see {@see ContainerInterface::get()})
  * @method static object getAs(class-string $id, class-string $service, mixed[] $args = []) Resolve a partially-resolved service from the container (see {@see ContainerInterface::getAs()})
+ * @method static class-string getClass(class-string $id) Resolve a service from the container without returning an instance (see {@see ContainerInterface::getClass()})
  * @method static ContainerInterface getGlobalContainer() Get the global container, creating it if necessary
- * @method static class-string getName(class-string $id) Resolve a service from the container without returning an instance (see {@see ContainerInterface::getName()})
  * @method static array<class-string> getProviders() Get a list of service providers registered with the container
  * @method static bool has(class-string $id) Check if a service is bound to the container (see {@see ContainerInterface::has()})
  * @method static bool hasGlobalContainer() Check if the global container is set
