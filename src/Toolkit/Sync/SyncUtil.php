@@ -88,7 +88,7 @@ final class SyncUtil extends AbstractUtility
                 ));
             }
             if (
-                is_a($container->getName($entity->name), $entityType, true)
+                is_a($container->getClass($entity->name), $entityType, true)
                 && $provider->isSyncEntityProvider($entity)
             ) {
                 break;

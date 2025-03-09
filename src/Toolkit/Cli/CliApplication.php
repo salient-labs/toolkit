@@ -473,7 +473,7 @@ class CliApplication extends Application implements CliApplicationInterface
         $version = Package::version(true, false);
         $ref = Package::ref();
         return Arr::implode(' ', [
-            sprintf('%s %s', $this->getAppName(), $version),
+            sprintf('%s %s', $this->getName(), $version),
             $ref !== null && !Str::startsWith($version, ['dev-' . $ref, $ref])
                 ? "($ref)"
                 : null,

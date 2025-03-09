@@ -486,7 +486,7 @@ abstract class CliCommand implements CliCommandInterface
         $text = str_replace(
             ['{{app}}', '{{program}}', '{{command}}', '{{subcommand}}'],
             [
-                $this->App->getAppName(),
+                $this->App->getName(),
                 $this->App->getProgramName(),
                 $this->getNameWithProgram(),
                 Str::coalesce(

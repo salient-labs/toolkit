@@ -10,8 +10,6 @@ use Closure;
 use LogicException;
 
 /**
- * A service container for applications
- *
  * @api
  */
 interface ApplicationInterface extends ContainerInterface
@@ -19,18 +17,12 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Get the name of the application
      */
-    public function getAppName(): string;
+    public function getName(): string;
 
     /**
      * Check if the application is running in a production environment
-     *
-     * Returns `true` if:
-     *
-     * - the name of the current environment is `"production"`
-     * - the application is running from a Phar archive, or
-     * - the application was installed with `composer --no-dev`
      */
-    public function isProduction(): bool;
+    public function isRunningInProduction(): bool;
 
     /**
      * Get the application's base path
@@ -38,33 +30,27 @@ interface ApplicationInterface extends ContainerInterface
     public function getBasePath(): string;
 
     /**
-     * Get a writable cache directory for the application
-     *
-     * Appropriate for replaceable data that should persist between runs to
-     * improve performance.
+     * Get a cache directory for the application
      */
     public function getCachePath(): string;
 
     /**
-     * Get a writable directory for configuration files created by the
-     * application
+     * Get a directory for configuration files created by the application
      */
     public function getConfigPath(): string;
 
     /**
-     * Get a writable data directory for the application
-     *
-     * Appropriate for critical data that should persist indefinitely.
+     * Get a data directory for the application
      */
     public function getDataPath(): string;
 
     /**
-     * Get a writable directory for the application's log files
+     * Get a directory for the application's log files
      */
     public function getLogPath(): string;
 
     /**
-     * Get a writable directory for the application's ephemeral data
+     * Get a directory for the application's temporary files
      */
     public function getTempPath(): string;
 
@@ -76,7 +62,7 @@ interface ApplicationInterface extends ContainerInterface
      *
      * If `$debug` is `true`, or `$debug` is `null` and debug mode is enabled in
      * the environment, messages with levels between `LEVEL_EMERGENCY` and
-     * `LEVEL_DEBUG` are simultaneously written to `<name>.debug.log`.
+     * `LEVEL_DEBUG` are also written to `<name>.debug.log`.
      *
      * @param string|null $name If `null`, the name of the application is used.
      * @return $this
@@ -87,8 +73,8 @@ interface ApplicationInterface extends ContainerInterface
      * Export the application's HTTP requests to an HTTP Archive (HAR) file in
      * its log directory
      *
-     * If any requests are made via {@see CurlerInterface} objects,
-     * `<name>-<timestamp>-<uuid>.har` is created to record them.
+     * If any HTTP requests are made via {@see CurlerInterface} implementations,
+     * they are recorded in `<name>-<timestamp>-<uuid>.har`.
      *
      * @param string|null $name If `null`, the name of the application is used.
      * @param (Closure(): string)|string|null $uuid
@@ -103,43 +89,38 @@ interface ApplicationInterface extends ContainerInterface
     );
 
     /**
-     * Get the name of the HTTP Archive (HAR) file created via exportHar() if it
-     * has been created
+     * Get the name of the application's HTTP Archive (HAR) file if it exists
+     *
+     * Returns `null` if {@see exportHar()} has been called but no HTTP requests
+     * have been made.
      *
      * @throws LogicException if HTTP requests are not being recorded.
      */
     public function getHarFilename(): ?string;
 
     /**
-     * Start a cache store and make it the global cache
+     * Start a cache for the application and make it the global cache
      *
-     * If the cache store is filesystem-backed, the application's cache
-     * directory is used.
+     * If the cache is filesystem-backed, it is started in the application's
+     * cache directory.
      *
      * @return $this
      */
     public function startCache();
 
     /**
-     * Start a cache store and make it the global cache if a previously started
-     * cache store exists, otherwise do nothing
-     *
-     * @return $this
-     */
-    public function resumeCache();
-
-    /**
-     * Stop a cache store started by startCache() or resumeCache()
+     * Stop the application's cache if started
      *
      * @return $this
      */
     public function stopCache();
 
     /**
-     * Start an entity store and make it the global sync entity store
+     * Start a sync entity store for the application and make it the global sync
+     * entity store
      *
-     * If the entity store is filesystem-backed, the application's data
-     * directory is used.
+     * If the entity store is filesystem-backed, it is started in the
+     * application's data directory.
      *
      * @param string[]|null $arguments
      * @return $this
@@ -147,7 +128,7 @@ interface ApplicationInterface extends ContainerInterface
     public function startSync(?string $command = null, ?array $arguments = null);
 
     /**
-     * Stop an entity store started by startSync()
+     * Stop the application's sync entity store if started
      *
      * @return $this
      */
@@ -155,14 +136,13 @@ interface ApplicationInterface extends ContainerInterface
 
     /**
      * Register a namespace for sync entities and their provider interfaces with
-     * the global sync entity store
+     * the application's sync entity store, starting it if necessary
      *
      * @see SyncStoreInterface::registerNamespace()
      *
      * @return $this
-     * @throws LogicException if the global sync entity store is not loaded.
      */
-    public function registerSyncNamespace(
+    public function sync(
         string $prefix,
         string $uri,
         string $namespace,
@@ -170,33 +150,27 @@ interface ApplicationInterface extends ContainerInterface
     );
 
     /**
-     * Get the application's working directory
-     *
-     * The application's working directory is either the directory it was
-     * started in, or the directory most recently set via
-     * {@see ApplicationInterface::setWorkingDirectory()}.
+     * Get the directory in which the application was started
      */
-    public function getWorkingDirectory(): string;
+    public function getInitialWorkingDirectory(): string;
 
     /**
-     * Change to the application's working directory
+     * Change to the directory in which the application was started
      *
      * @return $this
      */
     public function restoreWorkingDirectory();
 
     /**
-     * Set the application's working directory
+     * Set the directory in which the application was started
      *
-     * @param string|null $directory If `null`, the current working directory is
-     * used.
      * @return $this
      */
-    public function setWorkingDirectory(?string $directory = null);
+    public function setInitialWorkingDirectory(string $directory);
 
     /**
-     * Print a summary of the application's runtime performance metrics and
-     * system resource usage when it terminates
+     * Write a summary of the application's runtime performance metrics and
+     * system resource usage to the console when it terminates
      *
      * @param Console::LEVEL_* $level
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are
@@ -212,7 +186,7 @@ interface ApplicationInterface extends ContainerInterface
     );
 
     /**
-     * Print a summary of the application's system resource usage
+     * Write a summary of the application's system resource usage to the console
      *
      * @param Console::LEVEL_* $level
      * @return $this
@@ -220,7 +194,8 @@ interface ApplicationInterface extends ContainerInterface
     public function reportResourceUsage(int $level = Console::LEVEL_INFO);
 
     /**
-     * Print a summary of the application's runtime performance metrics
+     * Write a summary of the application's runtime performance metrics to the
+     * console
      *
      * @param Console::LEVEL_* $level
      * @param string[]|string|null $groups If `null` or `["*"]`, all metrics are

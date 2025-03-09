@@ -219,7 +219,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getAppName(): string
+    final public function getName(): string
     {
         return $this->AppName;
     }
@@ -227,7 +227,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    public function isProduction(): bool
+    public function isRunningInProduction(): bool
     {
         $env = Env::getEnvironment();
 
@@ -310,7 +310,7 @@ class Application extends Container implements ApplicationInterface
                 $path = $this->BasePath . '/' . $path;
             }
         } elseif (
-            !$this->isProduction()
+            !$this->isRunningInProduction()
             && File::isCreatable($this->BasePath . '/' . $srcChild)
         ) {
             $path = $this->BasePath . '/' . $srcChild;
@@ -481,7 +481,12 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @inheritDoc
+     * Start a cache for the application and make it the global cache if started
+     * previously, otherwise do nothing
+     *
+     * @internal
+     *
+     * @return $this
      */
     final public function resumeCache()
     {
@@ -581,7 +586,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function registerSyncNamespace(
+    final public function sync(
         string $prefix,
         string $uri,
         string $namespace,
@@ -598,7 +603,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getWorkingDirectory(): string
+    final public function getInitialWorkingDirectory(): string
     {
         return $this->WorkingDirectory;
     }
@@ -617,9 +622,9 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function setWorkingDirectory(?string $directory = null)
+    final public function setInitialWorkingDirectory(string $directory)
     {
-        $this->WorkingDirectory = $directory ?? File::getcwd();
+        $this->WorkingDirectory = $directory;
         return $this;
     }
 

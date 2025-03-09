@@ -391,12 +391,12 @@ final class ContainerTest extends TestCase
     public function testGetName(): void
     {
         $container = (new Container())->provider(Provider2::class);
-        $this->assertSame(Provider2::class, $container->getName(Service1::class));
+        $this->assertSame(Provider2::class, $container->getClass(Service1::class));
         $this->assertFalse($container->hasInstance(Service1::class));
-        $this->assertSame(C::class, $container->getName(C::class));
+        $this->assertSame(C::class, $container->getClass(C::class));
 
         $container->instance(C::class, $container->get(D::class));
-        $this->assertSame(D::class, $container->getName(C::class));
+        $this->assertSame(D::class, $container->getClass(C::class));
     }
 
     public function testProvider(): void

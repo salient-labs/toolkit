@@ -170,7 +170,7 @@ EOF)
             $entity = $this->Entities[$this->EntityBasename];
 
             $provider = $this->ProviderBasename ?? array_search(
-                $this->App->getName(SyncUtil::getEntityTypeProvider($entity, SyncUtil::getStore($this->App))),
+                $this->App->getClass(SyncUtil::getEntityTypeProvider($entity, SyncUtil::getStore($this->App))),
                 $this->Providers,
             );
 
@@ -187,7 +187,7 @@ EOF)
             $provider = $this->Provider;
 
             if (!is_a(
-                $this->App->getName($entity),
+                $this->App->getClass($entity),
                 SyncEntityInterface::class,
                 true
             )) {
@@ -199,7 +199,7 @@ EOF)
             }
 
             if (!is_a(
-                $this->App->getName($provider),
+                $this->App->getClass($provider),
                 SyncProviderInterface::class,
                 true
             )) {

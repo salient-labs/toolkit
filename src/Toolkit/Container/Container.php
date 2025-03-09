@@ -284,7 +284,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getName(string $id): string
+    final public function getClass(string $id): string
     {
         return $this->Dice->hasShared($id)
             ? get_class($this->Dice->create($id))

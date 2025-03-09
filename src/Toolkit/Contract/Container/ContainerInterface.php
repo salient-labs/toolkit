@@ -102,7 +102,7 @@ interface ContainerInterface extends
      * @param class-string<T> $id
      * @return class-string<T>
      */
-    public function getName(string $id): string;
+    public function getClass(string $id): string;
 
     /**
      * Check if a service is bound to the container
