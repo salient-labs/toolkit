@@ -4,7 +4,6 @@ namespace Salient\Container;
 
 use Salient\Cache\CacheStore;
 use Salient\Console\Target\StreamTarget;
-use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Curler\Event\CurlerEvent;
 use Salient\Contract\Curler\Event\CurlRequestEvent;
@@ -21,6 +20,7 @@ use Salient\Curler\CurlerHarRecorder;
 use Salient\Sync\SyncStore;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Exception\InvalidEnvironmentException;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Arr;
 use Salient\Utility\Env;
 use Salient\Utility\File;
@@ -36,10 +36,9 @@ use DateTime;
 use DateTimeZone;
 use LogicException;
 use Phar;
-use RuntimeException;
 
 /**
- * A service container for applications
+ * @api
  */
 class Application extends Container implements ApplicationInterface
 {
@@ -83,6 +82,8 @@ class Application extends Container implements ApplicationInterface
     private ?int $HarListenerId = null;
     private ?CurlerHarRecorder $HarRecorder = null;
     private string $HarFilename;
+    private ?CacheStore $CacheStore = null;
+    private ?SyncStore $SyncStore = null;
     private string $InitialWorkingDirectory;
 
     // --
@@ -212,15 +213,14 @@ class Application extends Container implements ApplicationInterface
      */
     public function unload(): void
     {
-        $this->stopCache();
         $this->stopSync();
+        $this->stopCache();
         if ($this->HarListenerId !== null) {
             Event::removeListener($this->HarListenerId);
             $this->HarListenerId = null;
         } elseif ($this->HarRecorder) {
             $this->HarRecorder->close();
             $this->HarRecorder = null;
-            unset($this->HarFilename);
         }
         parent::unload();
     }
@@ -228,7 +228,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getName(): string
+    public function getName(): string
     {
         return $this->Name;
     }
@@ -262,7 +262,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getBasePath(): string
+    public function getBasePath(): string
     {
         return $this->BasePath;
     }
@@ -270,7 +270,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getCachePath(bool $create = true): string
+    public function getCachePath(bool $create = true): string
     {
         return $this->getPath(self::PATH_CACHE, $create);
     }
@@ -278,7 +278,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getConfigPath(bool $create = true): string
+    public function getConfigPath(bool $create = true): string
     {
         return $this->getPath(self::PATH_CONFIG, $create);
     }
@@ -286,7 +286,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getDataPath(bool $create = true): string
+    public function getDataPath(bool $create = true): string
     {
         return $this->getPath(self::PATH_DATA, $create);
     }
@@ -294,7 +294,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getLogPath(bool $create = true): string
+    public function getLogPath(bool $create = true): string
     {
         return $this->getPath(self::PATH_LOG, $create);
     }
@@ -302,7 +302,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getTempPath(bool $create = true): string
+    public function getTempPath(bool $create = true): string
     {
         return $this->getPath(self::PATH_TEMP, $create);
     }
@@ -387,9 +387,7 @@ class Application extends Container implements ApplicationInterface
      */
     public function isRunningInProduction(): bool
     {
-        $env = Env::getEnvironment();
-
-        return $env === 'production'
+        return ($env = Env::getEnvironment()) === 'production'
             || ($env === null && (
                 $this->PharPath !== null
                 || !Package::hasDevPackages()
@@ -399,28 +397,26 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function logOutput(?string $name = null, ?bool $debug = null)
+    public function logOutput(?string $name = null, ?bool $debug = null)
     {
         if ($this->OutputLogIsRegistered) {
             throw new LogicException('Output log already registered');
         }
-
         $name ??= $this->Name;
         $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
         Console::registerTarget($target, Console::LEVELS_ALL_EXCEPT_DEBUG);
-
         if ($debug || ($debug === null && Env::getDebug())) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, Console::LEVELS_ALL);
         }
-
+        $this->OutputLogIsRegistered = true;
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    final public function exportHar(
+    public function exportHar(
         ?string $name = null,
         ?string $creatorName = null,
         ?string $creatorVersion = null,
@@ -440,11 +436,9 @@ class Application extends Container implements ApplicationInterface
                 return;
             }
 
-            $uuid ??= fn() =>
-                Sync::isLoaded() && Sync::runHasStarted()
-                    ? Sync::getRunUuid()
-                    : Get::uuid();
-
+            $uuid ??= Sync::isLoaded() && Sync::runHasStarted()
+                ? Sync::getRunUuid()
+                : Get::uuid();
             $filename = sprintf(
                 '%s/har/%s-%s-%s.har',
                 $this->getLogPath(),
@@ -452,9 +446,11 @@ class Application extends Container implements ApplicationInterface
                 (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d-His.v'),
                 Get::value($uuid),
             );
-
             if (file_exists($filename)) {
-                throw new RuntimeException(sprintf('File already exists: %s', $filename));
+                throw new ShouldNotHappenException(sprintf(
+                    'File already exists: %s',
+                    $filename,
+                ));
             }
 
             File::createDir(dirname($filename));
@@ -479,14 +475,13 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @phpstan-impure
+     * @inheritDoc
      */
-    final public function getHarFilename(): ?string
+    public function getHarFilename(): ?string
     {
         if ($this->HarListenerId === null && !$this->HarRecorder) {
             throw new LogicException('HAR recorder not started');
         }
-
         return $this->HarRecorder
             ? $this->HarFilename
             : null;
@@ -495,17 +490,26 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function startCache()
+    public function startCache()
     {
+        if ($this->CacheStore) {
+            throw new LogicException('Cache already started');
+        }
         if (Cache::isLoaded()) {
-            if ($this->checkCache(Cache::getInstance())) {
+            $cache = Cache::getInstance();
+            if (
+                $cache instanceof CacheStore
+                && File::same($this->getCacheDb(false), $file = $cache->getFilename())
+            ) {
                 return $this;
             }
-            throw new LogicException('Cache store already started');
+            throw new LogicException(sprintf(
+                'Global cache already started: %s',
+                $file ?? get_class($cache),
+            ));
         }
-
-        Cache::load(new CacheStore($this->getCacheDb()));
-
+        $this->CacheStore = new CacheStore($this->getCacheDb());
+        Cache::load($this->CacheStore);
         return $this;
     }
 
@@ -517,7 +521,7 @@ class Application extends Container implements ApplicationInterface
      *
      * @return $this
      */
-    final public function resumeCache()
+    public function resumeCache()
     {
         return file_exists($this->getCacheDb(false))
             ? $this->startCache()
@@ -527,21 +531,13 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function stopCache()
+    public function stopCache()
     {
-        if (
-            Cache::isLoaded()
-            && $this->checkCache($cache = Cache::getInstance())
-        ) {
-            $cache->close();
+        if ($this->CacheStore) {
+            $this->CacheStore->close();
+            $this->CacheStore = null;
         }
         return $this;
-    }
-
-    private function checkCache(CacheInterface $cache): bool
-    {
-        return $cache instanceof CacheStore
-            && File::same($this->getCacheDb(false), $cache->getFilename());
     }
 
     private function getCacheDb(bool $create = true): string
@@ -552,29 +548,29 @@ class Application extends Container implements ApplicationInterface
     /**
      * @param string[]|null $arguments
      */
-    final public function startSync(?string $command = null, ?array $arguments = null)
+    public function startSync(?string $command = null, ?array $arguments = null)
     {
-        $syncDb = $this->getSyncDb();
-
+        if ($this->SyncStore) {
+            throw new LogicException('Sync entity store already started');
+        }
         if (Sync::isLoaded()) {
             $store = Sync::getInstance();
-            if ($store instanceof SyncStore) {
-                $file = $store->getFilename();
-                if (File::same($syncDb, $file)) {
-                    return $this;
-                }
+            if (
+                $store instanceof SyncStore
+                && File::same($this->getSyncDb(false), $file = $store->getFilename())
+            ) {
+                return $this;
             }
             throw new LogicException(sprintf(
-                'Entity store already started: %s',
+                'Global sync entity store already started: %s',
                 $file ?? get_class($store),
             ));
         }
-
         if ($arguments === null && $command === null) {
             if (\PHP_SAPI === 'cli') {
                 /** @var string[] */
-                $args = $_SERVER['argv'];
-                $arguments = array_slice($args, 1);
+                $arguments = $_SERVER['argv'];
+                $arguments = array_slice($arguments, 1);
             } else {
                 $arguments = [Json::encode([
                     '_GET' => $_GET,
@@ -582,27 +578,23 @@ class Application extends Container implements ApplicationInterface
                 ])];
             }
         }
-
-        Sync::load(new SyncStore(
-            $syncDb,
+        $this->SyncStore = new SyncStore(
+            $this->getSyncDb(),
             $command ?? Sys::getProgramName($this->BasePath),
             $arguments ?? [],
-        ));
-
+        );
+        Sync::load($this->SyncStore);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    final public function stopSync()
+    public function stopSync()
     {
-        if (
-            Sync::isLoaded()
-            && ($store = Sync::getInstance()) instanceof SyncStore
-            && File::same($this->getSyncDb(false), $store->getFilename())
-        ) {
-            $store->close();
+        if ($this->SyncStore) {
+            $this->SyncStore->close();
+            $this->SyncStore = null;
         }
         return $this;
     }
@@ -610,17 +602,16 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function sync(
+    public function sync(
         string $prefix,
         string $uri,
         string $namespace,
         ?SyncNamespaceHelperInterface $helper = null
     ) {
-        if (!Sync::isLoaded()) {
+        if (!$this->SyncStore) {
             $this->startSync();
         }
         Sync::registerNamespace($prefix, $uri, $namespace, $helper);
-
         return $this;
     }
 
@@ -632,7 +623,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function getInitialWorkingDirectory(): string
+    public function getInitialWorkingDirectory(): string
     {
         return $this->InitialWorkingDirectory;
     }
@@ -640,7 +631,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function setInitialWorkingDirectory(string $directory)
+    public function setInitialWorkingDirectory(string $directory)
     {
         $this->InitialWorkingDirectory = $directory;
         return $this;
@@ -649,7 +640,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function restoreWorkingDirectory()
+    public function restoreWorkingDirectory()
     {
         if (File::getcwd() !== $this->InitialWorkingDirectory) {
             File::chdir($this->InitialWorkingDirectory);
@@ -669,7 +660,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function reportResourceUsage(int $level = Console::LEVEL_INFO)
+    public function reportResourceUsage(int $level = Console::LEVEL_INFO)
     {
         self::doReportResourceUsage($level);
         return $this;
@@ -678,7 +669,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function reportMetrics(
+    public function reportMetrics(
         int $level = Console::LEVEL_INFO,
         bool $includeRunningTimers = true,
         $groups = null,
@@ -691,7 +682,7 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function registerShutdownReport(
+    public function registerShutdownReport(
         int $level = Console::LEVEL_INFO,
         bool $includeResourceUsage = true,
         bool $includeRunningTimers = true,
@@ -708,22 +699,18 @@ class Application extends Container implements ApplicationInterface
             return $this;
         }
 
-        register_shutdown_function(
-            static function () {
-                self::doReportMetrics(
-                    self::$ShutdownReportLevel,
-                    self::$ShutdownReportRunningTimers,
-                    self::$ShutdownReportMetricGroups,
-                    self::$ShutdownReportMetricLimit,
-                );
-                if (self::$ShutdownReportResourceUsage) {
-                    self::doReportResourceUsage(self::$ShutdownReportLevel);
-                }
+        register_shutdown_function(static function () {
+            self::doReportMetrics(
+                self::$ShutdownReportLevel,
+                self::$ShutdownReportRunningTimers,
+                self::$ShutdownReportMetricGroups,
+                self::$ShutdownReportMetricLimit,
+            );
+            if (self::$ShutdownReportResourceUsage) {
+                self::doReportResourceUsage(self::$ShutdownReportLevel);
             }
-        );
-
+        });
         self::$ShutdownReportIsRegistered = true;
-
         return $this;
     }
 

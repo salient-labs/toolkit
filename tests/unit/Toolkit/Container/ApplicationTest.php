@@ -147,6 +147,7 @@ final class ApplicationTest extends HttpTestCase
         $this->getCurler()->get();
         // @phpstan-ignore method.impossibleType
         $this->assertNotNull($uuid);
+        // @phpstan-ignore method.impossibleType
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
         $app->unload();
@@ -175,6 +176,7 @@ final class ApplicationTest extends HttpTestCase
         // Trigger the start of a run
         $app->get(PostProvider::class)->with(Post::class)->get(1);
         $uuid = Sync::getRunUuid();
+        // @phpstan-ignore method.impossibleType
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
         $app->unload();
