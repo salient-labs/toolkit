@@ -262,20 +262,6 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    public function isRunningInProduction(): bool
-    {
-        $env = Env::getEnvironment();
-
-        return $env === 'production'
-            || ($env === null && (
-                $this->PharPath !== null
-                || !Package::hasDevPackages()
-            ));
-    }
-
-    /**
-     * @inheritDoc
-     */
     final public function getBasePath(): string
     {
         return $this->BasePath;
@@ -394,6 +380,20 @@ class Application extends Container implements ApplicationInterface
             ));
         }
         return $home . '/' . $dir;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isRunningInProduction(): bool
+    {
+        $env = Env::getEnvironment();
+
+        return $env === 'production'
+            || ($env === null && (
+                $this->PharPath !== null
+                || !Package::hasDevPackages()
+            ));
     }
 
     /**
@@ -607,11 +607,6 @@ class Application extends Container implements ApplicationInterface
         return $this;
     }
 
-    private function getSyncDb(bool $create = true): string
-    {
-        return $this->getDataPath($create) . '/sync.db';
-    }
-
     /**
      * @inheritDoc
      */
@@ -629,12 +624,26 @@ class Application extends Container implements ApplicationInterface
         return $this;
     }
 
+    private function getSyncDb(bool $create = true): string
+    {
+        return $this->getDataPath($create) . '/sync.db';
+    }
+
     /**
      * @inheritDoc
      */
     final public function getInitialWorkingDirectory(): string
     {
         return $this->InitialWorkingDirectory;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function setInitialWorkingDirectory(string $directory)
+    {
+        $this->InitialWorkingDirectory = $directory;
+        return $this;
     }
 
     /**
@@ -651,18 +660,31 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    final public function setInitialWorkingDirectory(string $directory)
+    public function reportVersion(int $level = Console::LEVEL_INFO)
     {
-        $this->InitialWorkingDirectory = $directory;
+        Console::print($this->getVersionString(), $level);
         return $this;
     }
 
     /**
      * @inheritDoc
      */
-    public function reportVersion(int $level = Console::LEVEL_INFO)
+    final public function reportResourceUsage(int $level = Console::LEVEL_INFO)
     {
-        Console::print($this->getVersionString(), $level);
+        self::doReportResourceUsage($level);
+        return $this;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    final public function reportMetrics(
+        int $level = Console::LEVEL_INFO,
+        bool $includeRunningTimers = true,
+        $groups = null,
+        ?int $limit = 10
+    ) {
+        self::doReportMetrics($level, $includeRunningTimers, $groups, $limit);
         return $this;
     }
 
@@ -706,15 +728,6 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @inheritDoc
-     */
-    final public function reportResourceUsage(int $level = Console::LEVEL_INFO)
-    {
-        self::doReportResourceUsage($level);
-        return $this;
-    }
-
-    /**
      * @param Console::LEVEL_* $level
      */
     private static function doReportResourceUsage(int $level): void
@@ -738,19 +751,6 @@ class Application extends Container implements ApplicationInterface
             $level,
             Console::TYPE_UNFORMATTED,
         );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    final public function reportMetrics(
-        int $level = Console::LEVEL_INFO,
-        bool $includeRunningTimers = true,
-        $groups = null,
-        ?int $limit = 10
-    ) {
-        self::doReportMetrics($level, $includeRunningTimers, $groups, $limit);
-        return $this;
     }
 
     /**
