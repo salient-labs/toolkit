@@ -6,7 +6,7 @@ use Salient\Contract\Container\Event\BeforeGlobalContainerSetEvent as BeforeGlob
 use Salient\Contract\Container\ContainerInterface;
 
 /**
- * Dispatched before the global container is set or unset
+ * @internal
  */
 class BeforeGlobalContainerSetEvent extends ContainerEvent implements BeforeGlobalContainerSetEventInterface
 {

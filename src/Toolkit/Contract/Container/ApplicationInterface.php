@@ -78,6 +78,7 @@ interface ApplicationInterface extends ContainerInterface
      *
      * @param string|null $name If `null`, the name of the application is used.
      * @return $this
+     * @throws LogicException if console output is already being logged.
      */
     public function logOutput(?string $name = null, ?bool $debug = null);
 

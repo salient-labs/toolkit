@@ -293,7 +293,7 @@ foreach ($commands as $class => $tests) {
         $content = ob_get_clean();
         if ($mockTarget) {
             Console::deregisterTarget($mockTarget);
-            Console::registerStdioTargets();
+            Console::registerStderrTarget();
         }
         if ($result !== $exitStatus) {
             $status |= 1;

@@ -10,8 +10,13 @@ use Salient\Contract\Container\ContainerInterface;
 trait RequiresContainer
 {
     /**
-     * Get the given container, optionally falling back to the global container
-     * or creating a standalone instance if no container is provided
+     * In order of preference, get the given container, the global container or
+     * a standalone container
+     *
+     * @param bool $getGlobalContainer If `true` and `$container` is `null`,
+     * return the global container if it is set
+     * @param bool $createGlobalContainer If `true` and `$container` is `null`,
+     * create the global container if it is not set
      */
     protected static function requireContainer(
         ?ContainerInterface $container = null,

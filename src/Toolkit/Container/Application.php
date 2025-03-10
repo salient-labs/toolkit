@@ -53,36 +53,37 @@ class Application extends Container implements ApplicationInterface
     private const PARENT_STATE = 2;
 
     /**
-     * [ Index => [ name, parent, child, Windows child, source child ], ... ]
+     * [ Path type => [ name, parent type, child, source child ], ... ]
      */
     private const PATHS = [
-        self::PATH_CACHE => ['cache', self::PARENT_STATE, 'cache', 'cache', 'var/cache'],
-        self::PATH_CONFIG => ['config', self::PARENT_CONFIG, null, 'config', 'var/lib/config'],
-        self::PATH_DATA => ['data', self::PARENT_DATA, null, 'data', 'var/lib/data'],
-        self::PATH_LOG => ['log', self::PARENT_STATE, 'log', 'log', 'var/log'],
-        self::PATH_TEMP => ['temp', self::PARENT_STATE, 'tmp', 'tmp', 'var/tmp'],
+        self::PATH_CACHE => ['cache', self::PARENT_STATE, 'cache', 'var/cache'],
+        self::PATH_CONFIG => ['config', self::PARENT_CONFIG, 'config', 'var/lib/config'],
+        self::PATH_DATA => ['data', self::PARENT_DATA, 'data', 'var/lib/data'],
+        self::PATH_LOG => ['log', self::PARENT_STATE, 'log', 'var/log'],
+        self::PATH_TEMP => ['temp', self::PARENT_STATE, 'tmp', 'var/tmp'],
     ];
-
-    private string $AppName;
-    private string $BasePath;
-    private string $WorkingDirectory;
-    private bool $RunningFromSource;
 
     /**
-     * @var array<self::PATH_*,string|null>
+     * [ Parent type => [ variable, default directory, add child?, Windows variable ], ... ]
      */
-    private array $Paths = [
-        self::PATH_CACHE => null,
-        self::PATH_CONFIG => null,
-        self::PATH_DATA => null,
-        self::PATH_LOG => null,
-        self::PATH_TEMP => null,
+    private const PARENTS = [
+        self::PARENT_CONFIG => ['XDG_CONFIG_HOME', '.config', false, 'APPDATA'],
+        self::PARENT_DATA => ['XDG_DATA_HOME', '.local/share', false, 'APPDATA'],
+        self::PARENT_STATE => ['XDG_CACHE_HOME', '.cache', true, 'LOCALAPPDATA'],
     ];
 
+    private string $Name;
+    private string $BasePath;
+    private ?string $PharPath;
+    /** @var array<self::PATH_*,string> */
+    private array $Path;
+    /** @var array<self::PATH_*,bool> */
+    private array $PathIsCreated;
     private bool $OutputLogIsRegistered = false;
     private ?int $HarListenerId = null;
     private ?CurlerHarRecorder $HarRecorder = null;
     private string $HarFilename;
+    private string $InitialWorkingDirectory;
 
     // --
 
@@ -98,95 +99,89 @@ class Application extends Container implements ApplicationInterface
     /**
      * Creates a new service container
      *
-     * If `$basePath` is `null`, the value of environment variable
-     * `app_base_path` is used if present, otherwise the path of the root
-     * package is used.
+     * This container:
      *
-     * If `$appName` is `null`, the basename of the file used to run the script
-     * is used after removing common PHP file extensions and recognised version
-     * numbers.
-     *
-     * If `$configDir` exists and is a directory, it is passed to
-     * {@see Config::loadDirectory()} after `.env` files are loaded and values
-     * are applied from the environment to the running script.
+     * - makes itself the global container
+     * - gets the current environment from {@see Env::getEnvironment()}, checks
+     *   for the following files, and loads values into the environment from the
+     *   first that exists:
+     *   - `<base_path>/.env.<environment>`
+     *   - `<base_path>/.env`
+     * - applies values from the environment to the running script (if
+     *   `$envFlags` is non-zero)
+     * - calls {@see Console::registerStderrTarget()} to register `STDERR` for
+     *   console output if running on the command line
+     * - calls {@see Err::register()} to register error, exception and shutdown
+     *   handlers
+     * - calls {@see Config::loadDirectory()} to load values from files in
+     *   `$configDir` (if it exists and is a directory)
      *
      * @api
      *
+     * @param string|null $basePath If `null`, the value of environment variable
+     * `app_base_path` is used if present, otherwise the path of the root
+     * package is used.
+     * @param non-empty-string|null $name If `null`, configuration value
+     * `"app.name"` is used if set, otherwise the basename of the file used to
+     * run the script is used after removing common PHP file extensions and
+     * recognised version numbers.
      * @param int-mask-of<Env::APPLY_*> $envFlags Values to apply from the
      * environment to the running script.
-     * @param string|null $configDir A path relative to the application's base
-     * path, or `null` if configuration files should not be loaded.
+     * @param string|null $configDir An absolute path, a path relative to the
+     * application's base path, or `null` if configuration files should not be
+     * loaded.
      */
     public function __construct(
         ?string $basePath = null,
-        ?string $appName = null,
+        ?string $name = null,
         int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
         parent::__construct();
 
-        static::setGlobalContainer($this);
+        self::setGlobalContainer($this);
 
-        $this->AppName = $appName ?? Regex::replace(
-            '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/i',
-            '',
-            Sys::getProgramBasename('.php', '.phar'),
-        );
-
+        $envBasePath = false;
         if ($basePath === null) {
-            $explicitBasePath = false;
+            $envBasePath = true;
             $basePath = Env::get('app_base_path', null);
             if ($basePath === null) {
+                $envBasePath = false;
                 $basePath = Package::path();
-                $defaultBasePath = true;
-            } else {
-                $defaultBasePath = false;
             }
-        } else {
-            $explicitBasePath = true;
-            $defaultBasePath = false;
         }
-
         if (!is_dir($basePath)) {
-            $exception = $explicitBasePath || $defaultBasePath
+            $exception = !$envBasePath
                 ? FilesystemErrorException::class
                 : InvalidEnvironmentException::class;
             throw new $exception(sprintf('Invalid base path: %s', $basePath));
         }
-
         $this->BasePath = File::realpath($basePath);
+        $this->PharPath = extension_loaded('Phar')
+            ? Str::coalesce(Phar::running(), null)
+            : null;
+        $this->InitialWorkingDirectory = File::getcwd();
 
-        $this->WorkingDirectory = File::getcwd();
-
-        $this->RunningFromSource = !extension_loaded('Phar')
-            || Phar::running() === '';
-
-        if ($this->RunningFromSource) {
-            $files = [];
-            $env = Env::getEnvironment();
-            if ($env !== null) {
-                $files[] = $this->BasePath . '/.env.' . $env;
-            }
-            $files[] = $this->BasePath . '/.env';
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    Env::loadFiles($file);
-                    break;
-                }
+        if (($env = Env::getEnvironment()) !== null) {
+            $files[] = $this->BasePath . '/.env.' . $env;
+        }
+        $files[] = $this->BasePath . '/.env';
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                Env::loadFiles($file);
+                break;
             }
         }
-
         if ($envFlags) {
             Env::apply($envFlags);
         }
 
-        Console::registerStdioTargets();
+        Console::registerStderrTarget();
 
         Err::register();
-
-        $adodb = Package::getPackagePath('adodb/adodb-php');
-        if ($adodb !== null) {
-            Err::silencePath($adodb);
+        $adodbPath = Package::getPackagePath('adodb/adodb-php');
+        if ($adodbPath !== null) {
+            Err::silencePath($adodbPath);
         }
 
         if ($configDir !== null) {
@@ -197,6 +192,19 @@ class Application extends Container implements ApplicationInterface
                 Config::loadDirectory($configDir);
             }
         }
+
+        $this->Name = $name
+            ?? (
+                Config::isLoaded()
+                && is_string($value = Config::get('app.name', null))
+                    ? $value
+                    : null
+            )
+            ?? Regex::replace(
+                '/-v?[0-9]+(\.[0-9]+){0,3}(-[0-9]+)?(-g?[0-9a-f]+)?$/iD',
+                '',
+                Sys::getProgramBasename('.php', '.phar'),
+            );
     }
 
     /**
@@ -222,7 +230,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function getName(): string
     {
-        return $this->AppName;
+        return $this->Name;
     }
 
     /**
@@ -245,7 +253,7 @@ class Application extends Container implements ApplicationInterface
     {
         return sprintf(
             '%s %s PHP %s',
-            $this->AppName,
+            $this->Name,
             $this->getVersion(),
             \PHP_VERSION,
         );
@@ -260,7 +268,7 @@ class Application extends Container implements ApplicationInterface
 
         return $env === 'production'
             || ($env === null && (
-                !$this->RunningFromSource
+                $this->PharPath !== null
                 || !Package::hasDevPackages()
             ));
     }
@@ -314,84 +322,78 @@ class Application extends Container implements ApplicationInterface
     }
 
     /**
-     * @param self::PATH_* $index
+     * @param self::PATH_* $type
      */
-    private function getPath(int $index, bool $create): string
+    private function getPath(int $type, bool $create): string
     {
-        if ($this->Paths[$index] !== null) {
-            return $this->Paths[$index];
-        }
-
-        [$name, $parent, $child, $winChild, $srcChild] = self::PATHS[$index];
-        $varName = sprintf('app_%s_path', $name);
-
-        $path = Env::get($varName, null);
-        if ($path !== null) {
-            if (trim($path) === '') {
-                throw new InvalidEnvironmentException(sprintf(
-                    'Directory disabled (empty %s in environment)',
-                    $varName,
-                ));
-            }
-            if (!File::isAbsolute($path)) {
-                $path = $this->BasePath . '/' . $path;
-            }
-        } elseif (
-            !$this->isRunningInProduction()
-            && File::isCreatable($this->BasePath . '/' . $srcChild)
-        ) {
-            $path = $this->BasePath . '/' . $srcChild;
-        } elseif (Sys::isWindows()) {
-            switch ($parent) {
-                case self::PARENT_CONFIG:
-                case self::PARENT_DATA:
-                    $path = Env::get('APPDATA');
-                    break;
-
-                case self::PARENT_STATE:
-                    $path = Env::get('LOCALAPPDATA');
-                    break;
-            }
-
-            $path = Arr::implode('/', [$path, $this->AppName, $winChild], '');
-        } else {
-            $home = Env::getHomeDir();
-            if ($home === null || !is_dir($home)) {
-                throw new InvalidEnvironmentException('Home directory not found');
-            }
-
-            switch ($parent) {
-                case self::PARENT_CONFIG:
-                    $path = Env::get('XDG_CONFIG_HOME', $home . '/.config');
-                    break;
-
-                case self::PARENT_DATA:
-                    $path = Env::get('XDG_DATA_HOME', $home . '/.local/share');
-                    break;
-
-                case self::PARENT_STATE:
-                    $path = Env::get('XDG_CACHE_HOME', $home . '/.cache');
-                    break;
-            }
-
-            $path = Arr::implode('/', [$path, $this->AppName, $child], '');
-        }
-
-        if (!File::isAbsolute($path)) {
-            // @codeCoverageIgnoreStart
-            throw new RuntimeException(sprintf(
-                'Absolute path to %s directory required',
-                $name,
-            ));
-            // @codeCoverageIgnoreEnd
-        }
-
-        if ($create) {
+        $path = $this->Path[$type] ??= $this->doGetPath($type);
+        $this->PathIsCreated[$type] ??= false;
+        if ($create && !$this->PathIsCreated[$type]) {
             File::createDir($path);
-            $this->Paths[$index] = $path;
+            $this->PathIsCreated[$type] = true;
         }
-
         return $path;
+    }
+
+    /**
+     * @param self::PATH_* $type
+     */
+    private function doGetPath(int $type): string
+    {
+        [$name, $parentType, $child, $srcChild] = self::PATHS[$type];
+        [$var, $defaultDir, $addChild, $winVar] = self::PARENTS[$parentType];
+        $pathVar = 'app_' . $name . '_path';
+        $path = Env::get($pathVar, null);
+        if ($path === '') {
+            throw new InvalidEnvironmentException(sprintf(
+                'Invalid %s path in environment variable: %s',
+                $name,
+                $pathVar,
+            ));
+        }
+        if ($path !== null) {
+            return File::isAbsolute($path)
+                ? $path
+                : $this->BasePath . '/' . $path;
+        }
+        if (!$this->isRunningInProduction()) {
+            $path = $this->BasePath . '/' . $srcChild;
+            if (File::isCreatable($path)) {
+                return $path;
+            }
+        }
+        if (Sys::isWindows()) {
+            $path = Arr::implode('/', [Env::get($winVar), $this->Name, $child], '');
+        } else {
+            $path = Arr::implode('/', [
+                Env::get($var, fn() => $this->getHomeDir($defaultDir)),
+                $this->Name,
+                $addChild ? $child : null,
+            ], '');
+        }
+        if (!File::isAbsolute($path)) {
+            throw new InvalidEnvironmentException(
+                sprintf('Invalid %s path: %s', $name, $path),
+            );
+        }
+        return $path;
+    }
+
+    private function getHomeDir(string $dir): string
+    {
+        $home = Env::getHomeDir();
+        if ($home === null) {
+            throw new InvalidEnvironmentException(
+                'Home directory not found in environment',
+            );
+        }
+        if (!is_dir($home)) {
+            throw new InvalidEnvironmentException(sprintf(
+                'Invalid home directory in environment: %s',
+                $home,
+            ));
+        }
+        return $home . '/' . $dir;
     }
 
     /**
@@ -403,7 +405,7 @@ class Application extends Container implements ApplicationInterface
             throw new LogicException('Output log already registered');
         }
 
-        $name ??= $this->AppName;
+        $name ??= $this->Name;
         $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
         Console::registerTarget($target, Console::LEVELS_ALL_EXCEPT_DEBUG);
 
@@ -446,7 +448,7 @@ class Application extends Container implements ApplicationInterface
             $filename = sprintf(
                 '%s/har/%s-%s-%s.har',
                 $this->getLogPath(),
-                $name ?? $this->AppName,
+                $name ?? $this->Name,
                 (new DateTime('now', new DateTimeZone('UTC')))->format('Y-m-d-His.v'),
                 Get::value($uuid),
             );
@@ -632,7 +634,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function getInitialWorkingDirectory(): string
     {
-        return $this->WorkingDirectory;
+        return $this->InitialWorkingDirectory;
     }
 
     /**
@@ -640,8 +642,8 @@ class Application extends Container implements ApplicationInterface
      */
     final public function restoreWorkingDirectory()
     {
-        if (File::getcwd() !== $this->WorkingDirectory) {
-            File::chdir($this->WorkingDirectory);
+        if (File::getcwd() !== $this->InitialWorkingDirectory) {
+            File::chdir($this->InitialWorkingDirectory);
         }
         return $this;
     }
@@ -651,7 +653,7 @@ class Application extends Container implements ApplicationInterface
      */
     final public function setInitialWorkingDirectory(string $directory)
     {
-        $this->WorkingDirectory = $directory;
+        $this->InitialWorkingDirectory = $directory;
         return $this;
     }
 

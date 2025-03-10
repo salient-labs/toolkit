@@ -44,11 +44,11 @@ class CliApplication extends Application implements CliApplicationInterface
      */
     public function __construct(
         ?string $basePath = null,
-        ?string $appName = null,
+        ?string $name = null,
         int $envFlags = Env::APPLY_ALL,
         ?string $configDir = 'config'
     ) {
-        parent::__construct($basePath, $appName, $envFlags, $configDir);
+        parent::__construct($basePath, $name, $envFlags, $configDir);
 
         if (\PHP_SAPI !== 'cli') {
             // @codeCoverageIgnoreStart
