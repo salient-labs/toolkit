@@ -2,7 +2,8 @@
     "require": {
         "php": "^8.2",
         "apigen/apigen": "^7@alpha",
-        "nette/schema": "~1.2.0"
+        "nette/schema": "~1.2.0",
+        "salient/utils": "^0.99"
     },
     "autoload": {
         "psr-4": {

@@ -2,7 +2,7 @@ parameters:
 	paths: [%workingDir%/src]
 	exclude: [Sli, PHPStan, stubs]
 	excludeProtected: false
-	excludePrivate: true
+	excludePrivate: false
 	excludeTagged: [internal]
 	outputDir: %workingDir%/docs/api
 	themeDir: theme
