@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Sync\Command;
 
-use Salient\Contract\Cli\CliApplicationInterface;
+use Salient\Cli\CliApplication;
 use Salient\Tests\Sync\Entity\Provider\CommentProvider;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
 use Salient\Tests\CommandTestCase;
@@ -18,7 +18,7 @@ abstract class SyncCommandTestCase extends CommandTestCase
      */
     public static function assertSameHttpRequests(
         array $requests,
-        CliApplicationInterface $app
+        CliApplication $app
     ): void {
         self::assertSame(
             $requests,
@@ -27,7 +27,7 @@ abstract class SyncCommandTestCase extends CommandTestCase
         );
     }
 
-    protected function setUpApp(CliApplicationInterface $app): CliApplicationInterface
+    protected function setUpApp(CliApplication $app): CliApplication
     {
         if (!$this->Providerless) {
             foreach ($this->Providers as $provider) {

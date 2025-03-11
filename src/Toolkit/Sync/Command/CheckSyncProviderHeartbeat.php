@@ -110,7 +110,7 @@ EOF;
             $providers = array_values(array_map(
                 function (string $providerClass) {
                     if (is_a(
-                        $this->App->getName($providerClass),
+                        $this->App->getClass($providerClass),
                         SyncProviderInterface::class,
                         true
                     )) {

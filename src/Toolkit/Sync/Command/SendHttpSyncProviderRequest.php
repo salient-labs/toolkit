@@ -121,7 +121,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
             $provider = $this->Provider;
 
             if (!is_a(
-                $this->App->getName($provider),
+                $this->App->getClass($provider),
                 HttpSyncProvider::class,
                 true,
             )) {

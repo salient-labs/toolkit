@@ -189,7 +189,7 @@ abstract class CliCommand implements CliCommandInterface
         }
 
         if ($this->HasVersionArgument) {
-            $this->App->reportVersion(Console::LEVEL_INFO, true);
+            Console::printStdout($this->App->getVersionString());
             return 0;
         }
 
@@ -486,7 +486,7 @@ abstract class CliCommand implements CliCommandInterface
         $text = str_replace(
             ['{{app}}', '{{program}}', '{{command}}', '{{subcommand}}'],
             [
-                $this->App->getAppName(),
+                $this->App->getName(),
                 $this->App->getProgramName(),
                 $this->getNameWithProgram(),
                 Str::coalesce(

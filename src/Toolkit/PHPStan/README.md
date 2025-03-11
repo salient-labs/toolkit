@@ -31,6 +31,7 @@ toolkit.
 
 | Extension            | Description                                                         | Error identifiers                                                                    |
 | -------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `ContainerRule`      | Checks calls to [ContainerInterface][] methods                      | `salient.service.type`                                                               |
 | `GetCoalesceRule`    | Checks for unnecessary use of [Get::coalesce()][]                   | `salient.needless.coalesce`                                                          |
 | `ImmutableTraitRule` | Checks calls to [ImmutableTrait][] methods `with()` and `without()` | `salient.property.notFound`<br>`salient.property.private`<br>`salient.property.type` |
 
@@ -56,6 +57,8 @@ be found.
   https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_whereNotEmpty
 [Arr::whereNotNull()]:
   https://salient-labs.github.io/toolkit/Salient.Utility.Arr.html#_whereNotNull
+[ContainerInterface]:
+  https://salient-labs.github.io/toolkit/Salient.Contract.Container.ContainerInterface.html
 [Get::coalesce()]:
   https://salient-labs.github.io/toolkit/Salient.Utility.Get.html#_coalesce
 [ImmutableTrait]:

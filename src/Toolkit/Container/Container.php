@@ -10,9 +10,9 @@ use Salient\Cache\CacheStore;
 use Salient\Console\Console;
 use Salient\Console\ConsoleLogger;
 use Salient\Container\Event\BeforeGlobalContainerSetEvent;
-use Salient\Container\Exception\ArgumentsNotUsedException;
 use Salient\Container\Exception\InvalidServiceException;
 use Salient\Container\Exception\ServiceNotFoundException;
+use Salient\Container\Exception\UnusedArgumentsException;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Container\ContainerAwareInterface;
@@ -21,7 +21,6 @@ use Salient\Contract\Container\HasBindings;
 use Salient\Contract\Container\HasContextualBindings;
 use Salient\Contract\Container\HasServices;
 use Salient\Contract\Container\ServiceAwareInterface;
-use Salient\Contract\Container\ServiceLifetime;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
@@ -33,13 +32,10 @@ use Salient\Core\Facade\Event;
 use Salient\Sync\SyncStore;
 use Closure;
 use InvalidArgumentException;
-use LogicException;
 use ReflectionClass;
-use ReflectionNamedType;
-use ReflectionParameter;
 
 /**
- * A service container with contextual bindings
+ * @api
  *
  * @implements FacadeAwareInterface<ContainerInterface>
  */
@@ -59,11 +55,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
     ];
 
     private const DEFAULT_SERVICES = [
-        CacheInterface::class => [CacheStore::class, ServiceLifetime::SINGLETON],
-        EventDispatcherInterface::class => [EventDispatcher::class, ServiceLifetime::SINGLETON],
-        ConsoleInterface::class => [Console::class, ServiceLifetime::SINGLETON],
-        LoggerInterface::class => [ConsoleLogger::class, ServiceLifetime::INHERIT],
-        SyncStoreInterface::class => [SyncStore::class, ServiceLifetime::SINGLETON],
+        CacheInterface::class => [CacheStore::class, self::LIFETIME_SINGLETON],
+        EventDispatcherInterface::class => [EventDispatcher::class, self::LIFETIME_SINGLETON],
+        ConsoleInterface::class => [Console::class, self::LIFETIME_SINGLETON],
+        LoggerInterface::class => [ConsoleLogger::class, self::LIFETIME_INHERIT],
+        SyncStoreInterface::class => [SyncStore::class, self::LIFETIME_SINGLETON],
     ];
 
     private static ?ContainerInterface $GlobalContainer = null;
@@ -143,7 +139,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public static function hasGlobalContainer(): bool
+    public static function hasGlobalContainer(): bool
     {
         return self::$GlobalContainer !== null;
     }
@@ -151,7 +147,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public static function getGlobalContainer(): ContainerInterface
+    public static function getGlobalContainer(): ContainerInterface
     {
         if (self::$GlobalContainer === null) {
             $container = new static();
@@ -165,7 +161,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public static function setGlobalContainer(?ContainerInterface $container): void
+    public static function setGlobalContainer(?ContainerInterface $container): void
     {
         if (self::$GlobalContainer === $container) {
             return;
@@ -179,7 +175,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function get(string $id, array $args = []): object
+    public function get(string $id, array $args = []): object
     {
         return $this->_get($id, $id, $args);
     }
@@ -187,25 +183,32 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getAs(string $id, string $service, array $args = []): object
+    public function getAs(string $id, string $service, array $args = []): object
     {
+        if (!is_a($id, $service, true)) {
+            throw new InvalidArgumentException(sprintf(
+                '%s does not inherit %s',
+                $id,
+                $service,
+            ));
+        }
         return $this->_get($id, $service, $args);
     }
 
     /**
-     * @template T
      * @template TService
+     * @template T of TService
      *
      * @param class-string<T> $id
      * @param class-string<TService> $service
      * @param mixed[] $args
-     * @return T&TService&object
+     * @return T&object
      */
     private function _get(string $id, string $service, array $args): object
     {
         $hasInstance = $this->Dice->hasShared($id);
         if ($hasInstance && $args) {
-            throw new ArgumentsNotUsedException(sprintf(
+            throw new UnusedArgumentsException(sprintf(
                 'Cannot apply arguments to shared instance: %s',
                 $id,
             ));
@@ -218,7 +221,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
                 $instance->setService($service);
             }
 
-            /** @var T&TService&object */
+            /** @var T&object */
             return $instance;
         }
 
@@ -233,7 +236,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         try {
             do {
                 try {
-                    /** @var T&TService&object */
+                    /** @var T&object */
                     return $this->Dice->create($id, $args);
                 } catch (DiceException $ex) {
                     /** @var class-string|null */
@@ -264,11 +267,11 @@ class Container implements ContainerInterface, FacadeAwareInterface
         $defaultService = self::DEFAULT_SERVICES[$id];
         /** @var class-string */
         $class = $defaultService[0];
-        /** @var ServiceLifetime::* */
+        /** @var self::LIFETIME_* */
         $lifetime = $defaultService[1];
         if (
-            $lifetime === ServiceLifetime::SINGLETON || (
-                $lifetime === ServiceLifetime::INHERIT
+            $lifetime === self::LIFETIME_SINGLETON || (
+                $lifetime === self::LIFETIME_INHERIT
                 && is_a($class, SingletonInterface::class, true)
             )
         ) {
@@ -281,15 +284,17 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getName(string $id): string
+    public function getClass(string $id): string
     {
-        return $this->Dice->getRule($id)['instanceOf'] ?? $id;
+        return $this->Dice->hasShared($id)
+            ? get_class($this->Dice->create($id))
+            : $this->Dice->getRule($id)['instanceOf'] ?? $id;
     }
 
     /**
      * @inheritDoc
      */
-    final public function has(string $id): bool
+    public function has(string $id): bool
     {
         return $this->Dice->hasRule($id) || $this->Dice->hasShared($id);
     }
@@ -297,7 +302,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function hasSingleton(string $id): bool
+    public function hasSingleton(string $id): bool
     {
         return $this->Dice->hasShared($id) || (
             $this->Dice->hasRule($id)
@@ -308,7 +313,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function hasInstance(string $id): bool
+    public function hasInstance(string $id): bool
     {
         return $this->Dice->hasShared($id);
     }
@@ -316,15 +321,19 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @param array<string,mixed> $rule
      */
-    private function addRule(string $id, array $rule): void
+    private function addRule(string $id, array $rule, bool $remove = false): void
     {
+        if ($remove) {
+            $this->Dice = $this->Dice->removeRule($id);
+        }
+
         $this->Dice = $this->Dice->addRule($id, $rule);
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
-    final public function inContextOf(string $id): ContainerInterface
+    public function inContextOf(string $id): ContainerInterface
     {
         $clone = clone $this;
 
@@ -361,7 +370,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @param array<class-string,string|object|array<string,mixed>> $subs
+     * @param array<class-string,class-string|object|non-empty-array<Dice::INSTANCE,Closure(): object>> $subs
      */
     private function applyBindings(array $subs): void
     {
@@ -370,19 +379,15 @@ class Container implements ContainerInterface, FacadeAwareInterface
                 if (strcasecmp($this->Dice->getRule($key)['instanceOf'] ?? '', $value)) {
                     $this->addRule($key, ['instanceOf' => $value]);
                 }
-                continue;
-            }
-            if (is_object($value)) {
+            } elseif (is_object($value)) {
                 if (!$this->Dice->hasShared($key) || $this->get($key) !== $value) {
                     $this->Dice = $this->Dice->addShared($key, $value);
                 }
-                continue;
-            }
-            $rule = $this->Dice->getDefaultRule();
-            // If this substitution can't be converted to a standalone rule,
-            // apply it via the default rule
-            if (($rule['substitutions'][ltrim($key, '\\')] ?? null) !== $value) {
-                $this->Dice = $this->Dice->addSubstitution($key, $value);
+            } else {
+                $value = $value[Dice::INSTANCE];
+                if (($this->Dice->getRule($key)['callback'] ?? null) !== $value) {
+                    $this->addRule($key, ['callback' => $value]);
+                }
             }
         }
     }
@@ -392,158 +397,175 @@ class Container implements ContainerInterface, FacadeAwareInterface
      * @template T of TService
      *
      * @param class-string<TService> $id
-     * @param class-string<T>|null $class
-     * @param mixed[] $args
+     * @param (Closure(ContainerInterface): T&object)|class-string<T>|null $class
      * @param array<string,mixed> $rule
-     * @return $this
+     * @phpstan-return $this
      */
-    private function _bind(
-        string $id,
-        ?string $class,
-        array $args,
-        array $rule = []
-    ): ContainerInterface {
-        if ($class !== null) {
+    private function _bind(string $id, $class, array $rule = []): ContainerInterface
+    {
+        if ($class instanceof Closure) {
+            $rule['callback'] = fn() => $class($this);
+        } elseif ($class !== null) {
             $rule['instanceOf'] = $class;
         }
 
-        if ($args) {
-            $rule['constructParams'] = $args;
-        }
-
-        $this->addRule($id, $rule);
+        $this->addRule($id, $rule, true);
 
         return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    final public function bind(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface {
-        return $this->_bind($id, $class, $args);
-    }
-
-    /**
-     * @return $this
-     */
-    final public function bindIf(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface {
-        if ($this->has($id)) {
-            return $this;
-        }
-
-        return $this->_bind($id, $class, $args);
-    }
-
-    /**
-     * @return $this
-     */
-    final public function singleton(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface {
-        return $this->_bind($id, $class, $args, ['shared' => true]);
-    }
-
-    /**
-     * @return $this
-     */
-    final public function singletonIf(
-        string $id,
-        ?string $class = null,
-        array $args = []
-    ): ContainerInterface {
-        if ($this->has($id)) {
-            return $this;
-        }
-
-        return $this->_bind($id, $class, $args, ['shared' => true]);
     }
 
     /**
      * @inheritDoc
      */
-    final public function hasProvider(string $id): bool
+    public function bind(string $id, $class = null): ContainerInterface
     {
-        return isset($this->Providers[$id]);
+        return $this->_bind($id, $class);
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    final public function provider(
-        string $id,
+    public function bindIf(string $id, $class = null): ContainerInterface
+    {
+        if ($this->has($id)) {
+            return $this;
+        }
+
+        return $this->_bind($id, $class);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function singleton(string $id, $class = null): ContainerInterface
+    {
+        return $this->_bind($id, $class, ['shared' => true]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function singletonIf(string $id, $class = null): ContainerInterface
+    {
+        if ($this->has($id)) {
+            return $this;
+        }
+
+        return $this->_bind($id, $class, ['shared' => true]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasProvider(string $provider): bool
+    {
+        return isset($this->Providers[$provider]);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function provider(
+        string $provider,
         ?array $services = null,
-        array $exceptServices = [],
-        int $lifetime = ServiceLifetime::INHERIT
+        array $excludeServices = [],
+        int $providerLifetime = Container::LIFETIME_INHERIT
     ): ContainerInterface {
-        $this->applyService($id, $services, $exceptServices, $lifetime);
-        $this->Providers[$id] = true;
+        $this->applyService($provider, $services, $excludeServices, $providerLifetime);
+        $this->Providers[$provider] = true;
         return $this;
     }
 
     /**
-     * @param class-string $id
+     * @param class-string $provider
      * @param class-string[]|null $services
-     * @param class-string[] $exceptServices
-     * @param ServiceLifetime::* $lifetime
+     * @param class-string[] $excludeServices
+     * @param self::LIFETIME_* $providerLifetime
      */
     private function applyService(
-        string $id,
+        string $provider,
         ?array $services = null,
-        array $exceptServices = [],
-        int $lifetime = ServiceLifetime::INHERIT
+        array $excludeServices = [],
+        int $providerLifetime = self::LIFETIME_INHERIT
     ): void {
-        if ($lifetime === ServiceLifetime::INHERIT) {
-            $lifetime = is_a($id, SingletonInterface::class, true)
-                ? ServiceLifetime::SINGLETON
-                : ServiceLifetime::TRANSIENT;
+        if ($providerLifetime === self::LIFETIME_INHERIT) {
+            $providerLifetime = is_a($provider, SingletonInterface::class, true)
+                ? self::LIFETIME_SINGLETON
+                : self::LIFETIME_TRANSIENT;
         }
 
         $rule = [];
-        if ($lifetime === ServiceLifetime::SINGLETON) {
+        if ($providerLifetime === self::LIFETIME_SINGLETON) {
             $rule['shared'] = true;
         }
 
         if (
-            is_a($id, HasContextualBindings::class, true)
-            && ($bindings = $id::getContextualBindings())
+            is_a($provider, HasContextualBindings::class, true)
+            && ($bindings = $provider::getContextualBindings($this))
         ) {
-            $rule['substitutions'] = $bindings;
+            foreach ($bindings as $service => $class) {
+                if (is_int($service)) {
+                    if (!is_string($class)) {
+                        throw new InvalidServiceException(sprintf(
+                            'Unmapped services must be of type class-string: %s::getContextualBindings()',
+                            $provider,
+                        ));
+                    }
+                    $service = $class;
+                }
+
+                if ($class instanceof Closure) {
+                    $class = [Dice::INSTANCE => fn() => $class($this)];
+                }
+
+                if ($service[0] === '$') {
+                    if ($constructor = (new ReflectionClass($provider))->getConstructor()) {
+                        $name = substr($service, 1);
+                        foreach ($constructor->getParameters() as $param) {
+                            if ($param->getName() === $name) {
+                                $rule['constructParams'][$name] = is_object($class)
+                                    ? [Dice::INSTANCE => fn() => $class]
+                                    : $class;
+                                break;
+                            }
+                        }
+                    }
+                } else {
+                    $rule['substitutions'][$service] = $class;
+                }
+            }
         }
 
         if ($rule) {
-            $this->addRule($id, $rule);
+            $this->addRule($provider, $rule);
         }
 
-        if (is_a($id, HasBindings::class, true)) {
-            $bindings = $id::getBindings();
+        if (is_a($provider, HasBindings::class, true)) {
+            $bindings = $provider::getBindings($this);
             foreach ($bindings as $service => $class) {
                 $this->bind($service, $class);
             }
 
-            $singletons = $id::getSingletons();
+            $singletons = $provider::getSingletons($this);
             foreach ($singletons as $service => $class) {
                 if (is_int($service)) {
+                    if (!is_string($class)) {
+                        throw new InvalidServiceException(sprintf(
+                            'Unmapped services must be of type class-string: %s::getSingletons()',
+                            $provider,
+                        ));
+                    }
                     $service = $class;
                 }
                 $this->singleton($service, $class);
             }
         }
 
-        if (is_a($id, HasServices::class, true)) {
-            $bind = $id::getServices();
+        if (is_a($provider, HasServices::class, true)) {
+            $bind = $provider::getServices();
         } else {
             $bind = array_diff(
-                (new ReflectionClass($id))->getInterfaceNames(),
+                (new ReflectionClass($provider))->getInterfaceNames(),
                 self::SERVICE_PROVIDER_INTERFACES,
             );
         }
@@ -552,18 +574,16 @@ class Container implements ContainerInterface, FacadeAwareInterface
             $services = array_unique($services);
             $bind = array_intersect($bind, $services);
             if (count($bind) < count($services)) {
-                // @codeCoverageIgnoreStart
                 throw new InvalidServiceException(sprintf(
                     '%s does not implement: %s',
-                    $id,
+                    $provider,
                     implode(', ', array_diff($services, $bind)),
                 ));
-                // @codeCoverageIgnoreEnd
             }
         }
 
-        if ($exceptServices) {
-            $bind = array_diff($bind, $exceptServices);
+        if ($excludeServices) {
+            $bind = array_diff($bind, $excludeServices);
         }
 
         if (!$bind) {
@@ -571,7 +591,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         }
 
         $rule = [
-            'instanceOf' => $id
+            'instanceOf' => $provider
         ];
         foreach ($bind as $service) {
             $this->addRule($service, $rule);
@@ -579,41 +599,47 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    final public function addContextualBinding($context, string $dependency, $value): ContainerInterface
+    public function addContextualBinding($context, string $id, $class = null): ContainerInterface
     {
         if (is_array($context)) {
             foreach ($context as $_context) {
-                $this->addContextualBinding($_context, $dependency, $value);
+                $this->addContextualBinding($_context, $id, $class);
             }
             return $this;
-        }
-
-        if ($dependency === '') {
-            // @codeCoverageIgnoreStart
-            throw new InvalidArgumentException('Argument #2 ($dependency) must be a non-empty string');
-            // @codeCoverageIgnoreEnd
         }
 
         $rule = $this->Dice->hasRule($context)
             ? $this->Dice->getRule($context)
             : [];
 
-        if (is_callable($value)) {
-            $value = [Dice::INSTANCE => fn() => $value($this)];
+        if ($class instanceof Closure) {
+            $class = [Dice::INSTANCE => fn() => $class($this)];
         }
 
-        if (
-            $dependency[0] === '$' && (
-                !($type = (new ReflectionParameter([$context, '__construct'], substr($dependency, 1)))->getType())
-                || !$type instanceof ReflectionNamedType
-                || $type->isBuiltin()
-            )
-        ) {
-            $rule['constructParams'][] = $value;
+        if ($id[0] === '$') {
+            if ($class === null) {
+                throw new InvalidArgumentException('$class cannot be null when $id starts with \'$\'');
+            }
+            $applied = false;
+            if ($constructor = (new ReflectionClass($context))->getConstructor()) {
+                $name = substr($id, 1);
+                foreach ($constructor->getParameters() as $param) {
+                    if ($param->getName() === $name) {
+                        $rule['constructParams'][$name] = is_object($class)
+                            ? [Dice::INSTANCE => fn() => $class]
+                            : $class;
+                        $applied = true;
+                        break;
+                    }
+                }
+            }
+            if (!$applied) {
+                return $this;
+            }
         } else {
-            $rule['substitutions'][$dependency] = $value;
+            $rule['substitutions'][$id] = $class ?? $id;
         }
 
         $this->addRule($context, $rule);
@@ -622,9 +648,9 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    final public function instance(string $id, $instance): ContainerInterface
+    public function instance(string $id, object $instance): ContainerInterface
     {
         $this->Dice = $this->Dice->addShared($id, $instance);
 
@@ -632,22 +658,25 @@ class Container implements ContainerInterface, FacadeAwareInterface
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    final public function providers(
-        array $serviceMap,
-        int $lifetime = ServiceLifetime::INHERIT
+    public function providers(
+        array $providers,
+        int $providerLifetime = Container::LIFETIME_INHERIT
     ): ContainerInterface {
         $idMap = [];
-        foreach ($serviceMap as $id => $class) {
+        foreach ($providers as $id => $class) {
+            if (is_int($id)) {
+                $id = $class;
+            }
             if (!class_exists($class)) {
-                throw new LogicException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     'Not a class: %s',
                     $class,
                 ));
             }
             if (!is_a($class, $id, true)) {
-                throw new LogicException(sprintf(
+                throw new InvalidArgumentException(sprintf(
                     '%s does not inherit %s',
                     $class,
                     $id,
@@ -662,7 +691,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         }
 
         foreach ($idMap as $class => $services) {
-            $this->provider($class, $services, [], $lifetime);
+            $this->provider($class, $services, [], $providerLifetime);
         }
 
         return $this;
@@ -671,25 +700,15 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getProviders(): array
+    public function getProviders(): array
     {
         return array_keys($this->Providers);
     }
 
     /**
-     * @return $this
+     * @inheritDoc
      */
-    final public function unbind(string $id): ContainerInterface
-    {
-        $this->Dice = $this->Dice->removeRule($id);
-
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    final public function removeInstance(string $id): ContainerInterface
+    public function removeInstance(string $id): ContainerInterface
     {
         if (!$this->Dice->hasShared($id)) {
             return $this;

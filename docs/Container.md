@@ -1,4 +1,44 @@
-## Working with application service containers
+# Service containers
+
+## `ContainerInterface`
+
+If a service resolves to a new instance of a class that implements
+`ContainerAwareInterface`, the container is passed to its
+`ContainerAwareInterface::setContainer()` method.
+
+Then, if the resolved instance implements `ServiceAwareInterface`, its
+`ServiceAwareInterface::setService()` method is called.
+
+A service provider registered via `ContainerInterface::provider()` or
+`ContainerInterface::providers()` may also implement any combination of the
+following interfaces:
+
+- `SingletonInterface` to be instantiated once per container
+- `HasServices` to specify which of its interfaces are services to register with
+  the container
+- `HasBindings` to bind additional services to the container
+- `HasContextualBindings` to bind services to the container that only apply in
+  the context of the provider
+
+`SingletonInterface` is ignored if a lifetime other than `LIFETIME_INHERIT` is
+given when the service provider is registered.
+
+## `ApplicationInterface`
+
+### `getCachePath()`
+
+Appropriate for replaceable data that should persist between runs to improve
+performance.
+
+### `getDataPath()`
+
+Appropriate for critical data that should persist indefinitely.
+
+### `getTempPath()`
+
+Appropriate for ephemeral data that shouldn't persist between runs.
+
+## `Application`
 
 ### Runtime directories
 
@@ -31,6 +71,14 @@ application data.
 [^4]:
     If `XDG_DATA_HOME` is empty or not set, `$HOME/.local/share` is used as the
     default
+
+### `isRunningInProduction()`
+
+Returns `true` if:
+
+- the name of the current environment is `production`
+- the application is running from a Phar archive, or
+- the application was installed with `composer --no-dev`
 
 [Application]:
   https://salient-labs.github.io/toolkit/Salient.Container.Application.html

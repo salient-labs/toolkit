@@ -49,7 +49,7 @@ final class SyncIntrospector extends Introspector
     {
         return new static(
             $service,
-            $container->getName($service),
+            $container->getClass($service),
             SyncProviderInterface::class,
             SyncEntityInterface::class,
             SyncContextInterface::class,

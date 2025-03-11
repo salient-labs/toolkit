@@ -1,5 +1,10 @@
 services:
 	-
+		class: Salient\PHPStan\Container\ContainerRule
+		tags:
+			- phpstan.rules.rule
+
+	-
 		class: Salient\PHPStan\Core\ImmutableTraitReadWritePropertiesExtension
 		tags:
 			- phpstan.properties.readWriteExtension

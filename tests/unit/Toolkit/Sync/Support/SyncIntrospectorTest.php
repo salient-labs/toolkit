@@ -80,7 +80,7 @@ final class SyncIntrospectorTest extends TestCase
         $provider = $container->get(TaskProvider::class);
 
         $_entity = new SyncEntityReflection(Task::class);
-        $_provider = new SyncProviderReflection($container->getName(TaskProvider::class));
+        $_provider = new SyncProviderReflection($container->getClass(TaskProvider::class));
 
         $this->assertSame('gettask', $this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::READ, $_entity, $provider)));
         $this->assertNull($this->getMethodVar($_provider->getSyncOperationClosure(SyncOperation::READ_LIST, $_entity, $provider)));

@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Sync\Provider;
 
+use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -83,7 +84,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return sprintf('JSONPlaceholder { %s }', $this->getBaseUrl());
     }
 
-    public static function getContextualBindings(): array
+    public static function getContextualBindings(ContainerInterface $container): array
     {
         return [
             Post::class => CustomPost::class,

@@ -3,6 +3,6 @@
 namespace Salient\Container\Event;
 
 /**
- * Base class for container events
+ * @internal
  */
-abstract class AbstractContainerEvent {}
+abstract class ContainerEvent {}

@@ -2,10 +2,9 @@
 
 namespace Salient\Container\Exception;
 
-use Salient\Contract\Container\InvalidServiceExceptionInterface;
-use Salient\Core\Exception\Exception;
+use Salient\Contract\Container\Exception\InvalidServiceException as InvalidServiceExceptionInterface;
 
 /**
- * Thrown when a service cannot be bound to a container
+ * @internal
  */
-class InvalidServiceException extends Exception implements InvalidServiceExceptionInterface {}
+class InvalidServiceException extends ContainerException implements InvalidServiceExceptionInterface {}

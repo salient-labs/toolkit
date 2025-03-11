@@ -2,13 +2,13 @@
 
 namespace Salient\Container\Event;
 
-use Salient\Contract\Container\BeforeGlobalContainerSetEventInterface;
+use Salient\Contract\Container\Event\BeforeGlobalContainerSetEvent as BeforeGlobalContainerSetEventInterface;
 use Salient\Contract\Container\ContainerInterface;
 
 /**
- * Dispatched before the global container is set or unset
+ * @internal
  */
-class BeforeGlobalContainerSetEvent extends AbstractContainerEvent implements BeforeGlobalContainerSetEventInterface
+class BeforeGlobalContainerSetEvent extends ContainerEvent implements BeforeGlobalContainerSetEventInterface
 {
     protected ?ContainerInterface $Container;
 

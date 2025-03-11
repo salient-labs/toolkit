@@ -61,7 +61,7 @@ class Introspector
         /** @var static<T,AbstractProvider,AbstractEntity,ProviderContext<AbstractProvider,AbstractEntity>> */
         return new static(
             $service,
-            $container->getName($service),
+            $container->getClass($service),
             AbstractProvider::class,
             AbstractEntity::class,
             ProviderContext::class,

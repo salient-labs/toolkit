@@ -13,6 +13,7 @@ use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Console\HasMessageType;
 use Salient\Contract\Console\HasMessageTypes;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Contract\Container\HasServiceLifetime;
 use Salient\Contract\Core\Event\EventDispatcherInterface;
 use Salient\Contract\Sync\SyncStoreInterface;
 use Salient\Contract\HasMessageLevel;
@@ -78,7 +79,7 @@ $loader = require "$dir/vendor/autoload.php";
 $loader->addPsr4('Salient\\Tests\\', ["$dir/tests/unit/Toolkit/", "$dir/tests/fixtures/Toolkit/"]);
 
 $facades = [
-    App::class => [ContainerInterface::class, [Container::class], '--desc', 'A facade for the global service container', '--api'],
+    App::class => [ContainerInterface::class, [Container::class], '--implement', HasServiceLifetime::class, '--desc', 'A facade for the global service container', '--api'],
     Cache::class => [CacheInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
     Console::class => [ConsoleInterface::class, [ConsoleService::class], '--implement', HasMessageLevel::class . ',' . HasMessageLevels::class . ',' . HasMessageType::class . ',' . HasMessageTypes::class, '--desc', 'A facade for the global console service', '--api'],
@@ -292,7 +293,7 @@ foreach ($commands as $class => $tests) {
         $content = ob_get_clean();
         if ($mockTarget) {
             Console::deregisterTarget($mockTarget);
-            Console::registerStdioTargets();
+            Console::registerStderrTarget();
         }
         if ($result !== $exitStatus) {
             $status |= 1;
