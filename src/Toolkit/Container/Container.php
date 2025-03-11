@@ -35,7 +35,7 @@ use InvalidArgumentException;
 use ReflectionClass;
 
 /**
- * A service container with contextual bindings
+ * @api
  *
  * @implements FacadeAwareInterface<ContainerInterface>
  */
@@ -139,7 +139,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public static function hasGlobalContainer(): bool
+    public static function hasGlobalContainer(): bool
     {
         return self::$GlobalContainer !== null;
     }
@@ -147,7 +147,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public static function getGlobalContainer(): ContainerInterface
+    public static function getGlobalContainer(): ContainerInterface
     {
         if (self::$GlobalContainer === null) {
             $container = new static();
@@ -161,7 +161,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public static function setGlobalContainer(?ContainerInterface $container): void
+    public static function setGlobalContainer(?ContainerInterface $container): void
     {
         if (self::$GlobalContainer === $container) {
             return;
@@ -175,7 +175,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function get(string $id, array $args = []): object
+    public function get(string $id, array $args = []): object
     {
         return $this->_get($id, $id, $args);
     }
@@ -183,7 +183,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getAs(string $id, string $service, array $args = []): object
+    public function getAs(string $id, string $service, array $args = []): object
     {
         if (!is_a($id, $service, true)) {
             throw new InvalidArgumentException(sprintf(
@@ -284,7 +284,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getClass(string $id): string
+    public function getClass(string $id): string
     {
         return $this->Dice->hasShared($id)
             ? get_class($this->Dice->create($id))
@@ -294,7 +294,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function has(string $id): bool
+    public function has(string $id): bool
     {
         return $this->Dice->hasRule($id) || $this->Dice->hasShared($id);
     }
@@ -302,7 +302,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function hasSingleton(string $id): bool
+    public function hasSingleton(string $id): bool
     {
         return $this->Dice->hasShared($id) || (
             $this->Dice->hasRule($id)
@@ -313,7 +313,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function hasInstance(string $id): bool
+    public function hasInstance(string $id): bool
     {
         return $this->Dice->hasShared($id);
     }
@@ -333,7 +333,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function inContextOf(string $id): ContainerInterface
+    public function inContextOf(string $id): ContainerInterface
     {
         $clone = clone $this;
 
@@ -417,7 +417,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function bind(string $id, $class = null): ContainerInterface
+    public function bind(string $id, $class = null): ContainerInterface
     {
         return $this->_bind($id, $class);
     }
@@ -425,7 +425,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function bindIf(string $id, $class = null): ContainerInterface
+    public function bindIf(string $id, $class = null): ContainerInterface
     {
         if ($this->has($id)) {
             return $this;
@@ -437,7 +437,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function singleton(string $id, $class = null): ContainerInterface
+    public function singleton(string $id, $class = null): ContainerInterface
     {
         return $this->_bind($id, $class, ['shared' => true]);
     }
@@ -445,7 +445,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function singletonIf(string $id, $class = null): ContainerInterface
+    public function singletonIf(string $id, $class = null): ContainerInterface
     {
         if ($this->has($id)) {
             return $this;
@@ -457,7 +457,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function hasProvider(string $provider): bool
+    public function hasProvider(string $provider): bool
     {
         return isset($this->Providers[$provider]);
     }
@@ -465,7 +465,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function provider(
+    public function provider(
         string $provider,
         ?array $services = null,
         array $excludeServices = [],
@@ -601,7 +601,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function addContextualBinding($context, string $id, $class = null): ContainerInterface
+    public function addContextualBinding($context, string $id, $class = null): ContainerInterface
     {
         if (is_array($context)) {
             foreach ($context as $_context) {
@@ -650,7 +650,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function instance(string $id, object $instance): ContainerInterface
+    public function instance(string $id, object $instance): ContainerInterface
     {
         $this->Dice = $this->Dice->addShared($id, $instance);
 
@@ -660,7 +660,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function providers(
+    public function providers(
         array $providers,
         int $providerLifetime = Container::LIFETIME_INHERIT
     ): ContainerInterface {
@@ -700,7 +700,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function getProviders(): array
+    public function getProviders(): array
     {
         return array_keys($this->Providers);
     }
@@ -708,7 +708,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
     /**
      * @inheritDoc
      */
-    final public function removeInstance(string $id): ContainerInterface
+    public function removeInstance(string $id): ContainerInterface
     {
         if (!$this->Dice->hasShared($id)) {
             return $this;
