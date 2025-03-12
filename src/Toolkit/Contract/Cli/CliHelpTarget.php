@@ -4,8 +4,6 @@ namespace Salient\Contract\Cli;
 
 /**
  * Help message targets
- *
- * @api
  */
 interface CliHelpTarget
 {

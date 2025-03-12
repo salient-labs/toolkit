@@ -4,8 +4,6 @@ namespace Salient\Contract\Console;
 
 /**
  * Console message types
- *
- * @api
  */
 interface HasMessageType
 {

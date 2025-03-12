@@ -18,8 +18,6 @@ use InvalidArgumentException;
 
 /**
  * A PSR-7 stream wrapper
- *
- * @api
  */
 class HttpStream implements HttpStreamInterface
 {

@@ -7,8 +7,6 @@ use Salient\Contract\Core\Immutable;
 
 /**
  * Formatting instructions for help messages
- *
- * @api
  */
 interface CliHelpStyleInterface extends Immutable
 {

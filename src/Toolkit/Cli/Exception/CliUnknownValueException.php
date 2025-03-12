@@ -6,7 +6,5 @@ use Salient\Core\Exception\Exception;
 
 /**
  * Thrown when an unknown value is rejected by a command line option
- *
- * @api
  */
 class CliUnknownValueException extends Exception {}

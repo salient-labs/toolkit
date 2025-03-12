@@ -18,8 +18,6 @@ use LogicException;
 
 /**
  * Formatting instructions for help messages
- *
- * @api
  */
 final class CliHelpStyle implements CliHelpStyleInterface
 {

@@ -6,8 +6,6 @@ use Salient\Contract\Core\HasJsonSchema;
 
 /**
  * A runnable CLI command
- *
- * @api
  */
 interface CliCommandInterface extends CliCommandNodeInterface, HasJsonSchema
 {

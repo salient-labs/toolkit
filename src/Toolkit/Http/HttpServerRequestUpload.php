@@ -10,8 +10,6 @@ use Salient\Utility\File;
 
 /**
  * A PSR-7 uploaded file (incoming, server-side)
- *
- * @api
  */
 class HttpServerRequestUpload implements UploadedFileInterface
 {

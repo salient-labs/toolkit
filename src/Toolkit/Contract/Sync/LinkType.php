@@ -2,9 +2,6 @@
 
 namespace Salient\Contract\Sync;
 
-/**
- * @api
- */
 interface LinkType
 {
     /**

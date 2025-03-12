@@ -10,8 +10,6 @@ use LogicException;
 
 /**
  * A node in a CLI command tree
- *
- * @api
  */
 interface CliCommandNodeInterface extends HasContainer, HasName, HasDescription
 {

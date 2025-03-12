@@ -16,9 +16,6 @@ use InvalidArgumentException;
 use JsonSerializable;
 use Traversable;
 
-/**
- * @api
- */
 final class FormData
 {
     /** @var mixed[]|object */

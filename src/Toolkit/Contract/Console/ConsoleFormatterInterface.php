@@ -5,9 +5,6 @@ namespace Salient\Contract\Console;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Immutable;
 
-/**
- * @api
- */
 interface ConsoleFormatterInterface extends Immutable
 {
     /**

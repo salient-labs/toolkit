@@ -25,8 +25,6 @@ use Throwable;
 
 /**
  * Base class for runnable CLI commands
- *
- * @api
  */
 abstract class CliCommand implements CliCommandInterface
 {

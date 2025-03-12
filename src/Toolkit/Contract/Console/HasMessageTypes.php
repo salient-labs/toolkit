@@ -4,8 +4,6 @@ namespace Salient\Contract\Console;
 
 /**
  * Groups of console message types
- *
- * @api
  */
 interface HasMessageTypes
 {

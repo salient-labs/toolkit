@@ -4,7 +4,4 @@ namespace Salient\Contract\Sync\Exception;
 
 use Throwable;
 
-/**
- * @api
- */
 interface SyncExceptionInterface extends Throwable {}

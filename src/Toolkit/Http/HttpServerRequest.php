@@ -14,8 +14,6 @@ use Stringable;
 
 /**
  * A PSR-7 request (incoming, server-side)
- *
- * @api
  */
 class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
 {

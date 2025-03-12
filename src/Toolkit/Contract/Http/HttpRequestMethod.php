@@ -2,9 +2,6 @@
 
 namespace Salient\Contract\Http;
 
-/**
- * @api
- */
 interface HttpRequestMethod
 {
     public const GET = 'GET';

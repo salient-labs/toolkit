@@ -4,8 +4,6 @@ namespace Salient\Contract\Console;
 
 /**
  * Console output target type flags
- *
- * @api
  */
 interface ConsoleTargetTypeFlag
 {

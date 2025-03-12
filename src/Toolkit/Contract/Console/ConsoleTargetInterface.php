@@ -7,8 +7,6 @@ use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * A console output target
- *
- * @api
  */
 interface ConsoleTargetInterface
 {

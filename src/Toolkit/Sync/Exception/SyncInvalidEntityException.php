@@ -6,9 +6,6 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Throwable;
 
-/**
- * @api
- */
 class SyncInvalidEntityException extends SyncException
 {
     protected SyncProviderInterface $Provider;

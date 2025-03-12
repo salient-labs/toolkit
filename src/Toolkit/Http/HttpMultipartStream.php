@@ -14,8 +14,6 @@ use Throwable;
 
 /**
  * A PSR-7 multipart data stream wrapper
- *
- * @api
  */
 class HttpMultipartStream implements HttpMultipartStreamInterface
 {

@@ -4,8 +4,6 @@ namespace Salient\Contract\Cli;
 
 /**
  * Command line option visibility flags
- *
- * @api
  */
 interface CliOptionVisibility
 {

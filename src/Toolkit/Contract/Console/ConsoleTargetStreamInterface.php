@@ -4,8 +4,6 @@ namespace Salient\Contract\Console;
 
 /**
  * A console output target with an underlying PHP stream
- *
- * @api
  */
 interface ConsoleTargetStreamInterface extends ConsoleTargetInterface
 {

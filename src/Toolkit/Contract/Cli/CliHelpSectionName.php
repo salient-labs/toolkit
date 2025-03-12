@@ -4,8 +4,6 @@ namespace Salient\Contract\Cli;
 
 /**
  * Section names commonly used in help messages
- *
- * @api
  */
 interface CliHelpSectionName
 {

@@ -14,8 +14,6 @@ use Stringable;
 
 /**
  * A PSR-7 URI with strict [RFC3986] compliance
- *
- * @api
  */
 class Uri implements UriInterface
 {

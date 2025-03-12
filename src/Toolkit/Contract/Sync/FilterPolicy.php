@@ -4,9 +4,6 @@ namespace Salient\Contract\Sync;
 
 use Salient\Contract\Sync\Exception\FilterPolicyViolationExceptionInterface;
 
-/**
- * @api
- */
 interface FilterPolicy
 {
     /**

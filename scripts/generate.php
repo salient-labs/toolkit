@@ -94,7 +94,7 @@ $facades = [
 ];
 
 $builders = [
-    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--no-declare=valueCallback', '--desc', '', '--api'],
+    CliOption::class => [CliOptionBuilder::class, '--forward=load', '--no-declare=valueCallback', '--desc', ''],
     Curler::class => [CurlerBuilder::class, '--constructor', 'create', '--forward=head,get,post,put,patch,delete,getP,postP,putP,patchP,deleteP,postR,putR,patchR,deleteR,sendRequest', '--desc', '', '--api'],
     DbSyncDefinition::class => [DbSyncDefinitionBuilder::class, '--no-declare=overrides', '--desc', ''],
     HttpSyncDefinition::class => [HttpSyncDefinitionBuilder::class, '--no-declare=callback,curlerCallback,overrides', '--desc', ''],

@@ -5,9 +5,6 @@ namespace Salient\Contract\Http;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Immutable;
 
-/**
- * @api
- */
 interface HttpMultipartStreamPartInterface extends Immutable
 {
     /**
