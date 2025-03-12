@@ -10,9 +10,9 @@ use Salient\Console\Console as ConsoleService;
 use Salient\Container\Container;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleTargetTypeFlag;
 use Salient\Contract\Console\HasMessageType;
 use Salient\Contract\Console\HasMessageTypes;
+use Salient\Contract\Console\HasTargetFlag;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\HasServiceLifetime;
 use Salient\Contract\Core\Event\EventDispatcherInterface;
@@ -83,7 +83,7 @@ $facades = [
     App::class => [ContainerInterface::class, [Container::class], '--implement', HasServiceLifetime::class, '--desc', 'A facade for the global service container', '--api'],
     Cache::class => [CacheInterface::class, [CacheStore::class], '--desc', 'A facade for the global cache', '--api'],
     Config::class => [ConfigurationManager::class, '--api'],
-    Console::class => [ConsoleInterface::class, [ConsoleService::class], '--implement', HasMessageLevel::class . ',' . HasMessageLevels::class . ',' . HasMessageType::class . ',' . HasMessageTypes::class . ',' . ConsoleTargetTypeFlag::class, '--desc', 'A facade for the global console service', '--api'],
+    Console::class => [ConsoleInterface::class, [ConsoleService::class], '--implement', HasMessageLevel::class . ',' . HasMessageLevels::class . ',' . HasMessageType::class . ',' . HasMessageTypes::class . ',' . HasTargetFlag::class, '--desc', 'A facade for the global console service', '--api'],
     Err::class => [ErrorHandler::class, '--skip', 'handleShutdown,handleError,handleException', '--api'],
     Event::class => [EventDispatcherInterface::class, [EventDispatcher::class], '--desc', 'A facade for the global event dispatcher', '--api'],
     Sync::class => [SyncStoreInterface::class, [SyncStore::class], '--desc', 'A facade for the global sync entity store'],

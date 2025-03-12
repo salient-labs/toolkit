@@ -3,9 +3,9 @@
 namespace Salient\Contract\Console;
 
 /**
- * Console output target type flags
+ * @api
  */
-interface ConsoleTargetTypeFlag
+interface HasTargetFlag
 {
     public const TARGET_STREAM = 1;
     public const TARGET_STDIO = 2;

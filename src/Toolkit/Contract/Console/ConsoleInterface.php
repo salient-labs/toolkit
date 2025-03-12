@@ -17,7 +17,7 @@ interface ConsoleInterface extends
     HasMessageLevels,
     HasMessageType,
     HasMessageTypes,
-    ConsoleTargetTypeFlag
+    HasTargetFlag
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the

@@ -8,9 +8,9 @@ use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterf
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\Target\TargetInterface;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleTargetTypeFlag;
 use Salient\Contract\Console\HasMessageType;
 use Salient\Contract\Console\HasMessageTypes;
+use Salient\Contract\Console\HasTargetFlag;
 use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;
 use Throwable;
@@ -63,7 +63,7 @@ use Throwable;
  *
  * @generated
  */
-final class Console extends Facade implements HasMessageLevel, HasMessageLevels, HasMessageType, HasMessageTypes, ConsoleTargetTypeFlag
+final class Console extends Facade implements HasMessageLevel, HasMessageLevels, HasMessageType, HasMessageTypes, HasTargetFlag
 {
     /**
      * @internal
