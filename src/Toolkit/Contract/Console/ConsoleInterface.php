@@ -4,8 +4,8 @@ namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
 use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Contract\Console\Target\ConsoleTargetInterface;
-use Salient\Contract\Console\Target\ConsoleTargetStreamInterface;
+use Salient\Contract\Console\Target\StreamTargetInterface;
+use Salient\Contract\Console\Target\TargetInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;
@@ -16,7 +16,8 @@ interface ConsoleInterface extends
     HasMessageLevel,
     HasMessageLevels,
     HasMessageType,
-    HasMessageTypes
+    HasMessageTypes,
+    ConsoleTargetTypeFlag
 {
     /**
      * Register STDOUT and STDERR to receive console output if running on the
@@ -47,7 +48,7 @@ interface ConsoleInterface extends
      * @return $this
      */
     public function registerTarget(
-        ConsoleTargetInterface $target,
+        TargetInterface $target,
         array $levels = ConsoleInterface::LEVELS_ALL
     );
 
@@ -55,27 +56,27 @@ interface ConsoleInterface extends
      * Deregister and close a registered target
      *
      * If `$target` is a registered target, it is deregistered and closed via
-     * {@see ConsoleTargetInterface::close()}, otherwise calling this method has
-     * no effect.
+     * {@see TargetInterface::close()}, otherwise calling this method has no
+     * effect.
      *
      * @return $this
      */
-    public function deregisterTarget(ConsoleTargetInterface $target);
+    public function deregisterTarget(TargetInterface $target);
 
     /**
      * Get a list of registered targets, optionally filtered by level and type
      *
      * @param ConsoleInterface::LEVEL_*|null $level
-     * @param int-mask-of<ConsoleTargetTypeFlag::*> $flags
-     * @return ConsoleTargetInterface[]
+     * @param int-mask-of<ConsoleInterface::TARGET_*> $flags
+     * @return TargetInterface[]
      */
     public function getTargets(?int $level = null, int $flags = 0): array;
 
     /**
      * Set or unset the prefix applied to each line of output by any registered
-     * targets that implement ConsoleTargetPrefixInterface
+     * targets that implement HasPrefix
      *
-     * @param int-mask-of<ConsoleTargetTypeFlag::*> $flags
+     * @param int-mask-of<ConsoleInterface::TARGET_*> $flags
      * @return $this
      */
     public function setTargetPrefix(?string $prefix, int $flags = 0);
@@ -83,8 +84,7 @@ interface ConsoleInterface extends
     /**
      * Get the width of a registered target in columns
      *
-     * Returns {@see ConsoleTargetInterface::getWidth()} from whichever is found
-     * first:
+     * Returns {@see TargetInterface::getWidth()} from whichever is found first:
      *
      * - the first TTY target registered with the given level
      * - the first `STDOUT` or `STDERR` target registered with the given level
@@ -99,8 +99,8 @@ interface ConsoleInterface extends
     /**
      * Get an output formatter for a registered target
      *
-     * Returns {@see ConsoleTargetInterface::getFormatter()} from the same
-     * target as {@see ConsoleInterface::getWidth()}.
+     * Returns {@see TargetInterface::getFormatter()} from the same target as
+     * {@see ConsoleInterface::getWidth()}.
      *
      * @param ConsoleInterface::LEVEL_* $level
      */
@@ -114,12 +114,12 @@ interface ConsoleInterface extends
     /**
      * Get a target for STDOUT, creating an unregistered one if necessary
      */
-    public function getStdoutTarget(): ConsoleTargetStreamInterface;
+    public function getStdoutTarget(): StreamTargetInterface;
 
     /**
      * Get a target for STDERR, creating an unregistered one if necessary
      */
-    public function getStderrTarget(): ConsoleTargetStreamInterface;
+    public function getStderrTarget(): StreamTargetInterface;
 
     /**
      * Get the number of error messages recorded so far

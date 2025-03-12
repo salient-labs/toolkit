@@ -5,7 +5,7 @@ namespace Salient\Contract\Console\Target;
 /**
  * A console output target with an underlying PHP stream
  */
-interface ConsoleTargetStreamInterface extends ConsoleTargetInterface
+interface StreamTargetInterface extends TargetInterface
 {
     /**
      * Check if the target writes to STDOUT

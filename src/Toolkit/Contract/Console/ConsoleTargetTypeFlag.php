@@ -7,10 +7,10 @@ namespace Salient\Contract\Console;
  */
 interface ConsoleTargetTypeFlag
 {
-    public const STREAM = 1;
-    public const STDIO = 2;
-    public const STDOUT = 4;
-    public const STDERR = 8;
-    public const TTY = 16;
-    public const INVERT = 32;
+    public const TARGET_STREAM = 1;
+    public const TARGET_STDIO = 2;
+    public const TARGET_STDOUT = 4;
+    public const TARGET_STDERR = 8;
+    public const TARGET_TTY = 16;
+    public const TARGET_INVERT = 32;
 }

@@ -5,12 +5,12 @@ namespace Salient\Console\Target;
 use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Target\ConsoleTargetInterface;
+use Salient\Contract\Console\Target\TargetInterface;
 
 /**
  * Base class for console output targets
  */
-abstract class ConsoleTarget implements ConsoleTargetInterface
+abstract class ConsoleTarget implements TargetInterface
 {
     private Formatter $Formatter;
 

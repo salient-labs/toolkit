@@ -8,7 +8,7 @@ use Salient\Contract\Console\ConsoleInterface as Console;
 /**
  * A console output target
  */
-interface ConsoleTargetInterface
+interface TargetInterface
 {
     /**
      * Get an output formatter for the target

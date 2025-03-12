@@ -3,14 +3,14 @@
 namespace Salient\Console\Target;
 
 use Salient\Contract\Console\Format\ConsoleTag as Tag;
-use Salient\Contract\Console\Target\ConsoleTargetPrefixInterface;
+use Salient\Contract\Console\Target\HasPrefix;
 use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * Base class for console output targets that apply an optional prefix to each
  * line of output
  */
-abstract class ConsolePrefixTarget extends ConsoleTarget implements ConsoleTargetPrefixInterface
+abstract class ConsolePrefixTarget extends ConsoleTarget implements HasPrefix
 {
     private ?string $Prefix = null;
     private int $PrefixLength = 0;

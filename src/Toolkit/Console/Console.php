@@ -6,12 +6,10 @@ use Psr\Log\LoggerInterface;
 use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Contract\Console\Target\ConsoleTargetInterface;
-use Salient\Contract\Console\Target\ConsoleTargetInterface as Target;
-use Salient\Contract\Console\Target\ConsoleTargetPrefixInterface as TargetPrefix;
-use Salient\Contract\Console\Target\ConsoleTargetStreamInterface as TargetStream;
+use Salient\Contract\Console\Target\HasPrefix;
+use Salient\Contract\Console\Target\StreamTargetInterface;
+use Salient\Contract\Console\Target\TargetInterface;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Exception\MultipleErrorException;
 use Salient\Contract\Core\Facade\FacadeAwareInterface;
@@ -132,7 +130,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @return $this
      */
-    private function registerStdioTarget(Target $target)
+    private function registerStdioTarget(TargetInterface $target)
     {
         $levels = Env::getDebug()
             ? self::LEVELS_ALL
@@ -163,30 +161,30 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      * @inheritDoc
      */
     public function registerTarget(
-        Target $target,
+        TargetInterface $target,
         array $levels = Console::LEVELS_ALL
     ) {
         $type = 0;
 
-        if ($target instanceof TargetStream) {
-            $type |= TargetTypeFlag::STREAM;
+        if ($target instanceof StreamTargetInterface) {
+            $type |= self::TARGET_STREAM;
 
             if ($target->isStdout()) {
-                $type |= TargetTypeFlag::STDIO | TargetTypeFlag::STDOUT;
+                $type |= self::TARGET_STDIO | self::TARGET_STDOUT;
                 $this->State->StdoutTarget = $target;
             }
 
             if ($target->isStderr()) {
-                $type |= TargetTypeFlag::STDIO | TargetTypeFlag::STDERR;
+                $type |= self::TARGET_STDIO | self::TARGET_STDERR;
                 $this->State->StderrTarget = $target;
             }
 
-            if ($type & TargetTypeFlag::STDIO) {
+            if ($type & self::TARGET_STDIO) {
                 $targetsByLevel[] = &$this->State->StdioTargetsByLevel;
             }
 
             if ($target->isTty()) {
-                $type |= TargetTypeFlag::TTY;
+                $type |= self::TARGET_TTY;
                 $targetsByLevel[] = &$this->State->TtyTargetsByLevel;
             }
         }
@@ -210,7 +208,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function deregisterTarget(Target $target)
+    public function deregisterTarget(TargetInterface $target)
     {
         return $this->onlyDeregisterTarget($target)->closeDeregisteredTargets();
     }
@@ -218,7 +216,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @return $this
      */
-    private function onlyDeregisterTarget(Target $target)
+    private function onlyDeregisterTarget(TargetInterface $target)
     {
         $targetId = spl_object_id($target);
 
@@ -253,7 +251,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             && (!$this->State->StdoutTarget || !$this->State->StderrTarget)
         ) {
             foreach (array_reverse($this->State->Targets) as $target) {
-                if (!$target instanceof TargetStream) {
+                if (!$target instanceof StreamTargetInterface) {
                     continue;
                 }
                 if (!$this->State->StdoutTarget && $target->isStdout()) {
@@ -313,7 +311,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     public function setTargetPrefix(?string $prefix, int $flags = 0)
     {
         foreach ($this->filterTargets($this->State->Targets, $flags) as $target) {
-            if ($target instanceof TargetPrefix) {
+            if ($target instanceof HasPrefix) {
                 $target->setPrefix($prefix);
             }
         }
@@ -339,16 +337,16 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @param self::LEVEL_* $level
      */
-    private function maybeGetTtyTarget(int $level): TargetStream
+    private function maybeGetTtyTarget(int $level): StreamTargetInterface
     {
-        /** @var Target[] */
+        /** @var TargetInterface[] */
         $targets = $this->State->TtyTargetsByLevel[$level]
             ?? $this->State->StdioTargetsByLevel[$level]
             ?? $this->State->TargetsByLevel[$level]
             ?? [];
 
         $target = reset($targets);
-        if (!$target || !$target instanceof TargetStream) {
+        if (!$target || !$target instanceof StreamTargetInterface) {
             $target = $this->getStderrTarget();
             if (!$target->isTty()) {
                 return $this->getStdoutTarget();
@@ -361,7 +359,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getStdoutTarget(): TargetStream
+    public function getStdoutTarget(): StreamTargetInterface
     {
         return $this->State->StdoutTarget ??= StreamTarget::fromStream(\STDOUT);
     }
@@ -369,7 +367,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getStderrTarget(): TargetStream
+    public function getStderrTarget(): StreamTargetInterface
     {
         return $this->State->StderrTarget ??= StreamTarget::fromStream(\STDERR);
     }
@@ -829,8 +827,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     }
 
     /**
-     * @param array<self::LEVEL_*,Target[]> $targets
-     * @return Target[]
+     * @param array<self::LEVEL_*,TargetInterface[]> $targets
+     * @return TargetInterface[]
      */
     private function reduceTargets(array $targets): array
     {
@@ -903,7 +901,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     }
 
     /**
-     * @template T of Target
+     * @template T of TargetInterface
      *
      * @param self::LEVEL_* $level
      * @param self::TYPE_* $type
@@ -972,15 +970,15 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     }
 
     /**
-     * @param array<int,ConsoleTargetInterface> $targets
-     * @param int-mask-of<TargetTypeFlag::*> $flags
-     * @return array<int,ConsoleTargetInterface>
+     * @param array<int,TargetInterface> $targets
+     * @param int-mask-of<self::TARGET_*> $flags
+     * @return array<int,TargetInterface>
      */
     private function filterTargets(array $targets, int $flags): array
     {
         $invert = false;
-        if ($flags & TargetTypeFlag::INVERT) {
-            $flags &= ~TargetTypeFlag::INVERT;
+        if ($flags & self::TARGET_INVERT) {
+            $flags &= ~self::TARGET_INVERT;
             $invert = true;
         }
         foreach ($targets as $targetId => $target) {
@@ -1000,20 +998,20 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
  */
 final class ConsoleState
 {
-    /** @var array<Console::LEVEL_*,TargetStream[]> */
+    /** @var array<Console::LEVEL_*,StreamTargetInterface[]> */
     public array $StdioTargetsByLevel = [];
-    /** @var array<Console::LEVEL_*,TargetStream[]> */
+    /** @var array<Console::LEVEL_*,StreamTargetInterface[]> */
     public array $TtyTargetsByLevel = [];
-    /** @var array<Console::LEVEL_*,Target[]> */
+    /** @var array<Console::LEVEL_*,TargetInterface[]> */
     public array $TargetsByLevel = [];
-    /** @var array<int,Target> */
+    /** @var array<int,TargetInterface> */
     public array $Targets = [];
-    /** @var array<int,Target> */
+    /** @var array<int,TargetInterface> */
     public array $DeregisteredTargets = [];
-    /** @var array<int,int-mask-of<TargetTypeFlag::*>> */
+    /** @var array<int,int-mask-of<Console::TARGET_*>> */
     public array $TargetTypeFlags = [];
-    public ?TargetStream $StdoutTarget = null;
-    public ?TargetStream $StderrTarget = null;
+    public ?StreamTargetInterface $StdoutTarget = null;
+    public ?StreamTargetInterface $StderrTarget = null;
     public int $GroupLevel = -1;
     /** @var array<array{string|null,string|null}> */
     public array $GroupMessageStack = [];

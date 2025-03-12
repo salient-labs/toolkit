@@ -6,7 +6,7 @@ namespace Salient\Contract\Console\Target;
  * A console output target that applies an optional prefix to each line of
  * output
  */
-interface ConsoleTargetPrefixInterface extends ConsoleTargetInterface
+interface HasPrefix extends TargetInterface
 {
     /**
      * Set or unset the prefix applied to each line of output
