@@ -5,7 +5,6 @@ namespace Salient\Console\Target;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LogLevel;
-use Salient\Console\Concept\ConsoleTarget;
 use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**

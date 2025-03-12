@@ -3,14 +3,14 @@
 namespace Salient\Console;
 
 use Psr\Log\LoggerInterface;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Target\StreamTarget;
-use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Target\ConsoleTargetInterface;
+use Salient\Contract\Console\Target\ConsoleTargetInterface as Target;
+use Salient\Contract\Console\Target\ConsoleTargetPrefixInterface as TargetPrefix;
+use Salient\Contract\Console\Target\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleTargetInterface;
-use Salient\Contract\Console\ConsoleTargetInterface as Target;
-use Salient\Contract\Console\ConsoleTargetPrefixInterface as TargetPrefix;
-use Salient\Contract\Console\ConsoleTargetStreamInterface as TargetStream;
 use Salient\Contract\Console\ConsoleTargetTypeFlag as TargetTypeFlag;
 use Salient\Contract\Core\Exception\Exception;
 use Salient\Contract\Core\Exception\MultipleErrorException;

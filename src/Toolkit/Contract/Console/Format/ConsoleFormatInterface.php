@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Console;
+namespace Salient\Contract\Console\Format;
 
-use Salient\Contract\Console\ConsoleMessageAttributesInterface as MessageAttributes;
-use Salient\Contract\Console\ConsoleTagAttributesInterface as TagAttributes;
+use Salient\Contract\Console\Format\ConsoleMessageAttributesInterface as MessageAttributes;
+use Salient\Contract\Console\Format\ConsoleTagAttributesInterface as TagAttributes;
 
 interface ConsoleFormatInterface
 {

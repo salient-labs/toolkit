@@ -2,19 +2,19 @@
 
 namespace Salient\Tests\Console;
 
-use Salient\Console\Contract\ConsoleFormatterFactory;
-use Salient\Console\Support\ConsoleLoopbackFormat;
-use Salient\Console\Support\ConsoleManPageFormat;
-use Salient\Console\Support\ConsoleMarkdownFormat;
-use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleFormatterFactory;
+use Salient\Console\Format\ConsoleLoopbackFormat;
+use Salient\Console\Format\ConsoleManPageFormat;
+use Salient\Console\Format\ConsoleMarkdownFormat;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
 /**
- * @covers \Salient\Console\ConsoleFormatter
- * @covers \Salient\Console\Support\ConsoleLoopbackFormat
- * @covers \Salient\Console\Support\ConsoleManPageFormat
- * @covers \Salient\Console\Support\ConsoleMarkdownFormat
+ * @covers \Salient\Console\Format\ConsoleFormatter
+ * @covers \Salient\Console\Format\ConsoleLoopbackFormat
+ * @covers \Salient\Console\Format\ConsoleManPageFormat
+ * @covers \Salient\Console\Format\ConsoleMarkdownFormat
  */
 final class ConsoleFormatterTest extends TestCase
 {

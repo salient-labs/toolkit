@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Contract;
+namespace Salient\Console\Format;
 
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
 
 interface ConsoleFormatterFactory
 {

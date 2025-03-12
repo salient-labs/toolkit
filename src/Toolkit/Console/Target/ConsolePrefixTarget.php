@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Concept;
+namespace Salient\Console\Target;
 
+use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Target\ConsoleTargetPrefixInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleTag as Tag;
-use Salient\Contract\Console\ConsoleTargetPrefixInterface;
 
 /**
  * Base class for console output targets that apply an optional prefix to each

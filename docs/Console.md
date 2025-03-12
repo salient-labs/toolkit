@@ -38,7 +38,7 @@ To override these defaults, register at least one [Console][] output target,
 e.g. by calling [registerTarget()][], before any other `Console` methods are
 called, preferably while bootstrapping your application.
 
-> [Application][] and [CliApplication][] always call [registerStdioTargets()][],
+> [Application][] and [CliApplication][] always call [registerStderrTarget()][],
 > which registers the default `STDOUT` and `STDERR` targets and prevents
 > creation of the default output log. To create a log file that persists between
 > reboots (in your project's `var/log` directory by default), call the app
@@ -91,7 +91,7 @@ The following Markdown-like syntax is supported in [Console][] messages:
   https://salient-labs.github.io/toolkit/Salient.Console.Console.html
 [logOutput()]:
   https://salient-labs.github.io/toolkit/Salient.Container.Application.html#_logOutput
-[registerStdioTargets()]:
-  https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerStdioTargets
+[registerStderrTarget()]:
+  https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerStderrTarget
 [registerTarget()]:
   https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerTarget

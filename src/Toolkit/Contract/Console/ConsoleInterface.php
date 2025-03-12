@@ -3,7 +3,9 @@
 namespace Salient\Contract\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Target\ConsoleTargetInterface;
+use Salient\Contract\Console\Target\ConsoleTargetStreamInterface;
 use Salient\Contract\Core\Instantiable;
 use Salient\Contract\HasMessageLevel;
 use Salient\Contract\HasMessageLevels;

@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Support;
+namespace Salient\Console\Format;
 
+use Salient\Contract\Console\Format\ConsoleMessageAttributesInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleMessageAttributesInterface;
 use Salient\Core\Concern\ImmutableTrait;
 
 /**

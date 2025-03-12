@@ -1,11 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Concept;
+namespace Salient\Console\Target;
 
-use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
-use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Console\ConsoleTargetInterface;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
+use Salient\Console\Format\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\Target\ConsoleTargetInterface;
 
 /**
  * Base class for console output targets

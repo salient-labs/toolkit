@@ -1,14 +1,12 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Support;
+namespace Salient\Console\Format;
 
-use Salient\Console\Contract\ConsoleFormatterFactory;
-use Salient\Console\Contract\ConsoleTagFormatFactory;
-use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Console\ConsoleFormatInterface;
-use Salient\Contract\Console\ConsoleTag as Tag;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
+use Salient\Console\Format\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\Format\ConsoleFormatInterface;
+use Salient\Contract\Console\Format\ConsoleTag as Tag;
 
 /**
  * Applies Markdown formatting with man page extensions to console output

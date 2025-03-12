@@ -4,10 +4,10 @@ namespace Salient\Core\Facade;
 
 use Psr\Log\LoggerInterface;
 use Salient\Console\Console as ConsoleService;
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Target\ConsoleTargetInterface;
+use Salient\Contract\Console\Target\ConsoleTargetStreamInterface;
 use Salient\Contract\Console\ConsoleInterface;
-use Salient\Contract\Console\ConsoleTargetInterface;
-use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\Console\ConsoleTargetTypeFlag;
 use Salient\Contract\Console\HasMessageType;
 use Salient\Contract\Console\HasMessageTypes;

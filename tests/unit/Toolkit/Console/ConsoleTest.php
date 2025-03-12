@@ -10,7 +10,7 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Console\Console
- * @covers \Salient\Console\ConsoleFormatter
+ * @covers \Salient\Console\Format\ConsoleFormatter
  */
 final class ConsoleTest extends TestCase
 {

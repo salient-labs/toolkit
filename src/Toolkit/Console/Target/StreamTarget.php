@@ -2,7 +2,6 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Console\Concept\ConsoleStreamTarget;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Facade\Err;
 use Salient\Utility\Exception\InvalidArgumentTypeException;

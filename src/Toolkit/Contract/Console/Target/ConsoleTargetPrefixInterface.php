@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Console;
+namespace Salient\Contract\Console\Target;
 
 /**
  * A console output target that applies an optional prefix to each line of
