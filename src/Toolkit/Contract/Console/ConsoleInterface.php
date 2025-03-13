@@ -20,26 +20,9 @@ interface ConsoleInterface extends
     HasTargetFlag
 {
     /**
-     * Register STDOUT and STDERR to receive console output if running on the
-     * command line
-     *
-     * - Errors and warnings are written to `STDERR`
-     * - Informational messages are written to `STDOUT`
-     * - Debug messages are ignored unless environment variable `DEBUG` is set
-     *
-     * @return $this
+     * Get a PSR-3 logger
      */
-    public function registerStdioTargets();
-
-    /**
-     * Register STDERR to receive console output if running on the command line
-     *
-     * - Errors, warnings and informational messages are written to `STDERR`
-     * - Debug messages are ignored unless environment variable `DEBUG` is set
-     *
-     * @return $this
-     */
-    public function registerStderrTarget();
+    public function getLogger(): LoggerInterface;
 
     /**
      * Register a target to receive console output
@@ -64,13 +47,26 @@ interface ConsoleInterface extends
     public function deregisterTarget(TargetInterface $target);
 
     /**
-     * Get a list of registered targets, optionally filtered by level and type
+     * Register STDERR to receive console output if running on the command line
      *
-     * @param ConsoleInterface::LEVEL_*|null $level
-     * @param int-mask-of<ConsoleInterface::TARGET_*> $flags
-     * @return TargetInterface[]
+     * - Errors, warnings and informational messages are written to `STDERR`
+     * - Debug messages are ignored unless environment variable `DEBUG` is set
+     *
+     * @return $this
      */
-    public function getTargets(?int $level = null, int $flags = 0): array;
+    public function registerStderrTarget();
+
+    /**
+     * Register STDOUT and STDERR to receive console output if running on the
+     * command line
+     *
+     * - Errors and warnings are written to `STDERR`
+     * - Informational messages are written to `STDOUT`
+     * - Debug messages are ignored unless environment variable `DEBUG` is set
+     *
+     * @return $this
+     */
+    public function registerStdioTargets();
 
     /**
      * Set or unset the prefix applied to each line of output by any registered
@@ -80,6 +76,35 @@ interface ConsoleInterface extends
      * @return $this
      */
     public function setTargetPrefix(?string $prefix, int $flags = 0);
+
+    /**
+     * Get a list of registered targets, optionally filtered by level and type
+     *
+     * @param ConsoleInterface::LEVEL_*|null $level
+     * @param int-mask-of<ConsoleInterface::TARGET_*> $flags
+     * @return TargetInterface[]
+     */
+    public function getTargets(?int $level = null, int $flags = 0): array;
+
+    /**
+     * Get a target for STDOUT, creating an unregistered one if necessary
+     */
+    public function getStdoutTarget(): StreamTargetInterface;
+
+    /**
+     * Get a target for STDERR, creating an unregistered one if necessary
+     */
+    public function getStderrTarget(): StreamTargetInterface;
+
+    /**
+     * Get an output formatter for a registered target
+     *
+     * Returns {@see TargetInterface::getFormatter()} from the same target as
+     * {@see ConsoleInterface::getWidth()}.
+     *
+     * @param ConsoleInterface::LEVEL_* $level
+     */
+    public function getFormatter(int $level = ConsoleInterface::LEVEL_INFO): FormatterInterface;
 
     /**
      * Get the width of a registered target in columns
@@ -95,41 +120,6 @@ interface ConsoleInterface extends
      * @param ConsoleInterface::LEVEL_* $level
      */
     public function getWidth(int $level = ConsoleInterface::LEVEL_INFO): ?int;
-
-    /**
-     * Get an output formatter for a registered target
-     *
-     * Returns {@see TargetInterface::getFormatter()} from the same target as
-     * {@see ConsoleInterface::getWidth()}.
-     *
-     * @param ConsoleInterface::LEVEL_* $level
-     */
-    public function getFormatter(int $level = ConsoleInterface::LEVEL_INFO): FormatterInterface;
-
-    /**
-     * Get a PSR-3 logger
-     */
-    public function getLogger(): LoggerInterface;
-
-    /**
-     * Get a target for STDOUT, creating an unregistered one if necessary
-     */
-    public function getStdoutTarget(): StreamTargetInterface;
-
-    /**
-     * Get a target for STDERR, creating an unregistered one if necessary
-     */
-    public function getStderrTarget(): StreamTargetInterface;
-
-    /**
-     * Get the number of error messages recorded so far
-     */
-    public function getErrorCount(): int;
-
-    /**
-     * Get the number of warning messages recorded so far
-     */
-    public function getWarningCount(): int;
 
     /**
      * Escape a string so it can be safely used in a console message
@@ -185,6 +175,29 @@ interface ConsoleInterface extends
     );
 
     /**
+     * Increase the indentation level of messages and print "» $msg1 $msg2" with
+     * level NOTICE
+     *
+     * If `$endMsg1` is not `null`, `"« $endMsg1 $endMsg2"` is printed with
+     * level NOTICE when {@see groupEnd()} is called to close the group.
+     *
+     * @return $this
+     */
+    public function group(
+        string $msg1,
+        ?string $msg2 = null,
+        ?string $endMsg1 = null,
+        ?string $endMsg2 = null
+    );
+
+    /**
+     * Close the nested message group most recently opened with group()
+     *
+     * @return $this
+     */
+    public function groupEnd();
+
+    /**
      * Print "➤ $msg1 $msg2" with level NOTICE
      *
      * @return $this
@@ -213,6 +226,25 @@ interface ConsoleInterface extends
     public function logOnce(string $msg1, ?string $msg2 = null);
 
     /**
+     * Print "⠿ $msg1 $msg2" with level INFO to TTY targets without moving to
+     * the next line
+     *
+     * This method can be called repeatedly to display progress updates without
+     * disrupting other console messages or bloating output logs.
+     *
+     * @return $this
+     */
+    public function logProgress(string $msg1, ?string $msg2 = null);
+
+    /**
+     * Print a "clear to end of line" control sequence with level INFO to TTY
+     * targets with a logProgress() message
+     *
+     * @return $this
+     */
+    public function clearProgress();
+
+    /**
      * Print ": <caller> $msg1 $msg2" with level DEBUG
      *
      * @param int $depth To print your caller's name instead of your own, set
@@ -239,25 +271,6 @@ interface ConsoleInterface extends
         ?Throwable $ex = null,
         int $depth = 0
     );
-
-    /**
-     * Print "⠿ $msg1 $msg2" with level INFO to TTY targets without moving to
-     * the next line
-     *
-     * This method can be called repeatedly to display progress updates without
-     * disrupting other console messages or bloating output logs.
-     *
-     * @return $this
-     */
-    public function logProgress(string $msg1, ?string $msg2 = null);
-
-    /**
-     * Print a "clear to end of line" control sequence with level INFO to TTY
-     * targets with a logProgress() message
-     *
-     * @return $this
-     */
-    public function clearProgress();
 
     /**
      * Print "$msg1 $msg2" with prefix and formatting optionally based on $level
@@ -291,37 +304,6 @@ interface ConsoleInterface extends
         ?Throwable $ex = null,
         bool $count = true
     );
-
-    /**
-     * Record a message with level $level without printing anything
-     *
-     * @param ConsoleInterface::LEVEL_* $level
-     * @return $this
-     */
-    public function count(int $level);
-
-    /**
-     * Increase the indentation level of messages and print "» $msg1 $msg2" with
-     * level NOTICE
-     *
-     * If `$endMsg1` is not `null`, `"« $endMsg1 $endMsg2"` is printed with
-     * level NOTICE when {@see groupEnd()} is called to close the group.
-     *
-     * @return $this
-     */
-    public function group(
-        string $msg1,
-        ?string $msg2 = null,
-        ?string $endMsg1 = null,
-        ?string $endMsg2 = null
-    );
-
-    /**
-     * Close the nested message group most recently opened with group()
-     *
-     * @return $this
-     */
-    public function groupEnd();
 
     /**
      * Print an exception's name and message with a given level, optionally
@@ -416,4 +398,22 @@ interface ConsoleInterface extends
         int $level = ConsoleInterface::LEVEL_INFO,
         int $type = ConsoleInterface::TYPE_UNFORMATTED
     );
+
+    /**
+     * Record a message with level $level without printing anything
+     *
+     * @param ConsoleInterface::LEVEL_* $level
+     * @return $this
+     */
+    public function count(int $level);
+
+    /**
+     * Get the number of error messages recorded so far
+     */
+    public function getErrorCount(): int;
+
+    /**
+     * Get the number of warning messages recorded so far
+     */
+    public function getWarningCount(): int;
 }
