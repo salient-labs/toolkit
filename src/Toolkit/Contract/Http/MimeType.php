@@ -2,9 +2,6 @@
 
 namespace Salient\Contract\Http;
 
-/**
- * @api
- */
 interface MimeType
 {
     public const BINARY = 'application/octet-stream';

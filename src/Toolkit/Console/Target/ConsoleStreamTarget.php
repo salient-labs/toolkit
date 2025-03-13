@@ -1,21 +1,21 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Concept;
+namespace Salient\Console\Target;
 
-use Salient\Console\Support\ConsoleFormat as Format;
-use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
-use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
-use Salient\Console\Support\ConsoleTagFormats as TagFormats;
+use Salient\Console\Format\ConsoleFormat as Format;
+use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
+use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
+use Salient\Console\Format\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleTag as Tag;
-use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Contract\HasEscapeSequence;
 
 /**
  * Base class for console output targets with an underlying PHP stream
  */
 abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
-    ConsoleTargetStreamInterface,
+    StreamTargetInterface,
     HasEscapeSequence
 {
     /**

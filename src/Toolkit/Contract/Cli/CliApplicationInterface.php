@@ -7,8 +7,6 @@ use LogicException;
 
 /**
  * A service container for CLI applications
- *
- * @api
  */
 interface CliApplicationInterface extends ApplicationInterface
 {

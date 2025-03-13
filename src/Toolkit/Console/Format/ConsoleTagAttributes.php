@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Support;
+namespace Salient\Console\Format;
 
-use Salient\Contract\Console\ConsoleTag as Tag;
-use Salient\Contract\Console\ConsoleTagAttributesInterface;
+use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Format\ConsoleTagAttributesInterface;
 
 /**
  * Tag attributes

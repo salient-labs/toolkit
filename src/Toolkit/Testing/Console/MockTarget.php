@@ -2,17 +2,17 @@
 
 namespace Salient\Testing\Console;
 
-use Salient\Console\ConsoleFormatter as Formatter;
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleTargetStreamInterface;
 use Salient\Utility\File;
 use LogicException;
 
 /**
  * @api
  */
-final class MockTarget implements ConsoleTargetStreamInterface
+final class MockTarget implements StreamTargetInterface
 {
     private bool $IsStdout;
     private bool $IsStderr;

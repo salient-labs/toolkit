@@ -8,9 +8,6 @@ use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Utility\Format;
 use Throwable;
 
-/**
- * @api
- */
 class SyncEntityNotFoundException extends SyncException implements SyncEntityNotFoundExceptionInterface
 {
     /**

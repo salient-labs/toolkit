@@ -2,9 +2,6 @@
 
 namespace Salient\Contract\Http;
 
-/**
- * @api
- */
 interface HttpMultipartStreamInterface extends HttpStreamInterface
 {
     /**

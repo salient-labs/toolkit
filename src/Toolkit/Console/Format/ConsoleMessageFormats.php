@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Support;
+namespace Salient\Console\Format;
 
-use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
+use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
 use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**

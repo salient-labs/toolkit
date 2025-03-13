@@ -9,8 +9,6 @@ use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Stringable;
 
 /**
- * @api
- *
  * @extends CollectionInterface<string,string[]>
  */
 interface HttpHeadersInterface extends

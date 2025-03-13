@@ -1,8 +1,8 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Contract;
+namespace Salient\Console\Format;
 
-use Salient\Console\Support\ConsoleTagFormats as TagFormats;
+use Salient\Console\Format\ConsoleTagFormats as TagFormats;
 
 interface ConsoleTagFormatFactory
 {

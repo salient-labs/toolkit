@@ -12,8 +12,6 @@ use Salient\Utility\Inflect;
 
 /**
  * A generic sync provider heartbeat check command
- *
- * @api
  */
 final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 {

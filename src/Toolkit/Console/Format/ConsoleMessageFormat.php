@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Support;
+namespace Salient\Console\Format;
 
-use Salient\Contract\Console\ConsoleFormatInterface as Format;
-use Salient\Contract\Console\ConsoleMessageAttributesInterface as MessageAttributes;
-use Salient\Contract\Console\ConsoleMessageFormatInterface;
+use Salient\Contract\Console\Format\ConsoleFormatInterface as Format;
+use Salient\Contract\Console\Format\ConsoleMessageAttributesInterface as MessageAttributes;
+use Salient\Contract\Console\Format\ConsoleMessageFormatInterface;
 
 /**
  * Applies formats to the components of a console message

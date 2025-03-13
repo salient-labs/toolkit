@@ -3,7 +3,6 @@
 namespace Salient\Console\Target;
 
 use Analog\Analog;
-use Salient\Console\Concept\ConsoleTarget;
 
 /**
  * Writes console output to Analog

@@ -27,8 +27,6 @@ use LogicException;
  * Headers can be applied explicitly or by passing HTTP header fields to
  * {@see HttpHeaders::addLine()}.
  *
- * @api
- *
  * @implements IteratorAggregate<string,string[]>
  */
 class HttpHeaders implements HttpHeadersInterface, IteratorAggregate

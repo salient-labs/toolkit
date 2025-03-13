@@ -8,9 +8,6 @@ use Salient\Contract\Sync\SyncOperation;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Salient\Utility\Reflect;
 
-/**
- * @api
- */
 class SyncOperationNotImplementedException extends SyncException implements SyncOperationNotImplementedExceptionInterface
 {
     /**

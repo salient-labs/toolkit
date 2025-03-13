@@ -2,15 +2,15 @@
 
 namespace Salient\Cli;
 
-use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
-use Salient\Console\Support\ConsoleManPageFormat as ManPageFormat;
-use Salient\Console\Support\ConsoleMarkdownFormat as MarkdownFormat;
-use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
+use Salient\Console\Format\ConsoleManPageFormat as ManPageFormat;
+use Salient\Console\Format\ConsoleMarkdownFormat as MarkdownFormat;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Regex;
@@ -18,8 +18,6 @@ use LogicException;
 
 /**
  * Formatting instructions for help messages
- *
- * @api
  */
 final class CliHelpStyle implements CliHelpStyleInterface
 {

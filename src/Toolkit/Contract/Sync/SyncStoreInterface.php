@@ -10,9 +10,6 @@ use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use InvalidArgumentException;
 use LogicException;
 
-/**
- * @api
- */
 interface SyncStoreInterface extends Instantiable
 {
     /**

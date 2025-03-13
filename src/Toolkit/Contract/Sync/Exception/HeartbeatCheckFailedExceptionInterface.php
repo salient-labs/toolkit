@@ -2,7 +2,4 @@
 
 namespace Salient\Contract\Sync\Exception;
 
-/**
- * @api
- */
 interface HeartbeatCheckFailedExceptionInterface extends SyncExceptionInterface {}

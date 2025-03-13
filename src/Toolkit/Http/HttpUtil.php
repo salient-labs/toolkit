@@ -21,9 +21,6 @@ use Generator;
 use InvalidArgumentException;
 use Stringable;
 
-/**
- * @api
- */
 final class HttpUtil extends AbstractUtility
 {
     /**

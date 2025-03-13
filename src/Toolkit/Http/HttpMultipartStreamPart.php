@@ -16,8 +16,6 @@ use LogicException;
 
 /**
  * Part of a PSR-7 multipart data stream
- *
- * @api
  */
 class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
 {

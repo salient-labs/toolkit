@@ -1,17 +1,17 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console;
+namespace Salient\Console\Format;
 
-use Salient\Console\Support\ConsoleLoopbackFormat as LoopbackFormat;
-use Salient\Console\Support\ConsoleMessageAttributes as MessageAttributes;
-use Salient\Console\Support\ConsoleMessageFormat as MessageFormat;
-use Salient\Console\Support\ConsoleMessageFormats as MessageFormats;
-use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Console\Support\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\ConsoleFormatInterface as Format;
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
+use Salient\Console\Format\ConsoleMessageAttributes as MessageAttributes;
+use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
+use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
+use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
+use Salient\Console\Format\ConsoleTagFormats as TagFormats;
+use Salient\Contract\Console\Format\ConsoleFormatInterface as Format;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\ConsoleInterface as Console;
-use Salient\Contract\Console\ConsoleTag as Tag;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;

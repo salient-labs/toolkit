@@ -1,13 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Console;
+namespace Salient\Contract\Console\Format;
 
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Immutable;
 
-/**
- * @api
- */
 interface ConsoleFormatterInterface extends Immutable
 {
     /**

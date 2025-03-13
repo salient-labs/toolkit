@@ -1,13 +1,11 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Console;
+namespace Salient\Contract\Console\Target;
 
 /**
  * A console output target with an underlying PHP stream
- *
- * @api
  */
-interface ConsoleTargetStreamInterface extends ConsoleTargetInterface
+interface StreamTargetInterface extends TargetInterface
 {
     /**
      * Check if the target writes to STDOUT

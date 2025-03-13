@@ -4,8 +4,6 @@ namespace Salient\Contract\Http;
 
 /**
  * Form data flags
- *
- * @api
  */
 interface FormDataFlag
 {

@@ -23,8 +23,6 @@ use InvalidArgumentException;
 /**
  * A generic sync entity retrieval command
  *
- * @api
- *
  * @template T of SyncEntityInterface
  */
 final class GetSyncEntity extends AbstractSyncCommand

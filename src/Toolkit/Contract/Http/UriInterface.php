@@ -7,9 +7,6 @@ use Salient\Contract\Core\Immutable;
 use JsonSerializable;
 use Stringable;
 
-/**
- * @api
- */
 interface UriInterface extends
     PsrUriInterface,
     Stringable,

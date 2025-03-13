@@ -6,8 +6,6 @@ use Salient\Core\Exception\MultipleErrorException;
 
 /**
  * Thrown when invalid command line arguments are given
- *
- * @api
  */
 class CliInvalidArgumentsException extends MultipleErrorException
 {

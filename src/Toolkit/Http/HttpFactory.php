@@ -18,8 +18,6 @@ use Salient\Utility\File;
 
 /**
  * A PSR-17 HTTP message factory
- *
- * @api
  */
 class HttpFactory implements
     RequestFactoryInterface,

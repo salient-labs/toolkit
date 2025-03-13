@@ -6,9 +6,6 @@ use Salient\Contract\Sync\Exception\UnreachableBackendExceptionInterface;
 use Salient\Contract\Sync\SyncProviderInterface;
 use Throwable;
 
-/**
- * @api
- */
 class UnreachableBackendException extends SyncException implements UnreachableBackendExceptionInterface
 {
     protected SyncProviderInterface $Provider;

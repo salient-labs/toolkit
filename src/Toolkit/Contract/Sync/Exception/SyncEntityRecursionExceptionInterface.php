@@ -2,7 +2,4 @@
 
 namespace Salient\Contract\Sync\Exception;
 
-/**
- * @api
- */
 interface SyncEntityRecursionExceptionInterface extends SyncExceptionInterface {}

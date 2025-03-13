@@ -1,16 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Console;
+namespace Salient\Contract\Console\Target;
 
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * A console output target
- *
- * @api
  */
-interface ConsoleTargetInterface
+interface TargetInterface
 {
     /**
      * Get an output formatter for the target

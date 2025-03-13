@@ -4,8 +4,6 @@ namespace Salient\Contract\Cli;
 
 /**
  * Command line option types
- *
- * @api
  */
 interface CliOptionType
 {

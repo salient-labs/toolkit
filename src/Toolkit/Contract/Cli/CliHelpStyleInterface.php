@@ -2,13 +2,11 @@
 
 namespace Salient\Contract\Cli;
 
-use Salient\Contract\Console\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Core\Immutable;
 
 /**
  * Formatting instructions for help messages
- *
- * @api
  */
 interface CliHelpStyleInterface extends Immutable
 {

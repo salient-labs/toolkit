@@ -4,9 +4,6 @@ namespace Salient\Contract\Sync\Event;
 
 use Salient\Contract\Sync\SyncStoreInterface;
 
-/**
- * @api
- */
 interface SyncStoreEventInterface
 {
     /**

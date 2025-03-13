@@ -16,8 +16,6 @@ use InvalidArgumentException;
 
 /**
  * A PSR-7 response
- *
- * @api
  */
 class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
 {

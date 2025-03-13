@@ -10,9 +10,6 @@ use InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
 
-/**
- * @api
- */
 interface HttpMessageInterface extends
     MessageInterface,
     Stringable,

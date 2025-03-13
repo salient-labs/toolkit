@@ -17,8 +17,6 @@ use InvalidArgumentException;
 
 /**
  * Base class for PSR-7 HTTP message classes
- *
- * @api
  */
 abstract class AbstractHttpMessage implements HttpMessageInterface
 {

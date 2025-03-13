@@ -5,8 +5,6 @@ namespace Salient\Contract\Cli;
 /**
  * Unknown value policy for command line options of type ONE_OF, ONE_OF_OPTIONAL
  * and ONE_OF_POSITIONAL
- *
- * @api
  */
 interface CliOptionValueUnknownPolicy
 {

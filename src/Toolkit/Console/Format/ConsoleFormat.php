@@ -1,10 +1,10 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Console\Support;
+namespace Salient\Console\Format;
 
-use Salient\Console\Support\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Console\ConsoleFormatInterface;
-use Salient\Contract\Console\ConsoleTag as Tag;
+use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
+use Salient\Contract\Console\Format\ConsoleFormatInterface;
+use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\HasEscapeSequence;
 
 /**

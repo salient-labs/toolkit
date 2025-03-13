@@ -3,7 +3,7 @@
 namespace Salient\Sync\Support;
 
 use Salient\Collection\Collection;
-use Salient\Console\ConsoleFormatter as Formatter;
+use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
