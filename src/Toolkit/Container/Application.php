@@ -405,7 +405,7 @@ class Application extends Container implements ApplicationInterface
         $name ??= $this->Name;
         $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
         Console::registerTarget($target, Console::LEVELS_ALL_EXCEPT_DEBUG);
-        if ($debug || ($debug === null && Env::getDebug())) {
+        if ($debug ?? Env::getDebug()) {
             $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, Console::LEVELS_ALL);
         }
@@ -727,17 +727,13 @@ class Application extends Container implements ApplicationInterface
             ...Sys::getCpuUsage(),
         ];
 
-        Console::print(
-            "\n" . sprintf(
-                'CPU time: **%.3fs** elapsed, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
-                $elapsedTime,
-                $userTime / 1000000,
-                $systemTime / 1000000,
-                Format::bytes($peakMemory),
-            ),
-            $level,
-            Console::TYPE_UNFORMATTED,
-        );
+        Console::print("\n" . sprintf(
+            'CPU time: **%.3fs** elapsed, **%.3fs** user, **%.3fs** system; memory: **%s** peak',
+            $elapsedTime,
+            $userTime / 1000000,
+            $systemTime / 1000000,
+            Format::bytes($peakMemory),
+        ), $level);
     }
 
     /**
@@ -832,11 +828,7 @@ class Application extends Container implements ApplicationInterface
         }
 
         if (isset($report)) {
-            Console::print(
-                "\n" . implode("\n\n", $report),
-                $level,
-                Console::TYPE_UNFORMATTED,
-            );
+            Console::print("\n" . implode("\n\n", $report), $level);
         }
     }
 }

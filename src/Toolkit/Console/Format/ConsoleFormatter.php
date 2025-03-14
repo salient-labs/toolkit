@@ -603,12 +603,12 @@ REGEX;
     /**
      * Escape special characters, optionally including newlines, in a string
      */
-    public static function escapeTags(string $string, bool $newlines = false): string
+    public static function escapeTags(string $string, bool $escapeNewlines = false): string
     {
         // Only escape recognised tag delimiters to minimise the risk of
         // PREG_JIT_STACKLIMIT_ERROR
         $escaped = addcslashes($string, '\#*<>_`~');
-        return $newlines
+        return $escapeNewlines
             ? str_replace("\n", "\\\n", $escaped)
             : $escaped;
     }
