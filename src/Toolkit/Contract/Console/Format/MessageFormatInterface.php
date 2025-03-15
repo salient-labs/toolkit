@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Console\Format;
 
-interface ConsoleMessageFormatInterface
+interface MessageFormatInterface
 {
     /**
      * Format a message before it is written to the target
@@ -11,6 +11,6 @@ interface ConsoleMessageFormatInterface
         string $msg1,
         ?string $msg2,
         string $prefix,
-        ConsoleMessageAttributesInterface $attributes
+        MessageAttributesInterface $attributes
     ): string;
 }

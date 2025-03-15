@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\FormatterInterface;
 
 interface ConsoleFormatterFactory
 {

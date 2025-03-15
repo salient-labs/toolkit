@@ -5,7 +5,7 @@ namespace Salient\Contract\Console\Format;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Immutable;
 
-interface ConsoleFormatterInterface extends Immutable
+interface FormatterInterface extends Immutable
 {
     /**
      * Get an instance with the given spinner state array
@@ -45,7 +45,7 @@ interface ConsoleFormatterInterface extends Immutable
      *
      * @param ConsoleTag::* $tag
      */
-    public function getTagFormat(int $tag): ConsoleFormatInterface;
+    public function getTagFormat(int $tag): FormatInterface;
 
     /**
      * Get the format applied to a message level and type
@@ -56,7 +56,7 @@ interface ConsoleFormatterInterface extends Immutable
     public function getMessageFormat(
         int $level,
         int $type = Console::TYPE_STANDARD
-    ): ConsoleMessageFormatInterface;
+    ): MessageFormatInterface;
 
     /**
      * Get the prefix applied to a message level and type

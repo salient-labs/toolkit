@@ -2,14 +2,14 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\ConsoleMessageAttributesInterface;
+use Salient\Contract\Console\Format\MessageAttributesInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
 
 /**
  * Message attributes
  */
-final class ConsoleMessageAttributes implements ConsoleMessageAttributesInterface
+final class ConsoleMessageAttributes implements MessageAttributesInterface
 {
     use ImmutableTrait;
 

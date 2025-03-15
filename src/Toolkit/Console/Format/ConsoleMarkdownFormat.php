@@ -5,14 +5,14 @@ namespace Salient\Console\Format;
 use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Format\ConsoleFormatInterface;
 use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Format\FormatInterface;
 
 /**
  * Applies Markdown formatting to console output
  */
 final class ConsoleMarkdownFormat implements
-    ConsoleFormatInterface,
+    FormatInterface,
     ConsoleFormatterFactory,
     ConsoleTagFormatFactory
 {

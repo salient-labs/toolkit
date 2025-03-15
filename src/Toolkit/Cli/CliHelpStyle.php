@@ -10,7 +10,7 @@ use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Regex;
