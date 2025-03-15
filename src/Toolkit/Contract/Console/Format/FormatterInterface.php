@@ -5,7 +5,7 @@ namespace Salient\Contract\Console\Format;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Immutable;
 
-interface FormatterInterface extends Immutable, ConsoleTag
+interface FormatterInterface extends Immutable, HasTag
 {
     /**
      * Get an instance with the given spinner state array

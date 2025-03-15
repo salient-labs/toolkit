@@ -5,7 +5,7 @@ namespace Salient\Contract\Console\Format;
 use Salient\Contract\Console\Format\MessageAttributesInterface as MessageAttributes;
 use Salient\Contract\Console\Format\TagAttributesInterface as TagAttributes;
 
-interface FormatInterface extends ConsoleTag
+interface FormatInterface extends HasTag
 {
     /**
      * Format text before it is written to the target

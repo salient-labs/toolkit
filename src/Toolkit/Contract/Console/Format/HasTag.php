@@ -5,7 +5,7 @@ namespace Salient\Contract\Console\Format;
 /**
  * @api
  */
-interface ConsoleTag
+interface HasTag
 {
     /**
      * Heading
