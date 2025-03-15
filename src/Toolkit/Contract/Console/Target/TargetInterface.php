@@ -3,35 +3,32 @@
 namespace Salient\Contract\Console\Target;
 
 use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Contract\Console\ConsoleInterface as Console;
+use Salient\Contract\HasMessageLevel;
 
 /**
- * A console output target
+ * @api
  */
-interface TargetInterface
+interface TargetInterface extends HasMessageLevel
 {
     /**
-     * Get an output formatter for the target
+     * Get the target's output formatter
      */
     public function getFormatter(): FormatterInterface;
 
     /**
-     * Get the width of the target in columns
+     * Get the width of the target in columns, or null if output written to the
+     * target should not be wrapped
      *
-     * Returns `null` if output written to the target should not be wrapped.
-     *
-     * Output may exceed the width reported by this method, e.g. if a message
-     * contains preformatted text or a long word.
-     *
-     * The target may truncate long lines if they cannot be displayed or
-     * recorded.
+     * Output written to the target may exceed its width, e.g. if a message
+     * contains preformatted text or a long word, but long lines may be
+     * truncated if the target cannot display or record them.
      */
     public function getWidth(): ?int;
 
     /**
      * Write formatted output to the target
      *
-     * @param Console::LEVEL_* $level
+     * @param TargetInterface::LEVEL_* $level
      * @param array<string,mixed> $context
      */
     public function write(int $level, string $message, array $context = []): void;

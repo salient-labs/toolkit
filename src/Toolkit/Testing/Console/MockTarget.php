@@ -72,9 +72,9 @@ final class MockTarget implements StreamTargetInterface
     /**
      * @inheritDoc
      */
-    public function getEol(): string
+    public function getUri(): ?string
     {
-        return "\n";
+        return $this->Stream ? File::getStreamUri($this->Stream) : null;
     }
 
     /**

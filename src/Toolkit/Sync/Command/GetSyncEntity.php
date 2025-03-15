@@ -292,12 +292,12 @@ EOF)
                 fn(SyncEntityInterface $entity, int $index) =>
                     $this->serialize($entity, $rules, !$index),
                 $count,
-                $tty ? $stdout->getEol() : "\r\n",
+                $tty ? "\n" : "\r\n",
                 !$tty,
                 !$tty,
             );
         } elseif ($this->Stream && $this->EntityId === null) {
-            $eol = $tty ? $stdout->getEol() : \PHP_EOL;
+            $eol = $tty ? "\n" : \PHP_EOL;
             $count = 0;
             foreach ($result as $entity) {
                 echo Json::prettyPrint($this->serialize($entity, $rules, !$count), 0, $eol) . $eol;
@@ -319,7 +319,7 @@ EOF)
                 $output = array_shift($output);
             }
 
-            $eol = $tty ? $stdout->getEol() : \PHP_EOL;
+            $eol = $tty ? "\n" : \PHP_EOL;
             echo Json::prettyPrint($output, 0, $eol) . $eol;
         }
 

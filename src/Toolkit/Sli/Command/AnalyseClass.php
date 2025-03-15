@@ -622,7 +622,7 @@ class AnalyseClass extends AbstractCommand implements ClassDataFactory
             if (!isset($this->StdoutIsTty)) {
                 $stdout = Console::getStdoutTarget();
                 if ($this->StdoutIsTty = $stdout->isTty()) {
-                    $this->StdoutEol = $stdout->getEol();
+                    $this->StdoutEol = "\n";
                 }
             }
 
