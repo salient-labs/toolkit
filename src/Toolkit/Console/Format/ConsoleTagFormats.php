@@ -3,8 +3,8 @@
 namespace Salient\Console\Format;
 
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Console\Format\ConsoleFormatInterface as Format;
 use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Format\FormatInterface as Format;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Arr;

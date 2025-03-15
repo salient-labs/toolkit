@@ -4,7 +4,7 @@ namespace Salient\Contract\Console\Format;
 
 use Salient\Contract\Core\Immutable;
 
-interface ConsoleMessageAttributesInterface extends Immutable
+interface MessageAttributesInterface extends Immutable
 {
     /**
      * Get an instance for the first part of a message

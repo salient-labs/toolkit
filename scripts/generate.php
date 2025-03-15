@@ -285,6 +285,7 @@ foreach ($commands as $class => $tests) {
         if (!$debug) {
             foreach (Console::getTargets() as $target) {
                 Console::deregisterTarget($target);
+                $target->close();
             }
             Console::registerTarget($mockTarget = new MockTarget());
         }
@@ -294,6 +295,7 @@ foreach ($commands as $class => $tests) {
         $content = ob_get_clean();
         if ($mockTarget) {
             Console::deregisterTarget($mockTarget);
+            $mockTarget->close();
             Console::registerStderrTarget();
         }
         if ($result !== $exitStatus) {

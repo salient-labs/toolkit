@@ -3,7 +3,7 @@
 namespace Salient\Contract\Console\Target;
 
 /**
- * A console output target with an underlying PHP stream
+ * @api
  */
 interface StreamTargetInterface extends TargetInterface
 {
@@ -23,12 +23,13 @@ interface StreamTargetInterface extends TargetInterface
     public function isTty(): bool;
 
     /**
-     * Get the target's end-of-line sequence
+     * Get the URI or filename of the target's underlying stream, or null if its
+     * location is unknown
      */
-    public function getEol(): string;
+    public function getUri(): ?string;
 
     /**
-     * Close and reopen the underlying PHP stream if possible
+     * Close and reopen the target's underlying stream if possible
      */
     public function reopen(): void;
 }

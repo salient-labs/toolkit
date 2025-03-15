@@ -4,4 +4,4 @@ namespace Salient\Contract\Console\Format;
 
 use Salient\Contract\Core\Immutable;
 
-interface ConsoleTagAttributesInterface extends Immutable {}
+interface TagAttributesInterface extends Immutable {}

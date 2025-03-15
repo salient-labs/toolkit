@@ -8,9 +8,9 @@ use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Format\ConsoleFormatInterface as Format;
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Format\FormatInterface as Format;
+use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
@@ -603,12 +603,12 @@ REGEX;
     /**
      * Escape special characters, optionally including newlines, in a string
      */
-    public static function escapeTags(string $string, bool $newlines = false): string
+    public static function escapeTags(string $string, bool $escapeNewlines = false): string
     {
         // Only escape recognised tag delimiters to minimise the risk of
         // PREG_JIT_STACKLIMIT_ERROR
         $escaped = addcslashes($string, '\#*<>_`~');
-        return $newlines
+        return $escapeNewlines
             ? str_replace("\n", "\\\n", $escaped)
             : $escaped;
     }

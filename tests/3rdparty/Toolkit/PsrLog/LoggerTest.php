@@ -34,7 +34,7 @@ final class LoggerTest extends LoggerInterfaceTest
                 null,
                 new Formatter(null, null, fn() => null, [], []),
             ))
-            ->getLogger();
+            ->logger();
     }
 
     /**

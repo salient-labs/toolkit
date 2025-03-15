@@ -3,7 +3,6 @@
 namespace Salient\Sync\Support;
 
 use Salient\Collection\Collection;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
@@ -88,7 +87,7 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
 
             if ($withMarkup) {
                 foreach ($values as $key => $value) {
-                    $values[$key] = Formatter::escapeTags((string) $value);
+                    $values[$key] = Console::escape((string) $value);
                 }
             }
 
@@ -139,7 +138,6 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
         $console->print(
             $this->doGetSummaryText(true),
             $level,
-            Console::TYPE_UNFORMATTED,
         );
     }
 

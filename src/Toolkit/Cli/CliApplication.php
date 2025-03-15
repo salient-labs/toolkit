@@ -336,7 +336,7 @@ class CliApplication extends Application implements CliApplicationInterface
             ) {
                 $usage = $this->getUsage($name, $node);
                 if ($usage !== null) {
-                    Console::printOut($usage);
+                    Console::printStdio($usage);
                 }
                 $this->LastExitStatus =
                     $arg === null
@@ -419,7 +419,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 && $name !== null
                 && ($usage = $this->getUsage($name, $node)) !== null
             ) {
-                Console::printOut("\n" . $usage);
+                Console::printStdio("\n" . $usage);
             }
             $this->LastExitStatus = 1;
             return $this;

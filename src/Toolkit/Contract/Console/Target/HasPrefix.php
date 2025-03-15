@@ -3,20 +3,20 @@
 namespace Salient\Contract\Console\Target;
 
 /**
- * A console output target that applies an optional prefix to each line of
- * output
+ * @api
  */
 interface HasPrefix extends TargetInterface
 {
     /**
-     * Set or unset the prefix applied to each line of output
+     * Set or unset the prefix applied to each line of output written to the
+     * target
      *
      * @return $this
      */
     public function setPrefix(?string $prefix);
 
     /**
-     * Get the prefix applied to each line of output
+     * Get the prefix applied to each line of output written to the target
      */
     public function getPrefix(): ?string;
 }

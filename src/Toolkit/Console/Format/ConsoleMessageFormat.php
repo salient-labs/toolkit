@@ -2,14 +2,14 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\ConsoleFormatInterface as Format;
-use Salient\Contract\Console\Format\ConsoleMessageAttributesInterface as MessageAttributes;
-use Salient\Contract\Console\Format\ConsoleMessageFormatInterface;
+use Salient\Contract\Console\Format\FormatInterface as Format;
+use Salient\Contract\Console\Format\MessageAttributesInterface as MessageAttributes;
+use Salient\Contract\Console\Format\MessageFormatInterface;
 
 /**
  * Applies formats to the components of a console message
  */
-final class ConsoleMessageFormat implements ConsoleMessageFormatInterface
+final class ConsoleMessageFormat implements MessageFormatInterface
 {
     private Format $Msg1Format;
     private Format $Msg2Format;

@@ -76,7 +76,7 @@ foreach ($files as $file) {
 }
 
 if ($replaced) {
-    Console::printOut('', Console::LEVEL_INFO);
+    Console::printStdio('', Console::LEVEL_INFO);
 }
 
 Console::summary(Inflect::format(

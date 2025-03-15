@@ -3,12 +3,12 @@
 namespace Salient\Console\Format;
 
 use Salient\Contract\Console\Format\ConsoleTag as Tag;
-use Salient\Contract\Console\Format\ConsoleTagAttributesInterface;
+use Salient\Contract\Console\Format\TagAttributesInterface;
 
 /**
  * Tag attributes
  */
-final class ConsoleTagAttributes implements ConsoleTagAttributesInterface
+final class ConsoleTagAttributes implements TagAttributesInterface
 {
     /**
      * Tag identifier

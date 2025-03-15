@@ -47,15 +47,15 @@ called, preferably while bootstrapping your application.
 ### Output methods
 
 <!-- prettier-ignore -->
-| Method          | Message level         | Default prefix | Default output target     |
-| --------------- | --------------------- | -------------- | ------------------------- |
-| `error[Once]()` | `LEVEL_ERROR` = `3`   | ` !  `         | `STDERR`                  |
-| `warn[Once]()`  | `LEVEL_WARNING` = `4` | ` ^  `         | `STDERR`                  |
-| `info[Once]()`  | `LEVEL_NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
-| `log[Once]()`   | `LEVEL_INFO` = `6`    | ` -  `         | `STDOUT`                  |
-| `debug[Once]()` | `LEVEL_DEBUG` = `7`   | ` :  `         | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]   | `LEVEL_NOTICE` = `5`  | ` »  `         | `STDOUT`                  |
-| `logProgress()` | `LEVEL_INFO` = `6`    | ` ⠿  `         | `STDOUT`                  |
+| Method          | Message level         | Default prefix   | Default output target     |
+| --------------- | --------------------- | ---------------- | ------------------------- |
+| `error[Once]()` | `LEVEL_ERROR` = `3`   | ` !  `           | `STDERR`                  |
+| `warn[Once]()`  | `LEVEL_WARNING` = `4` | ` ^  `           | `STDERR`                  |
+| `info[Once]()`  | `LEVEL_NOTICE` = `5`  | ` ➤  `           | `STDOUT`                  |
+| `log[Once]()`   | `LEVEL_INFO` = `6`    | ` -  `           | `STDOUT`                  |
+| `debug[Once]()` | `LEVEL_DEBUG` = `7`   | ` :  `           | `STDOUT` (if `DEBUG` set) |
+| `group()`[^2]   | `LEVEL_NOTICE` = `5`  | ` »  `           | `STDOUT`                  |
+| `logProgress()` | `LEVEL_INFO` = `6`    | ` ⠋  ` (spinner) | `STDOUT`                  |
 
 [^1]:
     Actually a facade for [ConsoleInterface][], which is backed by a shared

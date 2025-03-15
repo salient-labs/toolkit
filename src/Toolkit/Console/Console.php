@@ -5,7 +5,6 @@ namespace Salient\Console;
 use Psr\Log\LoggerInterface;
 use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Target\StreamTarget;
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
 use Salient\Contract\Console\Target\HasPrefix;
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\Target\TargetInterface;
@@ -45,7 +44,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getLogger(): LoggerInterface
+    public function logger(): LoggerInterface
     {
         return $this->State->Logger ??= new ConsoleLogger($this);
     }
@@ -58,7 +57,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         foreach ($this->State->Targets as $target) {
             $this->onlyDeregisterTarget($target);
         }
-        $this->closeDeregisteredTargets();
+        $this->removeDeregisteredTargets();
     }
 
     /**
@@ -94,7 +93,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function registerStdioTargets()
+    public function registerStdioTargets(?bool $debug = null)
     {
         if (\PHP_SAPI !== 'cli') {
             return $this;
@@ -104,7 +103,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         $stderrLevels = self::LEVELS_ERRORS_AND_WARNINGS;
 
         $stdout = $this->getStdoutTarget();
-        $stdoutLevels = Env::getDebug()
+        $stdoutLevels = $debug ?? Env::getDebug()
             ? self::LEVELS_INFO
             : self::LEVELS_INFO_EXCEPT_DEBUG;
 
@@ -112,34 +111,34 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             ->onlyDeregisterStdioTargets()
             ->registerTarget($stderr, $stderrLevels)
             ->registerTarget($stdout, $stdoutLevels)
-            ->closeDeregisteredTargets();
+            ->removeDeregisteredTargets();
     }
 
     /**
      * @inheritDoc
      */
-    public function registerStderrTarget()
+    public function registerStderrTarget(?bool $debug = null)
     {
         if (\PHP_SAPI !== 'cli') {
             return $this;
         }
 
-        return $this->registerStdioTarget($this->getStderrTarget());
+        return $this->registerStdioTarget($this->getStderrTarget(), $debug);
     }
 
     /**
      * @return $this
      */
-    private function registerStdioTarget(TargetInterface $target)
+    private function registerStdioTarget(TargetInterface $target, ?bool $debug = null)
     {
-        $levels = Env::getDebug()
+        $levels = $debug ?? Env::getDebug()
             ? self::LEVELS_ALL
             : self::LEVELS_ALL_EXCEPT_DEBUG;
 
         return $this
             ->onlyDeregisterStdioTargets()
             ->registerTarget($target, $levels)
-            ->closeDeregisteredTargets();
+            ->removeDeregisteredTargets();
     }
 
     /**
@@ -210,7 +209,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function deregisterTarget(TargetInterface $target)
     {
-        return $this->onlyDeregisterTarget($target)->closeDeregisteredTargets();
+        return $this->onlyDeregisterTarget($target)->removeDeregisteredTargets();
     }
 
     /**
@@ -275,7 +274,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @return $this
      */
-    private function closeDeregisteredTargets()
+    private function removeDeregisteredTargets()
     {
         // Reduce `$this->State->DeregisteredTargets` to targets not
         // subsequently re-registered
@@ -284,7 +283,6 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             $this->State->Targets,
         );
         foreach ($this->State->DeregisteredTargets as $i => $target) {
-            $target->close();
             unset($this->State->TargetTypeFlags[$i]);
             unset($this->State->DeregisteredTargets[$i]);
         }
@@ -294,13 +292,13 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getTargets(?int $level = null, int $flags = 0): array
+    public function getTargets(?int $level = null, int $targetFlags = 0): array
     {
         $targets = $level === null
             ? $this->State->Targets
             : $this->State->TargetsByLevel[$level] ?? [];
-        if ($flags) {
-            $targets = $this->filterTargets($targets, $flags);
+        if ($targetFlags) {
+            $targets = $this->filterTargets($targets, $targetFlags);
         }
         return array_values($targets);
     }
@@ -308,52 +306,14 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function setTargetPrefix(?string $prefix, int $flags = 0)
+    public function setPrefix(?string $prefix, int $targetFlags = 0)
     {
-        foreach ($this->filterTargets($this->State->Targets, $flags) as $target) {
+        foreach ($this->filterTargets($this->State->Targets, $targetFlags) as $target) {
             if ($target instanceof HasPrefix) {
                 $target->setPrefix($prefix);
             }
         }
         return $this;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getWidth(int $level = Console::LEVEL_INFO): ?int
-    {
-        return $this->maybeGetTtyTarget($level)->getWidth();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getFormatter(int $level = Console::LEVEL_INFO): FormatterInterface
-    {
-        return $this->maybeGetTtyTarget($level)->getFormatter();
-    }
-
-    /**
-     * @param self::LEVEL_* $level
-     */
-    private function maybeGetTtyTarget(int $level): StreamTargetInterface
-    {
-        /** @var TargetInterface[] */
-        $targets = $this->State->TtyTargetsByLevel[$level]
-            ?? $this->State->StdioTargetsByLevel[$level]
-            ?? $this->State->TargetsByLevel[$level]
-            ?? [];
-
-        $target = reset($targets);
-        if (!$target || !$target instanceof StreamTargetInterface) {
-            $target = $this->getStderrTarget();
-            if (!$target->isTty()) {
-                return $this->getStdoutTarget();
-            }
-        }
-
-        return $target;
     }
 
     /**
@@ -375,25 +335,41 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function getErrorCount(): int
+    public function getTtyTarget(): StreamTargetInterface
     {
-        return $this->State->ErrorCount;
+        return $this->State->StderrTarget && $this->State->StderrTarget->isTty()
+            ? $this->State->StderrTarget
+            : ($this->State->StdoutTarget && $this->State->StdoutTarget->isTty()
+                ? $this->State->StdoutTarget
+                : (($stderr = $this->getStderrTarget())->isTty()
+                    ? $stderr
+                    : (($stdout = $this->getStdoutTarget())->isTty()
+                        ? $stdout
+                        : $stderr)));
     }
 
     /**
      * @inheritDoc
      */
-    public function getWarningCount(): int
+    public function errors(): int
     {
-        return $this->State->WarningCount;
+        return $this->State->Errors;
     }
 
     /**
      * @inheritDoc
      */
-    public function escape(string $string): string
+    public function warnings(): int
     {
-        return Formatter::escapeTags($string);
+        return $this->State->Warnings;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function escape(string $string, bool $escapeNewlines = false): string
+    {
+        return Formatter::escapeTags($string, $escapeNewlines);
     }
 
     /**
@@ -403,8 +379,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $finishedText = 'Command finished',
         string $successText = 'without errors',
         bool $withResourceUsage = false,
-        bool $withoutErrorCount = false,
-        bool $withStandardMessageType = false
+        bool $withoutErrorsAndWarnings = false,
+        bool $withGenericType = false
     ) {
         if ($withResourceUsage) {
             /** @var float */
@@ -417,25 +393,25 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         }
 
         $msg1 = rtrim($finishedText);
-        $errors = $this->State->ErrorCount;
-        $warnings = $this->State->WarningCount;
+        $errors = $this->State->Errors;
+        $warnings = $this->State->Warnings;
         if (
             (!$errors && !$warnings)
             // If output is identical for success and failure, print a
             // success message
-            || ($withoutErrorCount && $successText === '')
+            || ($withoutErrorsAndWarnings && $successText === '')
         ) {
             return $this->write(
                 self::LEVEL_INFO,
                 Arr::implode(' ', [$msg1, $successText, $usage ?? null], ''),
                 null,
-                $withStandardMessageType
+                $withGenericType
                     ? self::TYPE_SUMMARY
                     : self::TYPE_SUCCESS,
             );
         }
 
-        if (!$withoutErrorCount) {
+        if (!$withoutErrorsAndWarnings) {
             $msg2 = 'with ' . Inflect::format($errors, '{{#}} {{#:error}}');
             if ($warnings) {
                 $msg2 .= ' and ' . Inflect::format($warnings, '{{#}} {{#:warning}}');
@@ -443,12 +419,12 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         }
 
         return $this->write(
-            $withoutErrorCount || $withStandardMessageType
+            $withoutErrorsAndWarnings || $withGenericType
                 ? self::LEVEL_INFO
                 : ($errors ? self::LEVEL_ERROR : self::LEVEL_WARNING),
             Arr::implode(' ', [$msg1, $msg2 ?? null, $usage ?? null], ''),
             null,
-            $withoutErrorCount || $withStandardMessageType
+            $withoutErrorsAndWarnings || $withGenericType
                 ? self::TYPE_SUMMARY
                 : self::TYPE_FAILURE,
         );
@@ -459,21 +435,19 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function print(
         string $msg,
-        int $level = Console::LEVEL_INFO,
-        int $type = Console::TYPE_UNFORMATTED
+        int $level = Console::LEVEL_INFO
     ) {
-        return $this->_write($level, $msg, null, $type, null, $this->State->TargetsByLevel);
+        return $this->_write($level, $msg, null, self::TYPE_UNFORMATTED, null, $this->State->TargetsByLevel);
     }
 
     /**
      * @inheritDoc
      */
-    public function printOut(
+    public function printStdio(
         string $msg,
-        int $level = Console::LEVEL_INFO,
-        int $type = Console::TYPE_UNFORMATTED
+        int $level = Console::LEVEL_INFO
     ) {
-        return $this->_write($level, $msg, null, $type, null, $this->State->StdioTargetsByLevel);
+        return $this->_write($level, $msg, null, self::TYPE_UNFORMATTED, null, $this->State->StdioTargetsByLevel);
     }
 
     /**
@@ -481,10 +455,9 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function printTty(
         string $msg,
-        int $level = Console::LEVEL_INFO,
-        int $type = Console::TYPE_UNFORMATTED
+        int $level = Console::LEVEL_INFO
     ) {
-        return $this->_write($level, $msg, null, $type, null, $this->State->TtyTargetsByLevel);
+        return $this->_write($level, $msg, null, self::TYPE_UNFORMATTED, null, $this->State->TtyTargetsByLevel);
     }
 
     /**
@@ -492,23 +465,10 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function printStdout(
         string $msg,
-        int $level = Console::LEVEL_INFO,
-        int $type = Console::TYPE_UNFORMATTED
+        int $level = Console::LEVEL_INFO
     ) {
         $targets = [$level => [$this->getStdoutTarget()]];
-        return $this->_write($level, $msg, null, $type, null, $targets);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function printStderr(
-        string $msg,
-        int $level = Console::LEVEL_INFO,
-        int $type = Console::TYPE_UNFORMATTED
-    ) {
-        $targets = [$level => [$this->getStderrTarget()]];
-        return $this->_write($level, $msg, null, $type, null, $targets);
+        return $this->_write($level, $msg, null, self::TYPE_UNFORMATTED, null, $targets);
     }
 
     /**
@@ -548,18 +508,18 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     /**
      * @inheritDoc
      */
-    public function count($level)
+    public function count(int $level)
     {
         switch ($level) {
             case self::LEVEL_EMERGENCY:
             case self::LEVEL_ALERT:
             case self::LEVEL_CRITICAL:
             case self::LEVEL_ERROR:
-                $this->State->ErrorCount++;
+                $this->State->Errors++;
                 break;
 
             case self::LEVEL_WARNING:
-                $this->State->WarningCount++;
+                $this->State->Warnings++;
                 break;
         }
 
@@ -575,7 +535,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->State->ErrorCount++;
+        !$count || $this->State->Errors++;
 
         return $this->write(self::LEVEL_ERROR, $msg1, $msg2, self::TYPE_STANDARD, $ex);
     }
@@ -589,7 +549,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->State->ErrorCount++;
+        !$count || $this->State->Errors++;
 
         return $this->writeOnce(self::LEVEL_ERROR, $msg1, $msg2, self::TYPE_STANDARD, $ex);
     }
@@ -603,7 +563,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->State->WarningCount++;
+        !$count || $this->State->Warnings++;
 
         return $this->write(self::LEVEL_WARNING, $msg1, $msg2, self::TYPE_STANDARD, $ex);
     }
@@ -617,7 +577,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         ?Throwable $ex = null,
         bool $count = true
     ) {
-        !$count || $this->State->WarningCount++;
+        !$count || $this->State->Warnings++;
 
         return $this->writeOnce(self::LEVEL_WARNING, $msg1, $msg2, self::TYPE_STANDARD, $ex);
     }
@@ -755,7 +715,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             $this->write(self::LEVEL_NOTICE, $msg1, $msg2, self::TYPE_GROUP_END);
         }
         if ($this->State->LastWritten !== [__METHOD__, '']) {
-            $this->printOut('', self::LEVEL_NOTICE);
+            $this->printStdio('', self::LEVEL_NOTICE);
             $this->State->LastWritten = [__METHOD__, ''];
         }
         if ($this->State->GroupLevel > -1) {
@@ -770,7 +730,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
     public function exception(
         Throwable $exception,
         int $level = Console::LEVEL_ERROR,
-        ?int $traceLevel = Console::LEVEL_DEBUG
+        ?int $traceLevel = Console::LEVEL_DEBUG,
+        bool $count = true
     ) {
         $ex = $exception;
         $msg2 = '';
@@ -800,7 +761,10 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         } while ($ex = $ex->getPrevious());
 
         $class = $this->escape(Get::basename(get_class($exception)));
-        $this->count($level)->write(
+        if ($count) {
+            $this->count($level);
+        }
+        $this->write(
             $level,
             "{$class}:",
             $msg2,
@@ -871,15 +835,14 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2,
         int $type = self::TYPE_STANDARD,
-        ?Throwable $ex = null,
-        bool $msg2HasTags = false
+        ?Throwable $ex = null
     ) {
-        $hash = Get::hash(implode("\0", [$level, $msg1, $msg2, $type, $msg2HasTags]));
+        $hash = Get::hash(implode("\0", [$level, $msg1, $msg2, $type]));
         if (isset($this->State->Written[$hash])) {
             return $this;
         }
         $this->State->Written[$hash] = true;
-        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TargetsByLevel, $msg2HasTags);
+        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TargetsByLevel);
     }
 
     /**
@@ -894,10 +857,9 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         string $msg1,
         ?string $msg2,
         int $type = self::TYPE_STANDARD,
-        ?Throwable $ex = null,
-        bool $msg2HasTags = false
+        ?Throwable $ex = null
     ) {
-        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TtyTargetsByLevel, $msg2HasTags);
+        return $this->_write($level, $msg1, $msg2, $type, $ex, $this->State->TtyTargetsByLevel);
     }
 
     /**
@@ -971,19 +933,19 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
 
     /**
      * @param array<int,TargetInterface> $targets
-     * @param int-mask-of<self::TARGET_*> $flags
+     * @param int-mask-of<self::TARGET_*> $targetFlags
      * @return array<int,TargetInterface>
      */
-    private function filterTargets(array $targets, int $flags): array
+    private function filterTargets(array $targets, int $targetFlags): array
     {
         $invert = false;
-        if ($flags & self::TARGET_INVERT) {
-            $flags &= ~self::TARGET_INVERT;
+        if ($targetFlags & self::TARGET_INVERT) {
+            $targetFlags &= ~self::TARGET_INVERT;
             $invert = true;
         }
         foreach ($targets as $targetId => $target) {
-            if (($flags === 0 && !$invert) || (
-                $this->State->TargetTypeFlags[$targetId] & $flags
+            if (($targetFlags === 0 && !$invert) || (
+                $this->State->TargetTypeFlags[$targetId] & $targetFlags
                 xor $invert
             )) {
                 $filtered[$targetId] = $target;
@@ -1015,8 +977,8 @@ final class ConsoleState
     public int $GroupLevel = -1;
     /** @var array<array{string|null,string|null}> */
     public array $GroupMessageStack = [];
-    public int $ErrorCount = 0;
-    public int $WarningCount = 0;
+    public int $Errors = 0;
+    public int $Warnings = 0;
     /** @var array<string,true> */
     public array $Written = [];
     /** @var string[] */

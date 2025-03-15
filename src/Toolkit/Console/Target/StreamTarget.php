@@ -111,6 +111,14 @@ final class StreamTarget extends ConsoleStreamTarget
     /**
      * @inheritDoc
      */
+    public function getUri(): ?string
+    {
+        return $this->Path ?? $this->Uri;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function close(): void
     {
         if (!$this->Stream) {

@@ -42,14 +42,6 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
         return false;
     }
 
-    /**
-     * @inheritDoc
-     */
-    public function getEol(): string
-    {
-        return "\n";
-    }
-
     protected function createTagFormats(): TagFormats
     {
         if (!$this->isTty()) {
