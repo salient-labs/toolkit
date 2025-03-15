@@ -5,7 +5,6 @@ namespace Salient\Console\Format;
 use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\Format\FormatInterface;
 
 /**
@@ -76,12 +75,12 @@ final class ConsoleLoopbackFormat implements
     public static function getTagFormats(): TagFormats
     {
         return (new TagFormats(false))
-            ->withFormat(Tag::HEADING, new self('***', '***'))
-            ->withFormat(Tag::BOLD, new self('**', '**'))
-            ->withFormat(Tag::ITALIC, new self('*', '*'))
-            ->withFormat(Tag::UNDERLINE, new self('<', '>'))
-            ->withFormat(Tag::LOW_PRIORITY, new self('~~', '~~'))
-            ->withFormat(Tag::CODE_SPAN, new self('`', '`'))
-            ->withFormat(Tag::CODE_BLOCK, new self('```', '```'));
+            ->withFormat(self::TAG_HEADING, new self('***', '***'))
+            ->withFormat(self::TAG_BOLD, new self('**', '**'))
+            ->withFormat(self::TAG_ITALIC, new self('*', '*'))
+            ->withFormat(self::TAG_UNDERLINE, new self('<', '>'))
+            ->withFormat(self::TAG_LOW_PRIORITY, new self('~~', '~~'))
+            ->withFormat(self::TAG_CODE_SPAN, new self('`', '`'))
+            ->withFormat(self::TAG_CODE_BLOCK, new self('```', '```'));
     }
 }

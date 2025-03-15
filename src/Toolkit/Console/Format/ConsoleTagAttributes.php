@@ -2,7 +2,6 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\Format\TagAttributesInterface;
 
 /**
@@ -14,7 +13,7 @@ final class ConsoleTagAttributes implements TagAttributesInterface
      * Tag identifier
      *
      * @readonly
-     * @var Tag::*
+     * @var ConsoleTagAttributes::*
      */
     public int $Tag;
 
@@ -54,7 +53,7 @@ final class ConsoleTagAttributes implements TagAttributesInterface
     public ?string $InfoString;
 
     /**
-     * @param Tag::* $tag
+     * @param ConsoleTagAttributes::* $tag
      */
     public function __construct(
         int $tag,

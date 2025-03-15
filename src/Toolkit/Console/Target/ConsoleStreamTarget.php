@@ -6,7 +6,6 @@ use Salient\Console\Format\ConsoleFormat as Format;
 use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\HasEscapeSequence;
@@ -58,16 +57,16 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
         $yellowUnderline = Format::ttyUnderline(self::YELLOW_FG);
 
         return (new TagFormats())
-            ->withFormat(Tag::HEADING, $boldCyan)
-            ->withFormat(Tag::BOLD, $bold)
-            ->withFormat(Tag::ITALIC, $yellow)
-            ->withFormat(Tag::UNDERLINE, $yellowUnderline)
-            ->withFormat(Tag::LOW_PRIORITY, $dim)
-            ->withFormat(Tag::CODE_SPAN, $bold)
-            ->withFormat(Tag::DIFF_HEADER, $bold)
-            ->withFormat(Tag::DIFF_RANGE, $cyan)
-            ->withFormat(Tag::DIFF_ADDITION, $green)
-            ->withFormat(Tag::DIFF_REMOVAL, $red);
+            ->withFormat(Format::TAG_HEADING, $boldCyan)
+            ->withFormat(Format::TAG_BOLD, $bold)
+            ->withFormat(Format::TAG_ITALIC, $yellow)
+            ->withFormat(Format::TAG_UNDERLINE, $yellowUnderline)
+            ->withFormat(Format::TAG_LOW_PRIORITY, $dim)
+            ->withFormat(Format::TAG_CODE_SPAN, $bold)
+            ->withFormat(Format::TAG_DIFF_HEADER, $bold)
+            ->withFormat(Format::TAG_DIFF_RANGE, $cyan)
+            ->withFormat(Format::TAG_DIFF_ADDITION, $green)
+            ->withFormat(Format::TAG_DIFF_REMOVAL, $red);
     }
 
     protected function createMessageFormats(): MessageFormats

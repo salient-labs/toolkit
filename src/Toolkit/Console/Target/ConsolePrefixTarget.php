@@ -2,9 +2,8 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Format\FormatterInterface as Formatter;
 use Salient\Contract\Console\Target\HasPrefix;
-use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * Base class for console output targets that apply an optional prefix to each
@@ -16,7 +15,7 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements HasPrefix
     private int $PrefixLength = 0;
 
     /**
-     * @param Console::LEVEL_* $level
+     * @param self::LEVEL_* $level
      * @param array<string,mixed> $context
      */
     abstract protected function writeToTarget(int $level, string $message, array $context): void;
@@ -55,7 +54,7 @@ abstract class ConsolePrefixTarget extends ConsoleTarget implements HasPrefix
         $this->assertIsValid();
 
         $this->PrefixLength = strlen($prefix);
-        $this->Prefix = $this->getFormatter()->getTagFormat(Tag::LOW_PRIORITY)->apply($prefix);
+        $this->Prefix = $this->getFormatter()->getTagFormat(Formatter::TAG_LOW_PRIORITY)->apply($prefix);
 
         return $this;
     }

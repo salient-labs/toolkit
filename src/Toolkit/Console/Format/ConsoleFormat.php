@@ -3,7 +3,6 @@
 namespace Salient\Console\Format;
 
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\Format\FormatInterface;
 use Salient\Contract\HasEscapeSequence;
 
@@ -47,7 +46,7 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
         // - add a level of indentation to the block
         if (
             $attributes instanceof TagAttributes
-            && $attributes->Tag === Tag::CODE_BLOCK
+            && $attributes->Tag === self::TAG_CODE_BLOCK
         ) {
             $indent = (string) $attributes->Indent;
             if ($indent !== '') {
@@ -89,7 +88,7 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
      * Get an instance that uses terminal control sequences to apply a colour to
      * TTY output
      *
-     * @param ConsoleFormat::* $colour The terminal control sequence of the
+     * @param ConsoleFormat::*_FG $colour The terminal control sequence of the
      * desired colour.
      */
     public static function ttyColour(string $colour): self
@@ -107,8 +106,8 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
      * Get an instance that uses terminal control sequences to increase the
      * intensity of TTY output and optionally apply a colour
      *
-     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
-     * desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
+     * the desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyBold(?string $colour = null): self
     {
@@ -136,8 +135,8 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
      * Get an instance that uses terminal control sequences to decrease the
      * intensity of TTY output and optionally apply a colour
      *
-     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
-     * desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
+     * the desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyDim(?string $colour = null): self
     {
@@ -168,8 +167,8 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
      * If bold (increased intensity) and dim (decreased intensity) attributes
      * cannot be set simultaneously, output will be dim, not bold.
      *
-     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
-     * desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
+     * the desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyBoldDim(?string $colour = null): self
     {
@@ -197,8 +196,8 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
      * Get an instance that uses terminal control sequences to underline and
      * optionally apply a colour to TTY output
      *
-     * @param ConsoleFormat::*|null $colour The terminal control sequence of the
-     * desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
+     * the desired colour. If `null`, no colour changes are applied.
      */
     public static function ttyUnderline(?string $colour = null): self
     {

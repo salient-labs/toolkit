@@ -3,7 +3,6 @@
 namespace Salient\Console\Format;
 
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\Format\FormatInterface as Format;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\ImmutableTrait;
@@ -16,7 +15,7 @@ final class ConsoleTagFormats implements Immutable
 {
     use ImmutableTrait;
 
-    /** @var array<Tag::*,Format> */
+    /** @var array<Format::TAG_*,Format> */
     private array $Formats = [];
     private bool $Unescape;
     private bool $WrapAfterApply;
@@ -68,7 +67,7 @@ final class ConsoleTagFormats implements Immutable
     /**
      * Get an instance with a format assigned to a tag
      *
-     * @param Tag::* $tag
+     * @param Format::TAG_* $tag
      * @return static
      */
     public function withFormat($tag, Format $format)
@@ -79,7 +78,7 @@ final class ConsoleTagFormats implements Immutable
     /**
      * Get the format assigned to a tag
      *
-     * @param Tag::* $tag
+     * @param Format::TAG_* $tag
      */
     public function getFormat($tag): Format
     {

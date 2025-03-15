@@ -8,7 +8,6 @@ use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
 use Salient\Contract\Console\Format\FormatInterface as Format;
 use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
@@ -49,18 +48,18 @@ final class ConsoleFormatter implements FormatterInterface
     private const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
     /**
-     * @var array<string,int&Tag::*>
+     * @var array<string,self::TAG_*>
      */
     private const TAG_MAP = [
-        '___' => Tag::HEADING,
-        '***' => Tag::HEADING,
-        '##' => Tag::HEADING,
-        '__' => Tag::BOLD,
-        '**' => Tag::BOLD,
-        '_' => Tag::ITALIC,
-        '*' => Tag::ITALIC,
-        '<' => Tag::UNDERLINE,
-        '~~' => Tag::LOW_PRIORITY,
+        '___' => self::TAG_HEADING,
+        '***' => self::TAG_HEADING,
+        '##' => self::TAG_HEADING,
+        '__' => self::TAG_BOLD,
+        '**' => self::TAG_BOLD,
+        '_' => self::TAG_ITALIC,
+        '*' => self::TAG_ITALIC,
+        '<' => self::TAG_UNDERLINE,
+        '~~' => self::TAG_LOW_PRIORITY,
     ];
 
     /**
@@ -387,7 +386,7 @@ REGEX;
                 $formatted = $formattedFormats->apply(
                     $match['block'],
                     new TagAttributes(
-                        Tag::CODE_BLOCK,
+                        self::TAG_CODE_BLOCK,
                         $match['fence'],
                         0,
                         false,
@@ -419,7 +418,7 @@ REGEX;
                     strtr($span, "\n", ' '),
                 );
                 $attributes = new TagAttributes(
-                    Tag::CODE_SPAN,
+                    self::TAG_CODE_SPAN,
                     $match['backtickstring'],
                 );
                 $text = $textFormats->apply($span, $attributes);
@@ -586,11 +585,11 @@ REGEX;
     public function formatDiff(string $diff): string
     {
         $formats = [
-            '---' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
-            '+++' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
-            '@' => $this->TagFormats->getFormat(Tag::DIFF_RANGE),
-            '+' => $this->TagFormats->getFormat(Tag::DIFF_ADDITION),
-            '-' => $this->TagFormats->getFormat(Tag::DIFF_REMOVAL),
+            '---' => $this->TagFormats->getFormat(self::TAG_DIFF_HEADER),
+            '+++' => $this->TagFormats->getFormat(self::TAG_DIFF_HEADER),
+            '@' => $this->TagFormats->getFormat(self::TAG_DIFF_RANGE),
+            '+' => $this->TagFormats->getFormat(self::TAG_DIFF_ADDITION),
+            '-' => $this->TagFormats->getFormat(self::TAG_DIFF_REMOVAL),
         ];
 
         return Regex::replaceCallback(
