@@ -380,7 +380,7 @@ abstract class CliCommand implements CliCommandInterface
                     );
                     if (
                         $booleanValue
-                        || mb_strlen($formatter->getWrapAfterFormatting()
+                        || mb_strlen($formatter->wrapsAfterFormatting()
                             ? $formatter->format($indent . $_line)
                             : Formatter::removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {

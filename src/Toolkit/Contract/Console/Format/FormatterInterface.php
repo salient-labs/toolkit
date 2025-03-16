@@ -20,7 +20,7 @@ interface FormatterInterface extends Immutable, HasTag
     /**
      * Check if the formatter removes escapes from strings
      */
-    public function getRemoveEscapes(): bool;
+    public function removesEscapes(): bool;
 
     /**
      * Get an instance that wraps strings after formatting
@@ -35,7 +35,7 @@ interface FormatterInterface extends Immutable, HasTag
      * Returns `false` if strings are wrapped after inline formatting tags are
      * removed.
      */
-    public function getWrapAfterFormatting(): bool;
+    public function wrapsAfterFormatting(): bool;
 
     /**
      * Get the format applied to a given tag

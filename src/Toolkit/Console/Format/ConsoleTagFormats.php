@@ -51,7 +51,7 @@ final class ConsoleTagFormats implements Immutable
     /**
      * True if text should be unescaped for the target
      */
-    public function getRemoveEscapes(): bool
+    public function removesEscapes(): bool
     {
         return $this->RemoveEscapes;
     }
@@ -59,7 +59,7 @@ final class ConsoleTagFormats implements Immutable
     /**
      * True if text should be wrapped after formatting
      */
-    public function getWrapAfterFormatting(): bool
+    public function wrapsAfterFormatting(): bool
     {
         return $this->WrapAfterFormatting;
     }

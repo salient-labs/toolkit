@@ -208,17 +208,17 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getRemoveEscapes(): bool
+    public function removesEscapes(): bool
     {
-        return $this->TagFormats->getRemoveEscapes();
+        return $this->TagFormats->removesEscapes();
     }
 
     /**
      * @inheritDoc
      */
-    public function getWrapAfterFormatting(): bool
+    public function wrapsAfterFormatting(): bool
     {
-        return $this->TagFormats->getWrapAfterFormatting();
+        return $this->TagFormats->wrapsAfterFormatting();
     }
 
     /**
@@ -266,8 +266,8 @@ REGEX;
         /** @var array<array{int,int,string}> */
         $replace = [];
         $append = '';
-        $removeEscapes = $this->getRemoveEscapes();
-        $wrapAfterFormatting = $this->getWrapAfterFormatting();
+        $removeEscapes = $this->removesEscapes();
+        $wrapAfterFormatting = $this->wrapsAfterFormatting();
         $textFormats = $wrapAfterFormatting
             ? $this->TagFormats
             : $this->getDefaultTagFormats();
@@ -336,7 +336,7 @@ REGEX;
                         $text = $this->applyTags(
                             $matches,
                             true,
-                            $textFormats->getRemoveEscapes(),
+                            $textFormats->removesEscapes(),
                             $textFormats
                         );
                         $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
@@ -345,7 +345,7 @@ REGEX;
                             : $this->applyTags(
                                 $matches,
                                 true,
-                                $formattedFormats->getRemoveEscapes(),
+                                $formattedFormats->removesEscapes(),
                                 $formattedFormats
                             );
                         $replace[] = [
