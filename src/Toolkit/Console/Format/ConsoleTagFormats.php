@@ -17,17 +17,17 @@ final class ConsoleTagFormats implements Immutable
 
     /** @var array<Format::TAG_*,Format> */
     private array $Formats = [];
-    private bool $Unescape;
-    private bool $WrapAfterApply;
+    private bool $RemoveEscapes;
+    private bool $WrapAfterFormatting;
     private Format $FallbackFormat;
 
     public function __construct(
-        bool $unescape = true,
-        bool $wrapAfterApply = false,
+        bool $removeEscapes = true,
+        bool $wrapAfterFormatting = false,
         ?Format $fallbackFormat = null
     ) {
-        $this->Unescape = $unescape;
-        $this->WrapAfterApply = $wrapAfterApply;
+        $this->RemoveEscapes = $removeEscapes;
+        $this->WrapAfterFormatting = $wrapAfterFormatting;
         $this->FallbackFormat = $fallbackFormat
             ?: ConsoleFormat::getDefaultFormat();
     }
@@ -35,33 +35,33 @@ final class ConsoleTagFormats implements Immutable
     /**
      * @return static
      */
-    public function withUnescape(bool $value = true)
+    public function withRemoveEscapes(bool $remove = true)
     {
-        return $this->with('Unescape', $value);
+        return $this->with('RemoveEscapes', $remove);
     }
 
     /**
      * @return static
      */
-    public function withWrapAfterApply(bool $value = true)
+    public function withWrapAfterFormatting(bool $value = true)
     {
-        return $this->with('WrapAfterApply', $value);
+        return $this->with('WrapAfterFormatting', $value);
     }
 
     /**
      * True if text should be unescaped for the target
      */
-    public function getUnescape(): bool
+    public function getRemoveEscapes(): bool
     {
-        return $this->Unescape;
+        return $this->RemoveEscapes;
     }
 
     /**
      * True if text should be wrapped after formatting
      */
-    public function getWrapAfterApply(): bool
+    public function getWrapAfterFormatting(): bool
     {
-        return $this->WrapAfterApply;
+        return $this->WrapAfterFormatting;
     }
 
     /**

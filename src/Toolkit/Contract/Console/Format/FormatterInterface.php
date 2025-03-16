@@ -21,24 +21,24 @@ interface FormatterInterface extends Immutable, HasTag
      *
      * @return static
      */
-    public function withUnescape(bool $value = true);
+    public function withRemoveEscapes(bool $remove = true);
 
     /**
      * Check if text is unescaped
      */
-    public function getUnescape(): bool;
+    public function getRemoveEscapes(): bool;
 
     /**
      * Get an instance that wraps text after formatting
      *
      * @return static
      */
-    public function withWrapAfterApply(bool $value = true);
+    public function withWrapAfterFormatting(bool $value = true);
 
     /**
      * Check if text is wrapped after formatting
      */
-    public function getWrapAfterApply(): bool;
+    public function getWrapAfterFormatting(): bool;
 
     /**
      * Get the format applied to a tag

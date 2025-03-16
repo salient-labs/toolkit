@@ -380,7 +380,7 @@ abstract class CliCommand implements CliCommandInterface
                     );
                     if (
                         $booleanValue
-                        || mb_strlen($formatter->getWrapAfterApply()
+                        || mb_strlen($formatter->getWrapAfterFormatting()
                             ? $formatter->format($indent . $_line)
                             : Formatter::removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {
@@ -512,7 +512,7 @@ abstract class CliCommand implements CliCommandInterface
         $width = $style->getWidth();
 
         // Synopsis newlines are hard line breaks, so wrap without markup
-        $formatter = $style->getFormatter()->withWrapAfterApply(false);
+        $formatter = $style->getFormatter()->withWrapAfterFormatting(false);
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($style, $collapsed);

@@ -185,17 +185,17 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function withUnescape(bool $value = true)
+    public function withRemoveEscapes(bool $remove = true)
     {
-        return $this->with('TagFormats', $this->TagFormats->withUnescape($value));
+        return $this->with('TagFormats', $this->TagFormats->withRemoveEscapes($remove));
     }
 
     /**
      * @inheritDoc
      */
-    public function withWrapAfterApply(bool $value = true)
+    public function withWrapAfterFormatting(bool $value = true)
     {
-        return $this->with('TagFormats', $this->TagFormats->withWrapAfterApply($value));
+        return $this->with('TagFormats', $this->TagFormats->withWrapAfterFormatting($value));
     }
 
     /**
@@ -219,17 +219,17 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getUnescape(): bool
+    public function getRemoveEscapes(): bool
     {
-        return $this->TagFormats->getUnescape();
+        return $this->TagFormats->getRemoveEscapes();
     }
 
     /**
      * @inheritDoc
      */
-    public function getWrapAfterApply(): bool
+    public function getWrapAfterFormatting(): bool
     {
-        return $this->TagFormats->getWrapAfterApply();
+        return $this->TagFormats->getWrapAfterFormatting();
     }
 
     /**
@@ -276,9 +276,9 @@ REGEX;
         /** @var array<array{int,int,string}> */
         $replace = [];
         $append = '';
-        $unescape = $this->getUnescape();
-        $wrapAfterApply = $this->getWrapAfterApply();
-        $textFormats = $wrapAfterApply
+        $removeEscapes = $this->getRemoveEscapes();
+        $wrapAfterFormatting = $this->getWrapAfterFormatting();
+        $textFormats = $wrapAfterFormatting
             ? $this->TagFormats
             : $this->getDefaultTagFormats();
         $formattedFormats = $unformat
@@ -346,7 +346,7 @@ REGEX;
                         $text = $this->applyTags(
                             $matches,
                             true,
-                            $textFormats->getUnescape(),
+                            $textFormats->getRemoveEscapes(),
                             $textFormats
                         );
                         $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
@@ -355,7 +355,7 @@ REGEX;
                             : $this->applyTags(
                                 $matches,
                                 true,
-                                $formattedFormats->getUnescape(),
+                                $formattedFormats->getRemoveEscapes(),
                                 $formattedFormats
                             );
                         $replace[] = [
@@ -449,15 +449,15 @@ REGEX;
             self::ESCAPE,
             function ($matches) use (
                 $unformat,
-                $unescape,
-                $wrapAfterApply,
+                $removeEscapes,
+                $wrapAfterFormatting,
                 &$replace,
                 &$adjustable,
                 &$adjust
             ): string {
                 // If the escape character is being wrapped, do nothing other
                 // than temporarily replace "\ " with "\x"
-                if ($wrapAfterApply && !$unescape) {
+                if ($wrapAfterFormatting && !$removeEscapes) {
                     if ($matches[1][0] !== ' ') {
                         return $matches[0][0];
                     }
@@ -483,12 +483,12 @@ REGEX;
                     $placeholder = 'x';
                 }
 
-                if ($unformat || !$unescape || $placeholder !== null) {
+                if ($unformat || !$removeEscapes || $placeholder !== null) {
                     // Use `$replace` to reinstate the escape after wrapping
                     $replace[] = [
                         $matches[0][1] + $adjust,
                         strlen($matches[1][0]),
-                        $unformat || !$unescape ? $matches[0][0] : $matches[1][0],
+                        $unformat || !$removeEscapes ? $matches[0][0] : $matches[1][0],
                     ];
                 }
 
