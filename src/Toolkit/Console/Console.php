@@ -918,10 +918,6 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
                     : ($_msg1 !== '' ? ' ' : '') . $_msg2;
             }
 
-            if ($type === self::TYPE_PROGRESS) {
-                $formatter = $formatter->withSpinnerState($this->State->SpinnerState);
-            }
-
             $message = $formatter->formatMessage($_msg1, $_msg2, $level, $type);
             $target->write($level, str_repeat(' ', $margin) . $message, $context ?? []);
         }
@@ -983,8 +979,6 @@ final class ConsoleState
     public array $Written = [];
     /** @var string[] */
     public array $LastWritten = [];
-    /** @var array{int<0,max>,float}|null */
-    public ?array $SpinnerState;
     public LoggerInterface $Logger;
 
     private function __clone() {}

@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Console;
 
+use Salient\Console\Format\ConsoleFormatter;
 use Salient\Console\Console as ConsoleService;
-use Salient\Console\ConsoleState;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
 use Salient\Tests\TestCase;
@@ -15,12 +15,14 @@ use Salient\Tests\TestCase;
 final class ConsoleTest extends TestCase
 {
     private ConsoleService $Console;
+    private ConsoleFormatter $Formatter;
     private MockTarget $Target;
 
     protected function setUp(): void
     {
         $this->Console = new ConsoleService();
-        $this->Target = new MockTarget();
+        $this->Formatter = new ConsoleFormatter(null, null, fn() => $this->Target->getWidth());
+        $this->Target = new MockTarget(null, true, true, true, 80, $this->Formatter);
         $this->Console->registerTarget($this->Target);
 
         Console::load($this->Console);
@@ -33,11 +35,10 @@ final class ConsoleTest extends TestCase
 
     public function testLogProgress(): void
     {
-        $state = $this->getState();
+        $spinnerState = &$this->getSpinnerState();
         for ($i = 0; $i < 11; $i++) {
-            if (isset($state->SpinnerState)) {
-                // @phpstan-ignore assign.propertyType
-                $state->SpinnerState[1] = (float) (hrtime(true) / 1000) - 80000;
+            if ($spinnerState[1] !== null) {
+                $spinnerState[1] = (float) (hrtime(true) / 1000) - 80000;
             }
             Console::logProgress('Complete:', sprintf('%d%%', ($i + 1) * 100 / 11));
         }
@@ -57,12 +58,15 @@ final class ConsoleTest extends TestCase
         ], $this->Target->getMessages());
     }
 
-    private function getState(): ConsoleState
+    /**
+     * @return array{int<0,max>,float|null}
+     */
+    private function &getSpinnerState(): array
     {
-        return (function () {
-            /** @var ConsoleService $this */
-            // @phpstan-ignore property.private, varTag.nativeType
-            return $this->State;
-        })->bindTo($this->Console, $this->Console)();
+        return (function &() {
+            /** @var ConsoleFormatter $this */
+            // @phpstan-ignore varTag.nativeType, property.private
+            return $this->SpinnerState;
+        })->bindTo($this->Formatter, $this->Formatter)();
     }
 }

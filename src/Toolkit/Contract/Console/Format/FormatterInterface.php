@@ -8,15 +8,6 @@ use Salient\Contract\Core\Immutable;
 interface FormatterInterface extends Immutable, HasTag
 {
     /**
-     * Get an instance with the given spinner state array
-     *
-     * @param array{int<0,max>,float}|null $state
-     * @param-out array{int<0,max>,float} $state
-     * @return static
-     */
-    public function withSpinnerState(?array &$state);
-
-    /**
      * Get an instance that unescapes text
      *
      * @return static

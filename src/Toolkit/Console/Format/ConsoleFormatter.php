@@ -147,7 +147,7 @@ REGEX;
     private array $LevelPrefixMap;
     /** @var array<Console::TYPE_*,string> */
     private array $TypePrefixMap;
-    /** @var array{int<0,max>,float} */
+    /** @var array{int<0,max>,float|null} */
     private array $SpinnerState;
 
     /**
@@ -167,19 +167,8 @@ REGEX;
         $this->WidthCallback = $widthCallback ?: fn(): ?int => null;
         $this->LevelPrefixMap = $levelPrefixMap;
         $this->TypePrefixMap = $typePrefixMap;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function withSpinnerState(?array &$state)
-    {
-        if ($state === null) {
-            $state = [0, 0.0];
-        }
-        $clone = clone $this;
-        $clone->SpinnerState = &$state;
-        return $clone;
+        $spinnerState = [0, null];
+        $this->SpinnerState = &$spinnerState;
     }
 
     /**
@@ -242,15 +231,16 @@ REGEX;
         if ($type === Console::TYPE_UNFORMATTED || $type === Console::TYPE_UNDECORATED) {
             return '';
         }
-        if ($type === Console::TYPE_PROGRESS && isset($this->SpinnerState)) {
-            $frames = count(self::SPINNER);
-            $prefix = self::SPINNER[$this->SpinnerState[0] % $frames] . ' ';
+        if ($type === Console::TYPE_PROGRESS) {
             $now = (float) (hrtime(true) / 1000);
-            if ($now - $this->SpinnerState[1] >= 80000) {
+            if ($this->SpinnerState[1] === null) {
+                $this->SpinnerState[1] = $now;
+            } elseif ($now - $this->SpinnerState[1] >= 80000) {
                 $this->SpinnerState[0]++;
-                $this->SpinnerState[0] %= $frames;
+                $this->SpinnerState[0] %= count(self::SPINNER);
                 $this->SpinnerState[1] = $now;
             }
+            $prefix = self::SPINNER[$this->SpinnerState[0]] . ' ';
         }
         return $prefix
             ?? $this->TypePrefixMap[$type]
