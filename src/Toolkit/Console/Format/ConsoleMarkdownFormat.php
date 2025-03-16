@@ -37,7 +37,7 @@ final class ConsoleMarkdownFormat implements
         $after = $this->After;
 
         $tag = $attributes instanceof TagAttributes
-            ? $attributes->OpenTag
+            ? $attributes->getOpenTag()
             : '';
 
         if ($tag === '##') {
@@ -46,7 +46,7 @@ final class ConsoleMarkdownFormat implements
 
         if (($tag === '_' || $tag === '*') && (
             !$attributes instanceof TagAttributes
-            || !$attributes->HasChildren
+            || !$attributes->hasChildren()
         )) {
             return '`' . Formatter::unescapeTags($string) . '`';
         }
@@ -57,9 +57,9 @@ final class ConsoleMarkdownFormat implements
 
         if ($before === '```') {
             return $attributes instanceof TagAttributes
-                ? $tag . $attributes->InfoString . "\n"
+                ? $tag . $attributes->getInfoString() . "\n"
                     . $string . "\n"
-                    . $attributes->Indent . $tag
+                    . $attributes->getIndent() . $tag
                 : $tag . "\n"
                     . $string . "\n"
                     . $tag;

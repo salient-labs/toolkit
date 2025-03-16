@@ -46,9 +46,9 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
         // - add a level of indentation to the block
         if (
             $attributes instanceof TagAttributes
-            && $attributes->Tag === self::TAG_CODE_BLOCK
+            && $attributes->getTag() === self::TAG_CODE_BLOCK
         ) {
-            $indent = (string) $attributes->Indent;
+            $indent = (string) $attributes->getIndent();
             if ($indent !== '') {
                 $length = strlen($indent);
                 if (substr($string, 0, $length) === $indent) {

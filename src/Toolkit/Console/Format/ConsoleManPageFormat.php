@@ -37,7 +37,7 @@ final class ConsoleManPageFormat implements
         $after = $this->After;
 
         $tag = $attributes instanceof TagAttributes
-            ? $attributes->OpenTag
+            ? $attributes->getOpenTag()
             : '';
 
         if ($tag === '##') {
@@ -54,9 +54,9 @@ final class ConsoleManPageFormat implements
 
         if ($before === '```') {
             return $attributes instanceof TagAttributes
-                ? $before . $attributes->InfoString . "\n"
+                ? $before . $attributes->getInfoString() . "\n"
                     . $string . "\n"
-                    . $attributes->Indent . $after
+                    . $attributes->getIndent() . $after
                 : $before . "\n"
                     . $string . "\n"
                     . $after;

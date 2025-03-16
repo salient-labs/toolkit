@@ -90,7 +90,7 @@ final class ConsoleTagFormats implements Immutable
      */
     public function apply(?string $string, TagAttributes $attributes): string
     {
-        $format = $this->Formats[$attributes->Tag] ?? $this->FallbackFormat;
+        $format = $this->Formats[$attributes->getTag()] ?? $this->FallbackFormat;
         return $format->apply($string, $attributes);
     }
 }

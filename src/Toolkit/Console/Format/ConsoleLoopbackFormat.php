@@ -38,10 +38,10 @@ final class ConsoleLoopbackFormat implements
 
         if (
             $attributes instanceof TagAttributes
-            && $attributes->OpenTag !== ''
+            && $attributes->getOpenTag() !== ''
         ) {
-            $before = $attributes->OpenTag;
-            $after = $before === '<' ? '>' : $attributes->OpenTag;
+            $before = $attributes->getOpenTag();
+            $after = $before === '<' ? '>' : $attributes->getOpenTag();
         }
 
         if ($before === '##') {
@@ -50,9 +50,9 @@ final class ConsoleLoopbackFormat implements
 
         if ($this->Before === '```') {
             return $attributes instanceof TagAttributes
-                ? $before . $attributes->InfoString . "\n"
+                ? $before . $attributes->getInfoString() . "\n"
                     . $string . "\n"
-                    . $attributes->Indent . $after
+                    . $attributes->getIndent() . $after
                 : $before . "\n"
                     . $string . "\n"
                     . $after;

@@ -3,92 +3,94 @@
 namespace Salient\Console\Format;
 
 use Salient\Contract\Console\Format\MessageAttributesInterface;
-use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
 
 /**
- * Message attributes
+ * @internal
  */
 final class ConsoleMessageAttributes implements MessageAttributesInterface
 {
     use ImmutableTrait;
 
-    /**
-     * Message level
-     *
-     * @readonly
-     * @var Console::LEVEL_*
-     */
-    public int $Level;
+    /** @var self::LEVEL_* */
+    private int $Level;
+    /** @var self::TYPE_* */
+    private int $Type;
+    private bool $IsMsg1 = false;
+    private bool $IsMsg2 = false;
+    private bool $IsPrefix = false;
 
     /**
-     * Message type
-     *
-     * @readonly
-     * @var Console::TYPE_*
+     * @param ConsoleMessageAttributes::LEVEL_* $level
+     * @param ConsoleMessageAttributes::TYPE_* $type
      */
-    public int $Type;
-
-    /**
-     * True if the text is part 1 of a message
-     *
-     * @readonly
-     */
-    public bool $IsMsg1;
-
-    /**
-     * True if the text is part 2 of a message
-     *
-     * @readonly
-     */
-    public bool $IsMsg2;
-
-    /**
-     * True if the text is a message prefix
-     *
-     * @readonly
-     */
-    public bool $IsPrefix;
-
-    /**
-     * @param Console::LEVEL_* $level
-     * @param Console::TYPE_* $type
-     */
-    public function __construct(
-        int $level,
-        int $type,
-        bool $isMsg1 = false,
-        bool $isMsg2 = false,
-        bool $isPrefix = false
-    ) {
+    public function __construct(int $level, int $type)
+    {
         $this->Level = $level;
         $this->Type = $type;
-        $this->IsMsg1 = $isMsg1;
-        $this->IsMsg2 = $isMsg2;
-        $this->IsPrefix = $isPrefix;
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
-    public function withIsMsg1(bool $value = true)
+    public function getLevel(): int
     {
-        return $this->with('IsMsg1', $value);
+        return $this->Level;
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
-    public function withIsMsg2(bool $value = true)
+    public function getType(): int
     {
-        return $this->with('IsMsg2', $value);
+        return $this->Type;
     }
 
     /**
-     * @return static
+     * @inheritDoc
      */
-    public function withIsPrefix(bool $value = true)
+    public function isMsg1(): bool
     {
-        return $this->with('IsPrefix', $value);
+        return $this->IsMsg1;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isMsg2(): bool
+    {
+        return $this->IsMsg2;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isPrefix(): bool
+    {
+        return $this->IsPrefix;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withMsg1()
+    {
+        return $this->with('IsMsg1', true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withMsg2()
+    {
+        return $this->with('IsMsg2', true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function withPrefix()
+    {
+        return $this->with('IsPrefix', true);
     }
 }

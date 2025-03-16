@@ -5,61 +5,26 @@ namespace Salient\Console\Format;
 use Salient\Contract\Console\Format\TagAttributesInterface;
 
 /**
- * Tag attributes
+ * @internal
  */
 final class ConsoleTagAttributes implements TagAttributesInterface
 {
-    /**
-     * Tag identifier
-     *
-     * @readonly
-     * @var ConsoleTagAttributes::*
-     */
-    public int $Tag;
+    /** @var self::TAG_* */
+    private int $Tag;
+    private string $OpenTag;
+    private int $Depth;
+    private bool $HasChildren;
+    private ?string $Indent;
+    private ?string $InfoString;
 
     /**
-     * Tag as it was originally used
-     *
-     * @readonly
-     */
-    public string $OpenTag;
-
-    /**
-     * Tag depth
-     *
-     * @readonly
-     */
-    public int $Depth;
-
-    /**
-     * True if the tag has nested tags
-     *
-     * @readonly
-     */
-    public ?bool $HasChildren;
-
-    /**
-     * Horizontal whitespace before the tag (fenced code blocks only)
-     *
-     * @readonly
-     */
-    public ?string $Indent;
-
-    /**
-     * Fenced code block info string
-     *
-     * @readonly
-     */
-    public ?string $InfoString;
-
-    /**
-     * @param ConsoleTagAttributes::* $tag
+     * @param ConsoleTagAttributes::TAG_* $tag
      */
     public function __construct(
         int $tag,
         string $openTag,
         int $depth = 0,
-        ?bool $hasChildren = null,
+        bool $hasChildren = false,
         ?string $indent = null,
         ?string $infoString = null
     ) {
@@ -69,5 +34,53 @@ final class ConsoleTagAttributes implements TagAttributesInterface
         $this->HasChildren = $hasChildren;
         $this->Indent = $indent;
         $this->InfoString = $infoString;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getTag(): int
+    {
+        return $this->Tag;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getOpenTag(): string
+    {
+        return $this->OpenTag;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getDepth(): int
+    {
+        return $this->Depth;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasChildren(): bool
+    {
+        return $this->HasChildren;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getIndent(): ?string
+    {
+        return $this->Indent;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getInfoString(): ?string
+    {
+        return $this->InfoString;
     }
 }

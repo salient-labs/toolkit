@@ -35,9 +35,9 @@ final class ConsoleMessageFormat implements MessageFormatInterface
         string $prefix,
         MessageAttributes $attributes
     ): string {
-        return ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withIsPrefix()) : '')
-            . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withIsMsg1()) : '')
-            . ((string) $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withIsMsg2()) : '');
+        return ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withPrefix()) : '')
+            . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withMsg1()) : '')
+            . ((string) $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withMsg2()) : '');
     }
 
     /**
