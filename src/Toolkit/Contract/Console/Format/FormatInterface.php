@@ -12,5 +12,5 @@ interface FormatInterface extends HasTag
      *
      * @param MessageAttributes|TagAttributes|null $attributes
      */
-    public function apply(?string $text, $attributes = null): string;
+    public function apply(?string $string, $attributes = null): string;
 }

@@ -27,9 +27,9 @@ final class ConsoleMarkdownFormat implements
     /**
      * @inheritDoc
      */
-    public function apply(?string $text, $attributes = null): string
+    public function apply(?string $string, $attributes = null): string
     {
-        if ($text === null || $text === '') {
+        if ($string === null || $string === '') {
             return '';
         }
 
@@ -41,31 +41,31 @@ final class ConsoleMarkdownFormat implements
             : '';
 
         if ($tag === '##') {
-            return '## ' . $text;
+            return '## ' . $string;
         }
 
         if (($tag === '_' || $tag === '*') && (
             !$attributes instanceof TagAttributes
             || !$attributes->HasChildren
         )) {
-            return '`' . Formatter::unescapeTags($text) . '`';
+            return '`' . Formatter::unescapeTags($string) . '`';
         }
 
         if ($before === '`') {
-            return '**`' . $text . '`**';
+            return '**`' . $string . '`**';
         }
 
         if ($before === '```') {
             return $attributes instanceof TagAttributes
                 ? $tag . $attributes->InfoString . "\n"
-                    . $text . "\n"
+                    . $string . "\n"
                     . $attributes->Indent . $tag
                 : $tag . "\n"
-                    . $text . "\n"
+                    . $string . "\n"
                     . $tag;
         }
 
-        return $before . $text . $after;
+        return $before . $string . $after;
     }
 
     /**

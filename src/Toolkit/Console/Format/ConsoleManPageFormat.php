@@ -27,9 +27,9 @@ final class ConsoleManPageFormat implements
     /**
      * @inheritDoc
      */
-    public function apply(?string $text, $attributes = null): string
+    public function apply(?string $string, $attributes = null): string
     {
-        if ($text === null || $text === '') {
+        if ($string === null || $string === '') {
             return '';
         }
 
@@ -41,28 +41,28 @@ final class ConsoleManPageFormat implements
             : '';
 
         if ($tag === '##') {
-            return '# ' . $text;
+            return '# ' . $string;
         }
 
         if ($tag === '_') {
-            return $text;
+            return $string;
         }
 
         if ($before === '`') {
-            return '**`' . $text . '`**';
+            return '**`' . $string . '`**';
         }
 
         if ($before === '```') {
             return $attributes instanceof TagAttributes
                 ? $before . $attributes->InfoString . "\n"
-                    . $text . "\n"
+                    . $string . "\n"
                     . $attributes->Indent . $after
                 : $before . "\n"
-                    . $text . "\n"
+                    . $string . "\n"
                     . $after;
         }
 
-        return $before . $text . $after;
+        return $before . $string . $after;
     }
 
     /**

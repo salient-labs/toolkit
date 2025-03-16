@@ -88,9 +88,9 @@ final class ConsoleTagFormats implements Immutable
     /**
      * Format tagged text before it is written to the target
      */
-    public function apply(?string $text, TagAttributes $attributes): string
+    public function apply(?string $string, TagAttributes $attributes): string
     {
         $format = $this->Formats[$attributes->Tag] ?? $this->FallbackFormat;
-        return $format->apply($text, $attributes);
+        return $format->apply($string, $attributes);
     }
 }

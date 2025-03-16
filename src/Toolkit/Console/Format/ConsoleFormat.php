@@ -35,9 +35,9 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
     /**
      * @inheritDoc
      */
-    public function apply(?string $text, $attributes = null): string
+    public function apply(?string $string, $attributes = null): string
     {
-        if ($text === null || $text === '') {
+        if ($string === null || $string === '') {
             return '';
         }
 
@@ -51,29 +51,29 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
             $indent = (string) $attributes->Indent;
             if ($indent !== '') {
                 $length = strlen($indent);
-                if (substr($text, 0, $length) === $indent) {
-                    $text = substr($text, $length);
+                if (substr($string, 0, $length) === $indent) {
+                    $string = substr($string, $length);
                 }
             }
-            $text = '    ' . str_replace("\n", "\n    ", $text);
+            $string = '    ' . str_replace("\n", "\n    ", $string);
         }
 
         if ($this->Search) {
-            $text = str_replace($this->Search, $this->Replace, $text);
+            $string = str_replace($this->Search, $this->Replace, $string);
         }
 
-        $text = $this->Before . $text;
+        $string = $this->Before . $string;
 
         if ($this->After === '') {
-            return $text;
+            return $string;
         }
 
         // Preserve a trailing carriage return
-        if ($text[-1] === "\r") {
-            return substr($text, 0, -1) . $this->After . "\r";
+        if ($string[-1] === "\r") {
+            return substr($string, 0, -1) . $this->After . "\r";
         }
 
-        return $text . $this->After;
+        return $string . $this->After;
     }
 
     /**
