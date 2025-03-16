@@ -11,23 +11,9 @@ use Salient\Contract\Core\Immutable;
 interface FormatterInterface extends Immutable, HasTag
 {
     /**
-     * Get an instance that removes escapes from strings
-     *
-     * @return static
-     */
-    public function withRemoveEscapes(bool $remove = true);
-
-    /**
      * Check if the formatter removes escapes from strings
      */
     public function removesEscapes(): bool;
-
-    /**
-     * Get an instance that wraps strings after formatting
-     *
-     * @return static
-     */
-    public function withWrapAfterFormatting(bool $value = true);
 
     /**
      * Check if the formatter wraps strings after formatting
@@ -36,6 +22,20 @@ interface FormatterInterface extends Immutable, HasTag
      * removed.
      */
     public function wrapsAfterFormatting(): bool;
+
+    /**
+     * Get an instance that removes escapes from strings
+     *
+     * @return static
+     */
+    public function withRemoveEscapes(bool $remove = true);
+
+    /**
+     * Get an instance that wraps strings after formatting
+     *
+     * @return static
+     */
+    public function withWrapAfterFormatting(bool $value = true);
 
     /**
      * Get the format applied to a given tag
