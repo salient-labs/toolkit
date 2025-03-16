@@ -5,41 +5,47 @@ namespace Salient\Contract\Console\Format;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Contract\Core\Immutable;
 
+/**
+ * @api
+ */
 interface FormatterInterface extends Immutable, HasTag
 {
     /**
-     * Get an instance that unescapes text
+     * Get an instance that removes escapes from strings
      *
      * @return static
      */
     public function withRemoveEscapes(bool $remove = true);
 
     /**
-     * Check if text is unescaped
+     * Check if the formatter removes escapes from strings
      */
     public function getRemoveEscapes(): bool;
 
     /**
-     * Get an instance that wraps text after formatting
+     * Get an instance that wraps strings after formatting
      *
      * @return static
      */
     public function withWrapAfterFormatting(bool $value = true);
 
     /**
-     * Check if text is wrapped after formatting
+     * Check if the formatter wraps strings after formatting
+     *
+     * Returns `false` if strings are wrapped after inline formatting tags are
+     * removed.
      */
     public function getWrapAfterFormatting(): bool;
 
     /**
-     * Get the format applied to a tag
+     * Get the format applied to a given tag
      *
-     * @param FormatterInterface::* $tag
+     * @param FormatterInterface::TAG_* $tag
      */
     public function getTagFormat(int $tag): FormatInterface;
 
     /**
-     * Get the format applied to a message level and type
+     * Get the format applied to a given message level and type
      *
      * @param Console::LEVEL_* $level
      * @param Console::TYPE_* $type
@@ -50,7 +56,7 @@ interface FormatterInterface extends Immutable, HasTag
     ): MessageFormatInterface;
 
     /**
-     * Get the prefix applied to a message level and type
+     * Get the prefix applied to a given message level and type
      *
      * @param Console::LEVEL_* $level
      * @param Console::TYPE_* $type
@@ -61,44 +67,36 @@ interface FormatterInterface extends Immutable, HasTag
     ): string;
 
     /**
-     * Format a string that may contain inline formatting tags
+     * Format and optionally reflow a string with inline formatting tags
      *
-     * Paragraphs outside preformatted blocks are optionally wrapped to a given
-     * width, and backslash-escaped punctuation characters and line breaks are
-     * preserved.
+     * @param int|array{int,int}|null $wrapTo - `int`: wrap the string to the
+     * given width
+     * - `array{int,int}`: wrap the string to `[ <first_line_width>, <width> ]`
+     * - `null` (default): do not wrap the string
      *
-     * Escaped line breaks may have a leading space, so the following are
-     * equivalent:
-     *
-     * ```
-     * Text with a \
-     * hard line break.
-     *
-     * Text with a\
-     * hard line break.
-     * ```
-     *
-     * @param array{int,int}|int|null $wrapToWidth If `null` (the default), text
-     * is not wrapped.
-     *
-     * If `$wrapToWidth` is an `array`, the first line of text is wrapped to the
-     * first value, and text in subsequent lines is wrapped to the second value.
-     *
-     * Widths less than or equal to `0` are added to the width reported by the
-     * target, and text is wrapped to the result.
-     * @param bool $unformat If `true`, formatting tags are reapplied after text
-     * is unwrapped and/or wrapped.
+     * Integers less than or equal to `0` are added to the width of the target
+     * and replaced with the result.
+     * @param bool $unformat If `true`, inline formatting tags are reapplied
+     * after the string is formatted.
      */
     public function format(
         string $string,
         bool $unwrap = false,
-        $wrapToWidth = null,
+        $wrapTo = null,
         bool $unformat = false,
         string $break = "\n"
     ): string;
 
     /**
+     * Format a unified diff
+     */
+    public function formatDiff(string $diff): string;
+
+    /**
      * Format a console message
+     *
+     * Inline formatting tags in `$msg1` and `$msg2` have no special meaning;
+     * call {@see format()} first if necessary.
      *
      * @param Console::LEVEL_* $level
      * @param Console::TYPE_* $type
@@ -109,9 +107,4 @@ interface FormatterInterface extends Immutable, HasTag
         int $level = Console::LEVEL_INFO,
         int $type = Console::TYPE_STANDARD
     ): string;
-
-    /**
-     * Format a unified diff
-     */
-    public function formatDiff(string $diff): string;
 }

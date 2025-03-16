@@ -3,7 +3,7 @@
 namespace Salient\Console\Format;
 
 use Salient\Contract\Console\Format\FormatInterface as Format;
-use Salient\Contract\Console\Format\MessageAttributesInterface as MessageAttributes;
+use Salient\Contract\Console\Format\MessageAttributesInterface;
 use Salient\Contract\Console\Format\MessageFormatInterface;
 
 /**
@@ -33,11 +33,11 @@ final class ConsoleMessageFormat implements MessageFormatInterface
         string $msg1,
         ?string $msg2,
         string $prefix,
-        MessageAttributes $attributes
+        MessageAttributesInterface $attributes
     ): string {
         return ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withPrefix()) : '')
             . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withMsg1()) : '')
-            . ((string) $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withMsg2()) : '');
+            . ($msg2 !== null && $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withMsg2()) : '');
     }
 
     /**

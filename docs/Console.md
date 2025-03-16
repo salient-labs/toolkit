@@ -79,6 +79,19 @@ The following Markdown-like syntax is supported in [Console][] messages:
 | Inline code  | `` ` `` text `` ` ``                                   | <code>Bold</code>                     | `` The input format can be specified using the `-f/--from` option. ``     |
 | Code block   | ` ``` `<br>text<br>` ``` `                             | <pre><code>Unchanged</code></pre>     | <pre><code>\`\`\`&#10;$baz = Foo::bar();&#10;\`\`\`</code></pre>          |
 
+Paragraphs outside code blocks are wrapped to the width reported by the target,
+and backslash-escaped punctuation characters and line breaks are preserved.
+
+Escaped line breaks may have a leading space, so the following are equivalent:
+
+```
+Text with a \
+hard line break.
+
+Text with a\
+hard line break.
+```
+
 [Application]:
   https://salient-labs.github.io/toolkit/Salient.Container.Application.html
 [CliApplication]:

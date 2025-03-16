@@ -22,7 +22,7 @@ final class ConsoleFormatterTest extends TestCase
      * @dataProvider formatProvider
      *
      * @param class-string<ConsoleFormatterFactory>|null $factory
-     * @param array{int,int}|int|null $wrapToWidth
+     * @param int|array{int,int}|null $wrapToWidth
      */
     public function testFormat(
         string $expected,
@@ -50,7 +50,7 @@ final class ConsoleFormatterTest extends TestCase
     }
 
     /**
-     * @return array<array{string,class-string<ConsoleFormatterFactory>|null,string,3?:bool,4?:array{int,int}|int|null,5?:bool,6?:string}>
+     * @return array<array{string,class-string<ConsoleFormatterFactory>|null,string,3?:bool,4?:int|array{int,int}|null,5?:bool,6?:string}>
      */
     public static function formatProvider(): array
     {

@@ -254,7 +254,7 @@ REGEX;
     public function format(
         string $string,
         bool $unwrap = false,
-        $wrapToWidth = null,
+        $wrapTo = null,
         bool $unformat = false,
         string $break = "\n"
     ): string {
@@ -492,33 +492,33 @@ REGEX;
             \PREG_OFFSET_CAPTURE
         );
 
-        if (is_array($wrapToWidth)) {
+        if (is_array($wrapTo)) {
             for ($i = 0; $i < 2; $i++) {
-                if ($wrapToWidth[$i] <= 0) {
+                if ($wrapTo[$i] <= 0) {
                     $width ??= ($this->WidthCallback)();
                     if ($width === null) {
-                        $wrapToWidth = null;
+                        $wrapTo = null;
                         break;
                     }
-                    $wrapToWidth[$i] = max(0, $wrapToWidth[$i] + $width);
+                    $wrapTo[$i] = max(0, $wrapTo[$i] + $width);
                 }
             }
         } elseif (
-            is_int($wrapToWidth)
-            && $wrapToWidth <= 0
+            is_int($wrapTo)
+            && $wrapTo <= 0
         ) {
             $width = ($this->WidthCallback)();
-            $wrapToWidth =
+            $wrapTo =
                 $width === null
                     ? null
-                    : max(0, $wrapToWidth + $width);
+                    : max(0, $wrapTo + $width);
         }
-        if ($wrapToWidth !== null) {
+        if ($wrapTo !== null) {
             if ($break === "\n") {
-                $string = Str::wrap($string, $wrapToWidth);
+                $string = Str::wrap($string, $wrapTo);
             } else {
                 // Only replace new line breaks with `$break`
-                $wrapped = Str::wrap($string, $wrapToWidth);
+                $wrapped = Str::wrap($string, $wrapTo);
                 $length = strlen($wrapped);
                 for ($i = 0; $i < $length; $i++) {
                     if ($wrapped[$i] === "\n" && $string[$i] !== "\n") {
@@ -582,9 +582,17 @@ REGEX;
             '-' => $this->TagFormats->getFormat(self::TAG_DIFF_REMOVAL),
         ];
 
+        $attributes = [
+            '---' => new TagAttributes(self::TAG_DIFF_HEADER, '---'),
+            '+++' => new TagAttributes(self::TAG_DIFF_HEADER, '+++'),
+            '@' => new TagAttributes(self::TAG_DIFF_RANGE, '@'),
+            '+' => new TagAttributes(self::TAG_DIFF_ADDITION, '+'),
+            '-' => new TagAttributes(self::TAG_DIFF_REMOVAL, '-'),
+        ];
+
         return Regex::replaceCallback(
             '/^(-{3}|\+{3}|[-+@]).*/m',
-            fn(array $matches) => $formats[$matches[1]]->apply($matches[0]),
+            fn(array $matches) => $formats[$matches[1]]->apply($matches[0], $attributes[$matches[1]]),
             $diff,
         );
     }

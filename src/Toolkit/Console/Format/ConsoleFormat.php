@@ -35,9 +35,9 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
     /**
      * @inheritDoc
      */
-    public function apply(?string $string, $attributes = null): string
+    public function apply(string $string, $attributes = null): string
     {
-        if ($string === null || $string === '') {
+        if ($string === '') {
             return '';
         }
 

@@ -2,10 +2,13 @@
 
 namespace Salient\Contract\Console\Format;
 
+/**
+ * @api
+ */
 interface MessageFormatInterface
 {
     /**
-     * Format a message before it is written to the target
+     * Format a console message
      */
     public function apply(
         string $msg1,

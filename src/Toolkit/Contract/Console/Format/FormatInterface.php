@@ -2,15 +2,15 @@
 
 namespace Salient\Contract\Console\Format;
 
-use Salient\Contract\Console\Format\MessageAttributesInterface as MessageAttributes;
-use Salient\Contract\Console\Format\TagAttributesInterface as TagAttributes;
-
+/**
+ * @api
+ */
 interface FormatInterface extends HasTag
 {
     /**
-     * Format text before it is written to the target
+     * Format a string
      *
-     * @param MessageAttributes|TagAttributes|null $attributes
+     * @param TagAttributesInterface|MessageAttributesInterface|null $attributes
      */
-    public function apply(?string $string, $attributes = null): string;
+    public function apply(string $string, $attributes = null): string;
 }
