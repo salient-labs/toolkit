@@ -2,15 +2,12 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Console\Format\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\Format\FormatInterface;
 
 /**
  * Reapplies the output's original inline formatting tags
  */
-final class ConsoleLoopbackFormat implements
+final class LoopbackFormat implements
     FormatInterface,
     ConsoleFormatterFactory,
     ConsoleTagFormatFactory

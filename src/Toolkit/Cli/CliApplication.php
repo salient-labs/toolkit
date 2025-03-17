@@ -3,9 +3,9 @@
 namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleManPageFormat;
-use Salient\Console\Format\ConsoleMarkdownFormat;
+use Salient\Console\Format\Formatter;
+use Salient\Console\Format\ManPageFormat;
+use Salient\Console\Format\MarkdownFormat;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
@@ -464,12 +464,12 @@ class CliApplication extends Application implements CliApplicationInterface
 
         switch ($target) {
             case CliHelpTarget::MARKDOWN:
-                $formats = ConsoleMarkdownFormat::getTagFormats();
+                $formats = MarkdownFormat::getTagFormats();
                 $collapseSynopsis = Get::boolean($args[0] ?? null);
                 break;
 
             case CliHelpTarget::MAN_PAGE:
-                $formats = ConsoleManPageFormat::getTagFormats();
+                $formats = ManPageFormat::getTagFormats();
                 $progName = $this->getProgramName();
                 printf(
                     '%% %s(%d) %s | %s%s',

@@ -2,8 +2,6 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-
 interface ConsoleTagFormatFactory
 {
     /**

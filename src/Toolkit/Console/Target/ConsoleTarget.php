@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Console\Format\ConsoleFormatter;
+use Salient\Console\Format\Formatter;
 use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\Target\TargetInterface;
 
@@ -48,6 +48,6 @@ abstract class ConsoleTarget implements TargetInterface
      */
     protected function createFormatter(): FormatterInterface
     {
-        return new ConsoleFormatter(null, null, fn() => $this->getWidth());
+        return new Formatter(null, null, fn() => $this->getWidth());
     }
 }

@@ -8,7 +8,7 @@ use Salient\Contract\HasEscapeSequence;
 /**
  * @api
  */
-class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
+class TtyFormat extends AbstractFormat implements HasEscapeSequence
 {
     use EncloseAndReplaceFormatTrait {
         apply as private doApply;
@@ -46,7 +46,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
     /**
      * @inheritDoc
      */
-    protected static function getTagFormats(): ?ConsoleTagFormats
+    protected static function getTagFormats(): ?TagFormats
     {
         $bold = self::getBold();
         $faint = self::getFaint();
@@ -57,7 +57,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
         $cyan = self::getColour(self::CYAN_FG);
         $yellowUnderline = self::getUnderline(self::YELLOW_FG);
 
-        return (new ConsoleTagFormats())
+        return (new TagFormats())
             ->withFormat(self::TAG_HEADING, $boldCyan)
             ->withFormat(self::TAG_BOLD, $bold)
             ->withFormat(self::TAG_ITALIC, $yellow)
@@ -73,7 +73,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
     /**
      * @inheritDoc
      */
-    protected static function getMessageFormats(): ?ConsoleMessageFormats
+    protected static function getMessageFormats(): ?MessageFormats
     {
         $null = new NullFormat();
         $bold = self::getBold();
@@ -87,23 +87,23 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
         $yellow = self::getColour(self::YELLOW_FG);
         $cyan = self::getColour(self::CYAN_FG);
 
-        return (new ConsoleMessageFormats())
-            ->set(self::LEVELS_ERRORS, self::TYPES_ALL, new ConsoleMessageFormat($boldRed, $null, $boldRed))
-            ->set(self::LEVEL_WARNING, self::TYPES_ALL, new ConsoleMessageFormat($yellow, $null, $boldYellow))
-            ->set(self::LEVEL_NOTICE, self::TYPES_ALL, new ConsoleMessageFormat($bold, $cyan, $boldCyan))
-            ->set(self::LEVEL_INFO, self::TYPES_ALL, new ConsoleMessageFormat($null, $yellow, $yellow))
-            ->set(self::LEVEL_DEBUG, self::TYPES_ALL, new ConsoleMessageFormat($faint, $faint, $faint))
-            ->set(self::LEVELS_INFO, self::TYPE_PROGRESS, new ConsoleMessageFormat($null, $yellow, $yellow))
-            ->set(self::LEVELS_INFO, self::TYPES_GROUP, new ConsoleMessageFormat($boldMagenta, $null, $boldMagenta))
-            ->set(self::LEVELS_INFO, self::TYPE_SUMMARY, new ConsoleMessageFormat($null, $null, $bold))
-            ->set(self::LEVELS_INFO, self::TYPE_SUCCESS, new ConsoleMessageFormat($green, $null, $boldGreen))
-            ->set(self::LEVELS_ERRORS_AND_WARNINGS, self::TYPE_FAILURE, new ConsoleMessageFormat($yellow, $null, $boldYellow));
+        return (new MessageFormats())
+            ->set(self::LEVELS_ERRORS, self::TYPES_ALL, new MessageFormat($boldRed, $null, $boldRed))
+            ->set(self::LEVEL_WARNING, self::TYPES_ALL, new MessageFormat($yellow, $null, $boldYellow))
+            ->set(self::LEVEL_NOTICE, self::TYPES_ALL, new MessageFormat($bold, $cyan, $boldCyan))
+            ->set(self::LEVEL_INFO, self::TYPES_ALL, new MessageFormat($null, $yellow, $yellow))
+            ->set(self::LEVEL_DEBUG, self::TYPES_ALL, new MessageFormat($faint, $faint, $faint))
+            ->set(self::LEVELS_INFO, self::TYPE_PROGRESS, new MessageFormat($null, $yellow, $yellow))
+            ->set(self::LEVELS_INFO, self::TYPES_GROUP, new MessageFormat($boldMagenta, $null, $boldMagenta))
+            ->set(self::LEVELS_INFO, self::TYPE_SUMMARY, new MessageFormat($null, $null, $bold))
+            ->set(self::LEVELS_INFO, self::TYPE_SUCCESS, new MessageFormat($green, $null, $boldGreen))
+            ->set(self::LEVELS_ERRORS_AND_WARNINGS, self::TYPE_FAILURE, new MessageFormat($yellow, $null, $boldYellow));
     }
 
     /**
      * Get a format that applies a colour to TTY output
      *
-     * @param ConsoleFormat::*_FG $colour
+     * @param TtyFormat::*_FG $colour
      */
     protected static function getColour(string $colour): self
     {
@@ -120,7 +120,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
      * Get a format that increases the intensity of TTY output and optionally
      * applies a colour
      *
-     * @param ConsoleFormat::*_FG|null $colour
+     * @param TtyFormat::*_FG|null $colour
      */
     protected static function getBold(?string $colour = null): self
     {
@@ -146,7 +146,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
      * Get a format that decreases the intensity of TTY output and optionally
      * applies a colour
      *
-     * @param ConsoleFormat::*_FG|null $colour
+     * @param TtyFormat::*_FG|null $colour
      */
     protected static function getFaint(?string $colour = null): self
     {
@@ -175,7 +175,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
      * If bold (increased intensity) and faint (decreased intensity) attributes
      * cannot be set simultaneously, output will be faint, not bold.
      *
-     * @param ConsoleFormat::*_FG|null $colour
+     * @param TtyFormat::*_FG|null $colour
      */
     protected static function getBoldFaint(?string $colour = null): self
     {
@@ -201,7 +201,7 @@ class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
      * Get a format that underlines and optionally applies a colour to TTY
      * output
      *
-     * @param ConsoleFormat::*_FG|null $colour
+     * @param TtyFormat::*_FG|null $colour
      */
     protected static function getUnderline(?string $colour = null): self
     {

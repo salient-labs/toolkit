@@ -7,7 +7,7 @@ use Salient\Contract\Console\Format\TagAttributesInterface;
 /**
  * @internal
  */
-final class ConsoleTagAttributes implements TagAttributesInterface
+final class TagAttributes implements TagAttributesInterface
 {
     /** @var self::TAG_* */
     private int $Tag;
@@ -18,7 +18,7 @@ final class ConsoleTagAttributes implements TagAttributesInterface
     private ?string $InfoString;
 
     /**
-     * @param ConsoleTagAttributes::TAG_* $tag
+     * @param TagAttributes::TAG_* $tag
      */
     public function __construct(
         int $tag,

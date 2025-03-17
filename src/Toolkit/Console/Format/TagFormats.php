@@ -11,7 +11,7 @@ use Salient\Utility\Arr;
 /**
  * Maps inline formatting tags to formats
  */
-final class ConsoleTagFormats implements Immutable
+final class TagFormats implements Immutable
 {
     use ImmutableTrait;
 

@@ -11,7 +11,7 @@ use Salient\Contract\Console\ConsoleInterface as Console;
  * If multiple formats are assigned to the same level and type, the format
  * assigned last takes precedence.
  */
-final class ConsoleMessageFormats
+final class MessageFormats
 {
     /** @var array<Console::LEVEL_*,array<Console::TYPE_*,MessageFormatInterface>> */
     private array $Formats = [];

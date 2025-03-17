@@ -4,7 +4,7 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\Formatter;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;

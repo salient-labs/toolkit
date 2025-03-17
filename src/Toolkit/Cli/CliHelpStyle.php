@@ -2,10 +2,10 @@
 
 namespace Salient\Cli;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
-use Salient\Console\Format\ConsoleManPageFormat as ManPageFormat;
-use Salient\Console\Format\ConsoleMarkdownFormat as MarkdownFormat;
+use Salient\Console\Format\Formatter;
+use Salient\Console\Format\LoopbackFormat;
+use Salient\Console\Format\ManPageFormat;
+use Salient\Console\Format\MarkdownFormat;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;

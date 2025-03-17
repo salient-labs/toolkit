@@ -8,7 +8,7 @@ use Salient\Core\Concern\ImmutableTrait;
 /**
  * @internal
  */
-final class ConsoleMessageAttributes implements MessageAttributesInterface
+final class MessageAttributes implements MessageAttributesInterface
 {
     use ImmutableTrait;
 
@@ -21,8 +21,8 @@ final class ConsoleMessageAttributes implements MessageAttributesInterface
     private bool $IsPrefix = false;
 
     /**
-     * @param ConsoleMessageAttributes::LEVEL_* $level
-     * @param ConsoleMessageAttributes::TYPE_* $type
+     * @param MessageAttributes::LEVEL_* $level
+     * @param MessageAttributes::TYPE_* $type
      */
     public function __construct(int $level, int $type)
     {

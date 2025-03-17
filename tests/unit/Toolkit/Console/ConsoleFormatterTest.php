@@ -2,19 +2,19 @@
 
 namespace Salient\Tests\Console;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
 use Salient\Console\Format\ConsoleFormatterFactory;
-use Salient\Console\Format\ConsoleLoopbackFormat;
-use Salient\Console\Format\ConsoleManPageFormat;
-use Salient\Console\Format\ConsoleMarkdownFormat;
+use Salient\Console\Format\Formatter;
+use Salient\Console\Format\LoopbackFormat;
+use Salient\Console\Format\ManPageFormat;
+use Salient\Console\Format\MarkdownFormat;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
 /**
- * @covers \Salient\Console\Format\ConsoleFormatter
- * @covers \Salient\Console\Format\ConsoleLoopbackFormat
- * @covers \Salient\Console\Format\ConsoleManPageFormat
- * @covers \Salient\Console\Format\ConsoleMarkdownFormat
+ * @covers \Salient\Console\Format\Formatter
+ * @covers \Salient\Console\Format\LoopbackFormat
+ * @covers \Salient\Console\Format\ManPageFormat
+ * @covers \Salient\Console\Format\MarkdownFormat
  */
 final class ConsoleFormatterTest extends TestCase
 {
@@ -186,7 +186,7 @@ It continues on a \*second* line.
 *2*   adjacent \
 *16*  tags
 EOF,
-                ConsoleLoopbackFormat::class,
+                LoopbackFormat::class,
                 $input1,
             ],
             [
@@ -231,7 +231,7 @@ It continues on a \*second* line.
 `2`   adjacent \
 `16`  tags
 EOF,
-                ConsoleMarkdownFormat::class,
+                MarkdownFormat::class,
                 $input1,
             ],
             [
@@ -276,7 +276,7 @@ It continues on a \*second* line.
 *2*   adjacent \
 *16*  tags
 EOF,
-                ConsoleManPageFormat::class,
+                ManPageFormat::class,
                 $input1,
             ],
             [
@@ -298,7 +298,7 @@ EOF,
 
 ` <== an unmatched backtick
 EOF,
-                ConsoleLoopbackFormat::class,
+                LoopbackFormat::class,
                 <<<'EOF'
 ## Heading
 
@@ -324,7 +324,7 @@ EOF,
 
     ` <== an indented backtick
 EOF,
-                ConsoleLoopbackFormat::class,
+                LoopbackFormat::class,
                 <<<'EOF'
 ## Heading
 
@@ -390,7 +390,7 @@ xxxxx xxxx xxx xx xxxx xxx
 xxxx xxx xx xxxx xxx xxxxx
 xxxx
 EOF,
-                ConsoleMarkdownFormat::class,
+                MarkdownFormat::class,
                 $input2,
                 true,
                 26,
@@ -404,7 +404,7 @@ xxxx xxx
 xxxx xxx xx xxxx xxx
 xxxxx xxxx
 EOF,
-                ConsoleMarkdownFormat::class,
+                MarkdownFormat::class,
                 $input2,
                 true,
                 25,
@@ -418,7 +418,7 @@ xxx
 xxxx xxx xx xxxx xxx
 xxxxx xxxx
 EOF,
-                ConsoleMarkdownFormat::class,
+                MarkdownFormat::class,
                 $input2,
                 true,
                 [26, 22],
@@ -432,7 +432,7 @@ xxxx xxx
 xxxx xxx xx xxxx xxx
 xxxxx xxxx
 EOF,
-                ConsoleMarkdownFormat::class,
+                MarkdownFormat::class,
                 $input2,
                 true,
                 [26, 21],
@@ -446,7 +446,7 @@ xxx
 xxxx xxx xx xxxx xxx
 xxxxx xxxx
 EOF,
-                ConsoleMarkdownFormat::class,
+                MarkdownFormat::class,
                 $input2,
                 true,
                 [26, 22],
@@ -534,7 +534,7 @@ text without backticks at the end of the line
 
 text with `backticks` at the end of the line
 EOF,
-                ConsoleLoopbackFormat::class,
+                LoopbackFormat::class,
                 <<<EOF
 text without backticks
 at the end of the line

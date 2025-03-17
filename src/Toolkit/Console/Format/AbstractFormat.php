@@ -22,9 +22,9 @@ abstract class AbstractFormat implements FormatInterface
      *
      * @param TargetInterface|(Closure(): int|null)|null $targetOrWidthCallback
      */
-    public static function getFormatter($targetOrWidthCallback = null): ConsoleFormatter
+    public static function getFormatter($targetOrWidthCallback = null): Formatter
     {
-        return new ConsoleFormatter(
+        return new Formatter(
             static::getTagFormats(),
             static::getMessageFormats(),
             $targetOrWidthCallback instanceof TargetInterface
@@ -38,7 +38,7 @@ abstract class AbstractFormat implements FormatInterface
     /**
      * Get tag formats, or null if the format does not provide them
      */
-    protected static function getTagFormats(): ?ConsoleTagFormats
+    protected static function getTagFormats(): ?TagFormats
     {
         return null;
     }
@@ -46,7 +46,7 @@ abstract class AbstractFormat implements FormatInterface
     /**
      * Get message formats, or null if the format does not provide them
      */
-    protected static function getMessageFormats(): ?ConsoleMessageFormats
+    protected static function getMessageFormats(): ?MessageFormats
     {
         return null;
     }

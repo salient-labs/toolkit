@@ -3,7 +3,7 @@
 namespace Salient\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\Formatter;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Console\Target\HasPrefix;
 use Salient\Contract\Console\Target\StreamTargetInterface;

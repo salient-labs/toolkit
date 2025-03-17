@@ -9,7 +9,7 @@ use Salient\Contract\Console\Format\MessageFormatInterface;
 /**
  * Applies formats to the components of a console message
  */
-final class ConsoleMessageFormat implements MessageFormatInterface
+final class MessageFormat implements MessageFormatInterface
 {
     private Format $Msg1Format;
     private Format $Msg2Format;

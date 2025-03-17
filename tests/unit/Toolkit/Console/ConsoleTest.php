@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Console;
 
-use Salient\Console\Format\ConsoleFormatter;
+use Salient\Console\Format\Formatter;
 use Salient\Console\Console as ConsoleService;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
@@ -10,18 +10,18 @@ use Salient\Tests\TestCase;
 
 /**
  * @covers \Salient\Console\Console
- * @covers \Salient\Console\Format\ConsoleFormatter
+ * @covers \Salient\Console\Format\Formatter
  */
 final class ConsoleTest extends TestCase
 {
     private ConsoleService $Console;
-    private ConsoleFormatter $Formatter;
+    private Formatter $Formatter;
     private MockTarget $Target;
     private MockTarget $StdoutTarget;
 
     protected function setUp(): void
     {
-        $this->Formatter = new ConsoleFormatter(null, null, fn() => 80);
+        $this->Formatter = new Formatter(null, null, fn() => 80);
         $this->Target = new MockTarget(null, false, true, true, 80, $this->Formatter);
         $this->StdoutTarget = new MockTarget(null, true, false, false, 80, $this->Formatter);
         $this->Console = (new ConsoleService())
@@ -190,7 +190,7 @@ final class ConsoleTest extends TestCase
     private function &getSpinnerState(): array
     {
         return (function &() {
-            /** @var ConsoleFormatter $this */
+            /** @var Formatter $this */
             // @phpstan-ignore varTag.nativeType, property.private
             return $this->SpinnerState;
         })->bindTo($this->Formatter, $this->Formatter)();

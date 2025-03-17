@@ -4,7 +4,7 @@
 namespace Lkrms\Tests;
 
 use Salient\Console\Target\StreamTarget;
-use Salient\Console\ConsoleFormatter;
+use Salient\Console\Formatter;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 
@@ -112,7 +112,7 @@ TestClass::callDebugLogger();
 TestClass::callDebugLogger(1);
 TestClass::callDebugLogger(2);
 
-var_dump($escaped = ConsoleFormatter::escapeTags('Backticks (`) and backslashes (\) should be escaped (`, \)'));
+var_dump($escaped = Formatter::escapeTags('Backticks (`) and backslashes (\) should be escaped (`, \)'));
 Console::info($escaped);
 
 for ($i = 1; $i <= 200; $i++) {

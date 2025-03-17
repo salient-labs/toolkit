@@ -2,15 +2,12 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Console\Format\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\Format\FormatInterface;
 
 /**
- * Applies Markdown formatting to console output
+ * Applies Markdown formatting with man page extensions to console output
  */
-final class ConsoleMarkdownFormat implements
+final class ManPageFormat implements
     FormatInterface,
     ConsoleFormatterFactory,
     ConsoleTagFormatFactory
@@ -41,14 +38,11 @@ final class ConsoleMarkdownFormat implements
             : '';
 
         if ($tag === '##') {
-            return '## ' . $string;
+            return '# ' . $string;
         }
 
-        if (($tag === '_' || $tag === '*') && (
-            !$attributes instanceof TagAttributes
-            || !$attributes->hasChildren()
-        )) {
-            return '`' . Formatter::unescapeTags($string) . '`';
+        if ($tag === '_') {
+            return $string;
         }
 
         if ($before === '`') {
@@ -57,12 +51,12 @@ final class ConsoleMarkdownFormat implements
 
         if ($before === '```') {
             return $attributes instanceof TagAttributes
-                ? $tag . $attributes->getInfoString() . "\n"
+                ? $before . $attributes->getInfoString() . "\n"
                     . $string . "\n"
-                    . $attributes->getIndent() . $tag
-                : $tag . "\n"
+                    . $attributes->getIndent() . $after
+                : $before . "\n"
                     . $string . "\n"
-                    . $tag;
+                    . $after;
         }
 
         return $before . $string . $after;
@@ -85,8 +79,8 @@ final class ConsoleMarkdownFormat implements
             ->withFormat(self::TAG_HEADING, new self('***', '***'))
             ->withFormat(self::TAG_BOLD, new self('**', '**'))
             ->withFormat(self::TAG_ITALIC, new self('*', '*'))
-            ->withFormat(self::TAG_UNDERLINE, new self('*<u>', '</u>*'))
-            ->withFormat(self::TAG_LOW_PRIORITY, new self('<small>', '</small>'))
+            ->withFormat(self::TAG_UNDERLINE, new self('*', '*'))
+            ->withFormat(self::TAG_LOW_PRIORITY, new self('', ''))
             ->withFormat(self::TAG_CODE_SPAN, new self('`', '`'))
             ->withFormat(self::TAG_CODE_BLOCK, new self('```', '```'));
     }

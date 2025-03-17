@@ -2,11 +2,6 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
-use Salient\Console\Format\ConsoleMessageAttributes as MessageAttributes;
-use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
-use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Console\Format\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\Format\FormatInterface as Format;
 use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\Format\MessageFormatInterface as MessageFormat;
@@ -21,7 +16,7 @@ use UnexpectedValueException;
 /**
  * Formats messages for a console output target
  */
-final class ConsoleFormatter implements FormatterInterface
+final class Formatter implements FormatterInterface
 {
     use ImmutableTrait;
 
@@ -136,7 +131,7 @@ REGEX;
 ) /x
 REGEX;
 
-    private static ConsoleFormatter $DefaultFormatter;
+    private static Formatter $DefaultFormatter;
     private static TagFormats $DefaultTagFormats;
     private static MessageFormats $DefaultMessageFormats;
     private static TagFormats $LoopbackTagFormats;
@@ -160,8 +155,8 @@ REGEX;
         ?TagFormats $tagFormats = null,
         ?MessageFormats $messageFormats = null,
         ?Closure $widthCallback = null,
-        array $levelPrefixMap = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP,
-        array $typePrefixMap = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP
+        array $levelPrefixMap = Formatter::DEFAULT_LEVEL_PREFIX_MAP,
+        array $typePrefixMap = Formatter::DEFAULT_TYPE_PREFIX_MAP
     ) {
         $this->TagFormats = $tagFormats ?? $this->getDefaultTagFormats();
         $this->MessageFormats = $messageFormats ?? $this->getDefaultMessageFormats();

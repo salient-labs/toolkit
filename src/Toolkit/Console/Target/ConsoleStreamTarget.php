@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Console\Format\ConsoleFormat;
+use Salient\Console\Format\TtyFormat;
 use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\HasEscapeSequence;
@@ -44,7 +44,7 @@ abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
     protected function createFormatter(): FormatterInterface
     {
         return $this->isTty()
-            ? ConsoleFormat::getFormatter($this)
+            ? TtyFormat::getFormatter($this)
             : parent::createFormatter();
     }
 }
