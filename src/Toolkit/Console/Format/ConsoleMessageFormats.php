@@ -2,7 +2,7 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
+use Salient\Contract\Console\Format\MessageFormatInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
@@ -13,14 +13,14 @@ use Salient\Contract\Console\ConsoleInterface as Console;
  */
 final class ConsoleMessageFormats
 {
-    /** @var array<Console::LEVEL_*,array<Console::TYPE_*,MessageFormat>> */
+    /** @var array<Console::LEVEL_*,array<Console::TYPE_*,MessageFormatInterface>> */
     private array $Formats = [];
-    private MessageFormat $FallbackFormat;
+    private MessageFormatInterface $FallbackFormat;
 
-    public function __construct(?MessageFormat $fallbackFormat = null)
+    public function __construct(?MessageFormatInterface $fallbackFormat = null)
     {
         $this->FallbackFormat = $fallbackFormat
-            ?: MessageFormat::getDefaultMessageFormat();
+            ?? new NullMessageFormat();
     }
 
     /**
@@ -30,7 +30,7 @@ final class ConsoleMessageFormats
      * @param array<Console::TYPE_*>|Console::TYPE_* $type
      * @return $this
      */
-    public function set($level, $type, MessageFormat $format)
+    public function set($level, $type, MessageFormatInterface $format)
     {
         foreach ((array) $level as $level) {
             foreach ((array) $type as $_type) {
@@ -47,7 +47,7 @@ final class ConsoleMessageFormats
      * @param Console::LEVEL_* $level
      * @param Console::TYPE_* $type
      */
-    public function get(int $level, $type): MessageFormat
+    public function get(int $level, $type): MessageFormatInterface
     {
         return $this->Formats[$level][$type] ?? $this->FallbackFormat;
     }

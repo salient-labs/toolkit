@@ -2,34 +2,16 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Contract\Console\Format\FormatInterface;
+use Salient\Contract\Console\Format\TagAttributesInterface;
 use Salient\Contract\HasEscapeSequence;
 
 /**
- * Applies inline character sequences to console output
+ * @api
  */
-final class ConsoleFormat implements FormatInterface, HasEscapeSequence
+class ConsoleFormat extends AbstractFormat implements HasEscapeSequence
 {
-    /** @var string */
-    private $Before;
-    /** @var string */
-    private $After;
-    /** @var string[] */
-    private $Search;
-    /** @var string[] */
-    private $Replace;
-    private static ConsoleFormat $DefaultFormat;
-
-    /**
-     * @param array<string,string> $replace
-     */
-    public function __construct(string $before = '', string $after = '', array $replace = [])
-    {
-        $this->Before = $before;
-        $this->After = $after;
-        $this->Search = array_keys($replace);
-        $this->Replace = array_values($replace);
+    use EncloseAndReplaceFormatTrait {
+        apply as private doApply;
     }
 
     /**
@@ -42,10 +24,10 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
         }
 
         // With fenced code blocks:
-        // - remove indentation from the first line of code
+        // - remove block indentation from the first line of code
         // - add a level of indentation to the block
         if (
-            $attributes instanceof TagAttributes
+            $attributes instanceof TagAttributesInterface
             && $attributes->getTag() === self::TAG_CODE_BLOCK
         ) {
             $indent = (string) $attributes->getIndent();
@@ -58,40 +40,72 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
             $string = '    ' . str_replace("\n", "\n    ", $string);
         }
 
-        if ($this->Search) {
-            $string = str_replace($this->Search, $this->Replace, $string);
-        }
-
-        $string = $this->Before . $string;
-
-        if ($this->After === '') {
-            return $string;
-        }
-
-        // Preserve a trailing carriage return
-        if ($string[-1] === "\r") {
-            return substr($string, 0, -1) . $this->After . "\r";
-        }
-
-        return $string . $this->After;
+        return $this->doApply($string, $attributes);
     }
 
     /**
-     * Get an instance that doesn't apply any formatting to console output
+     * @inheritDoc
      */
-    public static function getDefaultFormat(): self
+    protected static function getTagFormats(): ?ConsoleTagFormats
     {
-        return self::$DefaultFormat ??= new self();
+        $bold = self::getBold();
+        $faint = self::getFaint();
+        $boldCyan = self::getBold(self::CYAN_FG);
+        $red = self::getColour(self::RED_FG);
+        $green = self::getColour(self::GREEN_FG);
+        $yellow = self::getColour(self::YELLOW_FG);
+        $cyan = self::getColour(self::CYAN_FG);
+        $yellowUnderline = self::getUnderline(self::YELLOW_FG);
+
+        return (new ConsoleTagFormats())
+            ->withFormat(self::TAG_HEADING, $boldCyan)
+            ->withFormat(self::TAG_BOLD, $bold)
+            ->withFormat(self::TAG_ITALIC, $yellow)
+            ->withFormat(self::TAG_UNDERLINE, $yellowUnderline)
+            ->withFormat(self::TAG_LOW_PRIORITY, $faint)
+            ->withFormat(self::TAG_CODE_SPAN, $bold)
+            ->withFormat(self::TAG_DIFF_HEADER, $bold)
+            ->withFormat(self::TAG_DIFF_RANGE, $cyan)
+            ->withFormat(self::TAG_DIFF_ADDITION, $green)
+            ->withFormat(self::TAG_DIFF_REMOVAL, $red);
     }
 
     /**
-     * Get an instance that uses terminal control sequences to apply a colour to
-     * TTY output
-     *
-     * @param ConsoleFormat::*_FG $colour The terminal control sequence of the
-     * desired colour.
+     * @inheritDoc
      */
-    public static function ttyColour(string $colour): self
+    protected static function getMessageFormats(): ?ConsoleMessageFormats
+    {
+        $null = new NullFormat();
+        $bold = self::getBold();
+        $faint = self::getFaint();
+        $boldRed = self::getBold(self::RED_FG);
+        $boldGreen = self::getBold(self::GREEN_FG);
+        $boldYellow = self::getBold(self::YELLOW_FG);
+        $boldMagenta = self::getBold(self::MAGENTA_FG);
+        $boldCyan = self::getBold(self::CYAN_FG);
+        $green = self::getColour(self::GREEN_FG);
+        $yellow = self::getColour(self::YELLOW_FG);
+        $cyan = self::getColour(self::CYAN_FG);
+
+        return (new ConsoleMessageFormats())
+            ->set(self::LEVELS_ERRORS, self::TYPES_ALL, new ConsoleMessageFormat($boldRed, $null, $boldRed))
+            ->set(self::LEVEL_WARNING, self::TYPES_ALL, new ConsoleMessageFormat($yellow, $null, $boldYellow))
+            ->set(self::LEVEL_NOTICE, self::TYPES_ALL, new ConsoleMessageFormat($bold, $cyan, $boldCyan))
+            ->set(self::LEVEL_INFO, self::TYPES_ALL, new ConsoleMessageFormat($null, $yellow, $yellow))
+            ->set(self::LEVEL_DEBUG, self::TYPES_ALL, new ConsoleMessageFormat($faint, $faint, $faint))
+            ->set(self::LEVELS_INFO, self::TYPE_PROGRESS, new ConsoleMessageFormat($null, $yellow, $yellow))
+            ->set(self::LEVELS_INFO, self::TYPES_GROUP, new ConsoleMessageFormat($boldMagenta, $null, $boldMagenta))
+            ->set(self::LEVELS_INFO, self::TYPE_SUMMARY, new ConsoleMessageFormat($null, $null, $bold))
+            ->set(self::LEVELS_INFO, self::TYPE_SUCCESS, new ConsoleMessageFormat($green, $null, $boldGreen))
+            ->set(self::LEVELS_ERRORS_AND_WARNINGS, self::TYPE_FAILURE, new ConsoleMessageFormat($yellow, $null, $boldYellow));
+    }
+
+    /**
+     * Get a format that applies a colour to TTY output
+     *
+     * @param ConsoleFormat::*_FG $colour
+     */
+    protected static function getColour(string $colour): self
     {
         return new self(
             $colour,
@@ -103,121 +117,109 @@ final class ConsoleFormat implements FormatInterface, HasEscapeSequence
     }
 
     /**
-     * Get an instance that uses terminal control sequences to increase the
-     * intensity of TTY output and optionally apply a colour
+     * Get a format that increases the intensity of TTY output and optionally
+     * applies a colour
      *
-     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
-     * the desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour
      */
-    public static function ttyBold(?string $colour = null): self
+    protected static function getBold(?string $colour = null): self
     {
-        if ($colour !== null) {
-            return new self(
+        return $colour !== null
+            ? new self(
                 self::BOLD . $colour,
                 self::DEFAULT_FG . self::NOT_BOLD_NOT_FAINT,
                 [
                     self::NOT_BOLD_NOT_FAINT => self::BOLD_NOT_FAINT,
                     self::DEFAULT_FG => $colour,
                 ],
+            )
+            : new self(
+                self::BOLD,
+                self::NOT_BOLD_NOT_FAINT,
+                [
+                    self::NOT_BOLD_NOT_FAINT => self::BOLD_NOT_FAINT,
+                ],
             );
-        }
-
-        return new self(
-            self::BOLD,
-            self::NOT_BOLD_NOT_FAINT,
-            [
-                self::NOT_BOLD_NOT_FAINT => self::BOLD_NOT_FAINT,
-            ],
-        );
     }
 
     /**
-     * Get an instance that uses terminal control sequences to decrease the
-     * intensity of TTY output and optionally apply a colour
+     * Get a format that decreases the intensity of TTY output and optionally
+     * applies a colour
      *
-     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
-     * the desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour
      */
-    public static function ttyDim(?string $colour = null): self
+    protected static function getFaint(?string $colour = null): self
     {
-        if ($colour !== null) {
-            return new self(
+        return $colour !== null
+            ? new self(
                 self::FAINT . $colour,
                 self::DEFAULT_FG . self::NOT_BOLD_NOT_FAINT,
                 [
                     self::NOT_BOLD_NOT_FAINT => self::FAINT_NOT_BOLD,
                     self::DEFAULT_FG => $colour,
                 ],
+            )
+            : new self(
+                self::FAINT,
+                self::NOT_BOLD_NOT_FAINT,
+                [
+                    self::NOT_BOLD_NOT_FAINT => self::FAINT_NOT_BOLD,
+                ],
             );
-        }
-
-        return new self(
-            self::FAINT,
-            self::NOT_BOLD_NOT_FAINT,
-            [
-                self::NOT_BOLD_NOT_FAINT => self::FAINT_NOT_BOLD,
-            ],
-        );
     }
 
     /**
-     * Get an instance that uses terminal control sequences to apply bold and
-     * dim attributes to TTY output and optionally apply a colour
+     * Get a format that applies bold and faint attributes to TTY output and
+     * optionally applies a colour
      *
-     * If bold (increased intensity) and dim (decreased intensity) attributes
-     * cannot be set simultaneously, output will be dim, not bold.
+     * If bold (increased intensity) and faint (decreased intensity) attributes
+     * cannot be set simultaneously, output will be faint, not bold.
      *
-     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
-     * the desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour
      */
-    public static function ttyBoldDim(?string $colour = null): self
+    protected static function getBoldFaint(?string $colour = null): self
     {
-        if ($colour !== null) {
-            return new self(
+        return $colour !== null
+            ? new self(
                 self::BOLD . self::FAINT . $colour,
                 self::DEFAULT_FG . self::NOT_BOLD_NOT_FAINT,
                 [
                     self::NOT_BOLD_NOT_FAINT => self::BOLD . self::FAINT,
                     self::DEFAULT_FG => $colour,
                 ],
+            )
+            : new self(
+                self::BOLD . self::FAINT,
+                self::NOT_BOLD_NOT_FAINT,
+                [
+                    self::NOT_BOLD_NOT_FAINT => self::BOLD . self::FAINT,
+                ],
             );
-        }
-
-        return new self(
-            self::BOLD . self::FAINT,
-            self::NOT_BOLD_NOT_FAINT,
-            [
-                self::NOT_BOLD_NOT_FAINT => self::BOLD . self::FAINT,
-            ],
-        );
     }
 
     /**
-     * Get an instance that uses terminal control sequences to underline and
-     * optionally apply a colour to TTY output
+     * Get a format that underlines and optionally applies a colour to TTY
+     * output
      *
-     * @param ConsoleFormat::*_FG|null $colour The terminal control sequence of
-     * the desired colour. If `null`, no colour changes are applied.
+     * @param ConsoleFormat::*_FG|null $colour
      */
-    public static function ttyUnderline(?string $colour = null): self
+    protected static function getUnderline(?string $colour = null): self
     {
-        if ($colour !== null) {
-            return new self(
+        return $colour !== null
+            ? new self(
                 $colour . self::UNDERLINED,
                 self::NOT_UNDERLINED . self::DEFAULT_FG,
                 [
                     self::DEFAULT_FG => $colour,
                     self::NOT_UNDERLINED => '',
                 ],
+            )
+            : new self(
+                self::UNDERLINED,
+                self::NOT_UNDERLINED,
+                [
+                    self::NOT_UNDERLINED => '',
+                ],
             );
-        }
-
-        return new self(
-            self::UNDERLINED,
-            self::NOT_UNDERLINED,
-            [
-                self::NOT_UNDERLINED => '',
-            ],
-        );
     }
 }

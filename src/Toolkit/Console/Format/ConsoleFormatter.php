@@ -4,16 +4,17 @@ namespace Salient\Console\Format;
 
 use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
 use Salient\Console\Format\ConsoleMessageAttributes as MessageAttributes;
-use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
 use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
 use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
 use Salient\Console\Format\ConsoleTagFormats as TagFormats;
 use Salient\Contract\Console\Format\FormatInterface as Format;
 use Salient\Contract\Console\Format\FormatterInterface;
+use Salient\Contract\Console\Format\MessageFormatInterface as MessageFormat;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Closure;
 use LogicException;
 use UnexpectedValueException;
 
@@ -141,8 +142,8 @@ REGEX;
     private static TagFormats $LoopbackTagFormats;
     private TagFormats $TagFormats;
     private MessageFormats $MessageFormats;
-    /** @var callable(): (int|null) */
-    private $WidthCallback;
+    /** @var Closure(): (int|null) */
+    private Closure $WidthCallback;
     /** @var array<Console::LEVEL_*,string> */
     private array $LevelPrefixMap;
     /** @var array<Console::TYPE_*,string> */
@@ -151,20 +152,20 @@ REGEX;
     private array $SpinnerState;
 
     /**
-     * @param (callable(): (int|null))|null $widthCallback
+     * @param (Closure(): (int|null))|null $widthCallback
      * @param array<Console::LEVEL_*,string> $levelPrefixMap
      * @param array<Console::TYPE_*,string> $typePrefixMap
      */
     public function __construct(
         ?TagFormats $tagFormats = null,
         ?MessageFormats $messageFormats = null,
-        ?callable $widthCallback = null,
+        ?Closure $widthCallback = null,
         array $levelPrefixMap = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP,
         array $typePrefixMap = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP
     ) {
-        $this->TagFormats = $tagFormats ?: $this->getDefaultTagFormats();
-        $this->MessageFormats = $messageFormats ?: $this->getDefaultMessageFormats();
-        $this->WidthCallback = $widthCallback ?: fn(): ?int => null;
+        $this->TagFormats = $tagFormats ?? $this->getDefaultTagFormats();
+        $this->MessageFormats = $messageFormats ?? $this->getDefaultMessageFormats();
+        $this->WidthCallback = $widthCallback ?? fn() => null;
         $this->LevelPrefixMap = $levelPrefixMap;
         $this->TypePrefixMap = $typePrefixMap;
         $spinnerState = [0, null];

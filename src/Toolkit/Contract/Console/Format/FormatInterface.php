@@ -2,10 +2,20 @@
 
 namespace Salient\Contract\Console\Format;
 
+use Salient\Contract\Console\HasMessageType;
+use Salient\Contract\Console\HasMessageTypes;
+use Salient\Contract\HasMessageLevel;
+use Salient\Contract\HasMessageLevels;
+
 /**
  * @api
  */
-interface FormatInterface extends HasTag
+interface FormatInterface extends
+    HasTag,
+    HasMessageLevel,
+    HasMessageLevels,
+    HasMessageType,
+    HasMessageTypes
 {
     /**
      * Format a string

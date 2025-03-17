@@ -75,7 +75,7 @@ The following Markdown-like syntax is supported in [Console][] messages:
 | "Bold"       | `__` text `__`<br>`**` text `**`                       | **Bold + default colour**             | `__command__`<br>`**command**`                                            |
 | "Italic"     | `_` text `_`<br>`*` text `*`                           | _Secondary colour_                    | `_argument_`<br>`*argument*`                                              |
 | "Underline"  | `<` text `>`                                           | _<u>Secondary colour + underline</u>_ | `<argument>`                                                              |
-| Low priority | `~~` text `~~`                                         | <small>Dim</small>                    | `~~/path/to/script.php:42~~`                                              |
+| Low priority | `~~` text `~~`                                         | <small>Faint</small>                  | `~~/path/to/script.php:42~~`                                              |
 | Inline code  | `` ` `` text `` ` ``                                   | <code>Bold</code>                     | `` The input format can be specified using the `-f/--from` option. ``     |
 | Code block   | ` ``` `<br>text<br>` ``` `                             | <pre><code>Unchanged</code></pre>     | <pre><code>\`\`\`&#10;$baz = Foo::bar();&#10;\`\`\`</code></pre>          |
 

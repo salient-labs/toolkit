@@ -2,30 +2,25 @@
 
 namespace Salient\Console\Target;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
-use Salient\Console\Format\ConsoleTagFormats as TagFormats;
+use Salient\Console\Format\ConsoleFormatter;
+use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\Target\TargetInterface;
 
 /**
- * Base class for console output targets
+ * @api
  */
 abstract class ConsoleTarget implements TargetInterface
 {
-    private Formatter $Formatter;
+    private FormatterInterface $Formatter;
 
     /**
      * @inheritDoc
      */
-    public function getFormatter(): Formatter
+    final public function getFormatter(): FormatterInterface
     {
         $this->assertIsValid();
 
-        return $this->Formatter ??= new Formatter(
-            $this->createTagFormats(),
-            $this->createMessageFormats(),
-            fn(): ?int => $this->getWidth(),
-        );
+        return $this->Formatter ??= $this->createFormatter();
     }
 
     /**
@@ -43,15 +38,16 @@ abstract class ConsoleTarget implements TargetInterface
      */
     public function close(): void {}
 
+    /**
+     * Throw an exception if the target is closed
+     */
     protected function assertIsValid(): void {}
 
-    protected function createTagFormats(): TagFormats
+    /**
+     * Create an output formatter for the target
+     */
+    protected function createFormatter(): FormatterInterface
     {
-        return new TagFormats();
-    }
-
-    protected function createMessageFormats(): MessageFormats
-    {
-        return new MessageFormats();
+        return new ConsoleFormatter(null, null, fn() => $this->getWidth());
     }
 }

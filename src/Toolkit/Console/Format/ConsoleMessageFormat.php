@@ -14,7 +14,6 @@ final class ConsoleMessageFormat implements MessageFormatInterface
     private Format $Msg1Format;
     private Format $Msg2Format;
     private Format $PrefixFormat;
-    private static ConsoleMessageFormat $DefaultMessageFormat;
 
     public function __construct(
         Format $msg1Format,
@@ -38,17 +37,5 @@ final class ConsoleMessageFormat implements MessageFormatInterface
         return ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withPrefix()) : '')
             . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withMsg1()) : '')
             . ($msg2 !== null && $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withMsg2()) : '');
-    }
-
-    /**
-     * Get an instance that doesn't apply any formatting to messages
-     */
-    public static function getDefaultMessageFormat(): self
-    {
-        return self::$DefaultMessageFormat ??= new self(
-            ConsoleFormat::getDefaultFormat(),
-            ConsoleFormat::getDefaultFormat(),
-            ConsoleFormat::getDefaultFormat(),
-        );
     }
 }

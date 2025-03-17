@@ -2,8 +2,8 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
 use Salient\Contract\Console\Format\FormatInterface as Format;
+use Salient\Contract\Console\Format\TagAttributesInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Arr;
@@ -29,7 +29,7 @@ final class ConsoleTagFormats implements Immutable
         $this->RemoveEscapes = $removeEscapes;
         $this->WrapAfterFormatting = $wrapAfterFormatting;
         $this->FallbackFormat = $fallbackFormat
-            ?: ConsoleFormat::getDefaultFormat();
+            ?? new NullFormat();
     }
 
     /**
@@ -88,7 +88,7 @@ final class ConsoleTagFormats implements Immutable
     /**
      * Format tagged text before it is written to the target
      */
-    public function apply(string $string, TagAttributes $attributes): string
+    public function apply(string $string, TagAttributesInterface $attributes): string
     {
         $format = $this->Formats[$attributes->getTag()] ?? $this->FallbackFormat;
         return $format->apply($string, $attributes);
