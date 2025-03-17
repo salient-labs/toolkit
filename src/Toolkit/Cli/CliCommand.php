@@ -4,7 +4,7 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\Formatter;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
@@ -380,7 +380,7 @@ abstract class CliCommand implements CliCommandInterface
                     );
                     if (
                         $booleanValue
-                        || mb_strlen($formatter->getWrapAfterApply()
+                        || mb_strlen($formatter->wrapsAfterFormatting()
                             ? $formatter->format($indent . $_line)
                             : Formatter::removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {
@@ -512,7 +512,7 @@ abstract class CliCommand implements CliCommandInterface
         $width = $style->getWidth();
 
         // Synopsis newlines are hard line breaks, so wrap without markup
-        $formatter = $style->getFormatter()->withWrapAfterApply(false);
+        $formatter = $style->getFormatter()->withWrapAfterFormatting(false);
 
         $name = $b . $this->getNameWithProgram() . $b;
         $full = $this->getOptionsSynopsis($style, $collapsed);

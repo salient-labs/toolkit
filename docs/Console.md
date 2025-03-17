@@ -47,15 +47,15 @@ called, preferably while bootstrapping your application.
 ### Output methods
 
 <!-- prettier-ignore -->
-| Method          | Message level         | Default prefix | Default output target     |
-| --------------- | --------------------- | -------------- | ------------------------- |
-| `error[Once]()` | `LEVEL_ERROR` = `3`   | ` !  `         | `STDERR`                  |
-| `warn[Once]()`  | `LEVEL_WARNING` = `4` | ` ^  `         | `STDERR`                  |
-| `info[Once]()`  | `LEVEL_NOTICE` = `5`  | ` ➤  `         | `STDOUT`                  |
-| `log[Once]()`   | `LEVEL_INFO` = `6`    | ` -  `         | `STDOUT`                  |
-| `debug[Once]()` | `LEVEL_DEBUG` = `7`   | ` :  `         | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]   | `LEVEL_NOTICE` = `5`  | ` »  `         | `STDOUT`                  |
-| `logProgress()` | `LEVEL_INFO` = `6`    | ` ⠿  `         | `STDOUT`                  |
+| Method          | Message level         | Default prefix   | Default output target     |
+| --------------- | --------------------- | ---------------- | ------------------------- |
+| `error[Once]()` | `LEVEL_ERROR` = `3`   | ` !  `           | `STDERR`                  |
+| `warn[Once]()`  | `LEVEL_WARNING` = `4` | ` ^  `           | `STDERR`                  |
+| `info[Once]()`  | `LEVEL_NOTICE` = `5`  | ` ➤  `           | `STDOUT`                  |
+| `log[Once]()`   | `LEVEL_INFO` = `6`    | ` -  `           | `STDOUT`                  |
+| `debug[Once]()` | `LEVEL_DEBUG` = `7`   | ` :  `           | `STDOUT` (if `DEBUG` set) |
+| `group()`[^2]   | `LEVEL_NOTICE` = `5`  | ` »  `           | `STDOUT`                  |
+| `logProgress()` | `LEVEL_INFO` = `6`    | ` ⠋  ` (spinner) | `STDOUT`                  |
 
 [^1]:
     Actually a facade for [ConsoleInterface][], which is backed by a shared
@@ -75,9 +75,22 @@ The following Markdown-like syntax is supported in [Console][] messages:
 | "Bold"       | `__` text `__`<br>`**` text `**`                       | **Bold + default colour**             | `__command__`<br>`**command**`                                            |
 | "Italic"     | `_` text `_`<br>`*` text `*`                           | _Secondary colour_                    | `_argument_`<br>`*argument*`                                              |
 | "Underline"  | `<` text `>`                                           | _<u>Secondary colour + underline</u>_ | `<argument>`                                                              |
-| Low priority | `~~` text `~~`                                         | <small>Dim</small>                    | `~~/path/to/script.php:42~~`                                              |
+| Low priority | `~~` text `~~`                                         | <small>Faint</small>                  | `~~/path/to/script.php:42~~`                                              |
 | Inline code  | `` ` `` text `` ` ``                                   | <code>Bold</code>                     | `` The input format can be specified using the `-f/--from` option. ``     |
 | Code block   | ` ``` `<br>text<br>` ``` `                             | <pre><code>Unchanged</code></pre>     | <pre><code>\`\`\`&#10;$baz = Foo::bar();&#10;\`\`\`</code></pre>          |
+
+Paragraphs outside code blocks are wrapped to the width reported by the target,
+and backslash-escaped punctuation characters and line breaks are preserved.
+
+Escaped line breaks may have a leading space, so the following are equivalent:
+
+```
+Text with a \
+hard line break.
+
+Text with a\
+hard line break.
+```
 
 [Application]:
   https://salient-labs.github.io/toolkit/Salient.Container.Application.html

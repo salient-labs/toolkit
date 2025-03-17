@@ -3,9 +3,9 @@
 namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleManPageFormat;
-use Salient\Console\Format\ConsoleMarkdownFormat;
+use Salient\Console\Format\Formatter;
+use Salient\Console\Format\ManPageFormat;
+use Salient\Console\Format\MarkdownFormat;
 use Salient\Container\Application;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
@@ -336,7 +336,7 @@ class CliApplication extends Application implements CliApplicationInterface
             ) {
                 $usage = $this->getUsage($name, $node);
                 if ($usage !== null) {
-                    Console::printOut($usage);
+                    Console::printStdio($usage);
                 }
                 $this->LastExitStatus =
                     $arg === null
@@ -419,7 +419,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 && $name !== null
                 && ($usage = $this->getUsage($name, $node)) !== null
             ) {
-                Console::printOut("\n" . $usage);
+                Console::printStdio("\n" . $usage);
             }
             $this->LastExitStatus = 1;
             return $this;
@@ -464,12 +464,12 @@ class CliApplication extends Application implements CliApplicationInterface
 
         switch ($target) {
             case CliHelpTarget::MARKDOWN:
-                $formats = ConsoleMarkdownFormat::getTagFormats();
+                $formatter = MarkdownFormat::getFormatter(fn() => 80);
                 $collapseSynopsis = Get::boolean($args[0] ?? null);
                 break;
 
             case CliHelpTarget::MAN_PAGE:
-                $formats = ConsoleManPageFormat::getTagFormats();
+                $formatter = ManPageFormat::getFormatter(fn() => 80);
                 $progName = $this->getProgramName();
                 printf(
                     '%% %s(%d) %s | %s%s',
@@ -485,7 +485,6 @@ class CliApplication extends Application implements CliApplicationInterface
                 throw new InvalidArgumentException(sprintf('Invalid CliHelpTarget: %d', $target));
         }
 
-        $formatter = new Formatter($formats, null, fn(): int => 80);
         $style = new CliHelpStyle($target, 80, $formatter);
 
         if ($collapseSynopsis !== null) {

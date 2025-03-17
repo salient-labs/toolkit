@@ -904,7 +904,7 @@ EOF,
         $this->expectExceptionMessage('Closure returned class@anonymous (stdClass|bool expected)');
         Get::copy(
             $h,
-            fn($obj) => $obj instanceof stdClass ? new class() {} : false,
+            fn($obj) => $obj instanceof stdClass ? new class {} : false,
         );
     }
 

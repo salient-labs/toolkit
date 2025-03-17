@@ -7,7 +7,7 @@ use Analog\Analog;
 /**
  * Writes console output to Analog
  */
-final class AnalogTarget extends ConsoleTarget
+final class AnalogTarget extends AbstractTarget
 {
     /**
      * @inheritDoc

@@ -44,6 +44,7 @@ return (new PhpCsFixer\Config())
         'fully_qualified_strict_types' => true,
         'is_null' => true,
         'native_constant_invocation' => ['include' => $customTokens],
+        'new_with_parentheses' => ['anonymous_class' => false],
         'no_superfluous_phpdoc_tags' => ['allow_mixed' => true],
         'no_unneeded_import_alias' => true,
         'no_unused_imports' => true,

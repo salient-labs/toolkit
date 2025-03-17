@@ -2,26 +2,21 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
-use Salient\Console\Format\ConsoleMessageAttributes as MessageAttributes;
-use Salient\Console\Format\ConsoleMessageFormat as MessageFormat;
-use Salient\Console\Format\ConsoleMessageFormats as MessageFormats;
-use Salient\Console\Format\ConsoleTagAttributes as TagAttributes;
-use Salient\Console\Format\ConsoleTagFormats as TagFormats;
-use Salient\Contract\Console\Format\ConsoleFormatInterface as Format;
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
-use Salient\Contract\Console\Format\ConsoleTag as Tag;
+use Salient\Contract\Console\Format\FormatInterface;
+use Salient\Contract\Console\Format\FormatterInterface;
+use Salient\Contract\Console\Format\MessageFormatInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Closure;
 use LogicException;
 use UnexpectedValueException;
 
 /**
  * Formats messages for a console output target
  */
-final class ConsoleFormatter implements FormatterInterface
+final class Formatter implements FormatterInterface
 {
     use ImmutableTrait;
 
@@ -49,18 +44,18 @@ final class ConsoleFormatter implements FormatterInterface
     private const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
 
     /**
-     * @var array<string,int&Tag::*>
+     * @var array<string,self::TAG_*>
      */
     private const TAG_MAP = [
-        '___' => Tag::HEADING,
-        '***' => Tag::HEADING,
-        '##' => Tag::HEADING,
-        '__' => Tag::BOLD,
-        '**' => Tag::BOLD,
-        '_' => Tag::ITALIC,
-        '*' => Tag::ITALIC,
-        '<' => Tag::UNDERLINE,
-        '~~' => Tag::LOW_PRIORITY,
+        '___' => self::TAG_HEADING,
+        '***' => self::TAG_HEADING,
+        '##' => self::TAG_HEADING,
+        '__' => self::TAG_BOLD,
+        '**' => self::TAG_BOLD,
+        '_' => self::TAG_ITALIC,
+        '*' => self::TAG_ITALIC,
+        '<' => self::TAG_UNDERLINE,
+        '~~' => self::TAG_LOW_PRIORITY,
     ];
 
     /**
@@ -136,73 +131,62 @@ REGEX;
 ) /x
 REGEX;
 
-    private static ConsoleFormatter $DefaultFormatter;
+    private static Formatter $DefaultFormatter;
     private static TagFormats $DefaultTagFormats;
     private static MessageFormats $DefaultMessageFormats;
     private static TagFormats $LoopbackTagFormats;
     private TagFormats $TagFormats;
     private MessageFormats $MessageFormats;
-    /** @var callable(): (int|null) */
-    private $WidthCallback;
+    /** @var Closure(): (int|null) */
+    private Closure $WidthCallback;
     /** @var array<Console::LEVEL_*,string> */
     private array $LevelPrefixMap;
     /** @var array<Console::TYPE_*,string> */
     private array $TypePrefixMap;
-    /** @var array{int<0,max>,float} */
+    /** @var array{int<0,max>,float|null} */
     private array $SpinnerState;
 
     /**
-     * @param (callable(): (int|null))|null $widthCallback
+     * @param (Closure(): (int|null))|null $widthCallback
      * @param array<Console::LEVEL_*,string> $levelPrefixMap
      * @param array<Console::TYPE_*,string> $typePrefixMap
      */
     public function __construct(
         ?TagFormats $tagFormats = null,
         ?MessageFormats $messageFormats = null,
-        ?callable $widthCallback = null,
-        array $levelPrefixMap = ConsoleFormatter::DEFAULT_LEVEL_PREFIX_MAP,
-        array $typePrefixMap = ConsoleFormatter::DEFAULT_TYPE_PREFIX_MAP
+        ?Closure $widthCallback = null,
+        array $levelPrefixMap = Formatter::DEFAULT_LEVEL_PREFIX_MAP,
+        array $typePrefixMap = Formatter::DEFAULT_TYPE_PREFIX_MAP
     ) {
-        $this->TagFormats = $tagFormats ?: $this->getDefaultTagFormats();
-        $this->MessageFormats = $messageFormats ?: $this->getDefaultMessageFormats();
-        $this->WidthCallback = $widthCallback ?: fn(): ?int => null;
+        $this->TagFormats = $tagFormats ?? $this->getDefaultTagFormats();
+        $this->MessageFormats = $messageFormats ?? $this->getDefaultMessageFormats();
+        $this->WidthCallback = $widthCallback ?? fn() => null;
         $this->LevelPrefixMap = $levelPrefixMap;
         $this->TypePrefixMap = $typePrefixMap;
+        $spinnerState = [0, null];
+        $this->SpinnerState = &$spinnerState;
     }
 
     /**
      * @inheritDoc
      */
-    public function withSpinnerState(?array &$state)
+    public function withRemoveEscapes(bool $remove = true)
     {
-        if ($state === null) {
-            $state = [0, 0.0];
-        }
-        $clone = clone $this;
-        $clone->SpinnerState = &$state;
-        return $clone;
+        return $this->with('TagFormats', $this->TagFormats->withRemoveEscapes($remove));
     }
 
     /**
      * @inheritDoc
      */
-    public function withUnescape(bool $value = true)
+    public function withWrapAfterFormatting(bool $value = true)
     {
-        return $this->with('TagFormats', $this->TagFormats->withUnescape($value));
+        return $this->with('TagFormats', $this->TagFormats->withWrapAfterFormatting($value));
     }
 
     /**
      * @inheritDoc
      */
-    public function withWrapAfterApply(bool $value = true)
-    {
-        return $this->with('TagFormats', $this->TagFormats->withWrapAfterApply($value));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getTagFormat(int $tag): Format
+    public function getTagFormat(int $tag): FormatInterface
     {
         return $this->TagFormats->getFormat($tag);
     }
@@ -213,24 +197,24 @@ REGEX;
     public function getMessageFormat(
         int $level,
         int $type = Console::TYPE_STANDARD
-    ): MessageFormat {
-        return $this->MessageFormats->get($level, $type);
+    ): MessageFormatInterface {
+        return $this->MessageFormats->getFormat($level, $type);
     }
 
     /**
      * @inheritDoc
      */
-    public function getUnescape(): bool
+    public function removesEscapes(): bool
     {
-        return $this->TagFormats->getUnescape();
+        return $this->TagFormats->removesEscapes();
     }
 
     /**
      * @inheritDoc
      */
-    public function getWrapAfterApply(): bool
+    public function wrapsAfterFormatting(): bool
     {
-        return $this->TagFormats->getWrapAfterApply();
+        return $this->TagFormats->wrapsAfterFormatting();
     }
 
     /**
@@ -243,15 +227,16 @@ REGEX;
         if ($type === Console::TYPE_UNFORMATTED || $type === Console::TYPE_UNDECORATED) {
             return '';
         }
-        if ($type === Console::TYPE_PROGRESS && isset($this->SpinnerState)) {
-            $frames = count(self::SPINNER);
-            $prefix = self::SPINNER[$this->SpinnerState[0] % $frames] . ' ';
+        if ($type === Console::TYPE_PROGRESS) {
             $now = (float) (hrtime(true) / 1000);
-            if ($now - $this->SpinnerState[1] >= 80000) {
+            if ($this->SpinnerState[1] === null) {
+                $this->SpinnerState[1] = $now;
+            } elseif ($now - $this->SpinnerState[1] >= 80000) {
                 $this->SpinnerState[0]++;
-                $this->SpinnerState[0] %= $frames;
+                $this->SpinnerState[0] %= count(self::SPINNER);
                 $this->SpinnerState[1] = $now;
             }
+            $prefix = self::SPINNER[$this->SpinnerState[0]] . ' ';
         }
         return $prefix
             ?? $this->TypePrefixMap[$type]
@@ -265,7 +250,7 @@ REGEX;
     public function format(
         string $string,
         bool $unwrap = false,
-        $wrapToWidth = null,
+        $wrapTo = null,
         bool $unformat = false,
         string $break = "\n"
     ): string {
@@ -277,9 +262,9 @@ REGEX;
         /** @var array<array{int,int,string}> */
         $replace = [];
         $append = '';
-        $unescape = $this->getUnescape();
-        $wrapAfterApply = $this->getWrapAfterApply();
-        $textFormats = $wrapAfterApply
+        $removeEscapes = $this->removesEscapes();
+        $wrapAfterFormatting = $this->wrapsAfterFormatting();
+        $textFormats = $wrapAfterFormatting
             ? $this->TagFormats
             : $this->getDefaultTagFormats();
         $formattedFormats = $unformat
@@ -347,7 +332,7 @@ REGEX;
                         $text = $this->applyTags(
                             $matches,
                             true,
-                            $textFormats->getUnescape(),
+                            $textFormats->removesEscapes(),
                             $textFormats
                         );
                         $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
@@ -356,7 +341,7 @@ REGEX;
                             : $this->applyTags(
                                 $matches,
                                 true,
-                                $formattedFormats->getUnescape(),
+                                $formattedFormats->removesEscapes(),
                                 $formattedFormats
                             );
                         $replace[] = [
@@ -387,7 +372,7 @@ REGEX;
                 $formatted = $formattedFormats->apply(
                     $match['block'],
                     new TagAttributes(
-                        Tag::CODE_BLOCK,
+                        self::TAG_CODE_BLOCK,
                         $match['fence'],
                         0,
                         false,
@@ -419,7 +404,7 @@ REGEX;
                     strtr($span, "\n", ' '),
                 );
                 $attributes = new TagAttributes(
-                    Tag::CODE_SPAN,
+                    self::TAG_CODE_SPAN,
                     $match['backtickstring'],
                 );
                 $text = $textFormats->apply($span, $attributes);
@@ -450,15 +435,15 @@ REGEX;
             self::ESCAPE,
             function ($matches) use (
                 $unformat,
-                $unescape,
-                $wrapAfterApply,
+                $removeEscapes,
+                $wrapAfterFormatting,
                 &$replace,
                 &$adjustable,
                 &$adjust
             ): string {
                 // If the escape character is being wrapped, do nothing other
                 // than temporarily replace "\ " with "\x"
-                if ($wrapAfterApply && !$unescape) {
+                if ($wrapAfterFormatting && !$removeEscapes) {
                     if ($matches[1][0] !== ' ') {
                         return $matches[0][0];
                     }
@@ -484,12 +469,12 @@ REGEX;
                     $placeholder = 'x';
                 }
 
-                if ($unformat || !$unescape || $placeholder !== null) {
+                if ($unformat || !$removeEscapes || $placeholder !== null) {
                     // Use `$replace` to reinstate the escape after wrapping
                     $replace[] = [
                         $matches[0][1] + $adjust,
                         strlen($matches[1][0]),
-                        $unformat || !$unescape ? $matches[0][0] : $matches[1][0],
+                        $unformat || !$removeEscapes ? $matches[0][0] : $matches[1][0],
                     ];
                 }
 
@@ -503,33 +488,33 @@ REGEX;
             \PREG_OFFSET_CAPTURE
         );
 
-        if (is_array($wrapToWidth)) {
+        if (is_array($wrapTo)) {
             for ($i = 0; $i < 2; $i++) {
-                if ($wrapToWidth[$i] <= 0) {
+                if ($wrapTo[$i] <= 0) {
                     $width ??= ($this->WidthCallback)();
                     if ($width === null) {
-                        $wrapToWidth = null;
+                        $wrapTo = null;
                         break;
                     }
-                    $wrapToWidth[$i] = max(0, $wrapToWidth[$i] + $width);
+                    $wrapTo[$i] = max(0, $wrapTo[$i] + $width);
                 }
             }
         } elseif (
-            is_int($wrapToWidth)
-            && $wrapToWidth <= 0
+            is_int($wrapTo)
+            && $wrapTo <= 0
         ) {
             $width = ($this->WidthCallback)();
-            $wrapToWidth =
+            $wrapTo =
                 $width === null
                     ? null
-                    : max(0, $wrapToWidth + $width);
+                    : max(0, $wrapTo + $width);
         }
-        if ($wrapToWidth !== null) {
+        if ($wrapTo !== null) {
             if ($break === "\n") {
-                $string = Str::wrap($string, $wrapToWidth);
+                $string = Str::wrap($string, $wrapTo);
             } else {
                 // Only replace new line breaks with `$break`
-                $wrapped = Str::wrap($string, $wrapToWidth);
+                $wrapped = Str::wrap($string, $wrapTo);
                 $length = strlen($wrapped);
                 for ($i = 0; $i < $length; $i++) {
                     if ($wrapped[$i] === "\n" && $string[$i] !== "\n") {
@@ -568,7 +553,7 @@ REGEX;
         if ($type === Console::TYPE_UNFORMATTED) {
             return $this
                 ->getDefaultMessageFormats()
-                ->get($level, $type)
+                ->getFormat($level, $type)
                 ->apply($msg1, $msg2, '', $attributes);
         }
 
@@ -576,7 +561,7 @@ REGEX;
 
         return $this
             ->MessageFormats
-            ->get($level, $type)
+            ->getFormat($level, $type)
             ->apply($msg1, $msg2, $prefix, $attributes);
     }
 
@@ -586,16 +571,24 @@ REGEX;
     public function formatDiff(string $diff): string
     {
         $formats = [
-            '---' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
-            '+++' => $this->TagFormats->getFormat(Tag::DIFF_HEADER),
-            '@' => $this->TagFormats->getFormat(Tag::DIFF_RANGE),
-            '+' => $this->TagFormats->getFormat(Tag::DIFF_ADDITION),
-            '-' => $this->TagFormats->getFormat(Tag::DIFF_REMOVAL),
+            '---' => $this->TagFormats->getFormat(self::TAG_DIFF_HEADER),
+            '+++' => $this->TagFormats->getFormat(self::TAG_DIFF_HEADER),
+            '@' => $this->TagFormats->getFormat(self::TAG_DIFF_RANGE),
+            '+' => $this->TagFormats->getFormat(self::TAG_DIFF_ADDITION),
+            '-' => $this->TagFormats->getFormat(self::TAG_DIFF_REMOVAL),
+        ];
+
+        $attributes = [
+            '---' => new TagAttributes(self::TAG_DIFF_HEADER, '---'),
+            '+++' => new TagAttributes(self::TAG_DIFF_HEADER, '+++'),
+            '@' => new TagAttributes(self::TAG_DIFF_RANGE, '@'),
+            '+' => new TagAttributes(self::TAG_DIFF_ADDITION, '+'),
+            '-' => new TagAttributes(self::TAG_DIFF_REMOVAL, '-'),
         ];
 
         return Regex::replaceCallback(
             '/^(-{3}|\+{3}|[-+@]).*/m',
-            fn(array $matches) => $formats[$matches[1]]->apply($matches[0]),
+            fn(array $matches) => $formats[$matches[1]]->apply($matches[0], $attributes[$matches[1]]),
             $diff,
         );
     }
@@ -603,12 +596,12 @@ REGEX;
     /**
      * Escape special characters, optionally including newlines, in a string
      */
-    public static function escapeTags(string $string, bool $newlines = false): string
+    public static function escapeTags(string $string, bool $escapeNewlines = false): string
     {
         // Only escape recognised tag delimiters to minimise the risk of
         // PREG_JIT_STACKLIMIT_ERROR
         $escaped = addcslashes($string, '\#*<>_`~');
-        return $newlines
+        return $escapeNewlines
             ? str_replace("\n", "\\\n", $escaped)
             : $escaped;
     }
@@ -650,7 +643,7 @@ REGEX;
 
     private static function getLoopbackTagFormats(): TagFormats
     {
-        return self::$LoopbackTagFormats ??= LoopbackFormat::getTagFormats();
+        return self::$LoopbackTagFormats ??= LoopbackFormat::getFormatter()->TagFormats;
     }
 
     /**

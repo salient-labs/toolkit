@@ -5,7 +5,7 @@ namespace Salient\Tests\PsrLog;
 use Psr\Log\Test\LoggerInterfaceTest;
 use Psr\Log\InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Salient\Console\Format\ConsoleFormatter as Formatter;
+use Salient\Console\Format\Formatter;
 use Salient\Console\Console;
 use Salient\Contract\HasMessageLevel;
 use Salient\Testing\Console\MockTarget;
@@ -34,7 +34,7 @@ final class LoggerTest extends LoggerInterfaceTest
                 null,
                 new Formatter(null, null, fn() => null, [], []),
             ))
-            ->getLogger();
+            ->logger();
     }
 
     /**

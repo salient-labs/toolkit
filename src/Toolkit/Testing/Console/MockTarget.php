@@ -2,8 +2,8 @@
 
 namespace Salient\Testing\Console;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Console\Format\Formatter;
+use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Utility\File;
@@ -72,9 +72,9 @@ final class MockTarget implements StreamTargetInterface
     /**
      * @inheritDoc
      */
-    public function getEol(): string
+    public function getUri(): ?string
     {
-        return "\n";
+        return $this->Stream ? File::getStreamUri($this->Stream) : null;
     }
 
     /**

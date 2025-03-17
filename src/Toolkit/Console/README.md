@@ -22,17 +22,16 @@ similar to `console` in web browsers.
 - Formatting that reflects message priority and improves readability
 - Optional Markdown-like syntax for additional formatting
 - Colour output to TTYs
-- [PSR-3 (Logger Interface)][PSR-3] support via
-  [Console::getLogger()][getLogger]
+- [PSR-3 (Logger Interface)][PSR-3] support via [Console::logger()][logger]
 
 [error]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_error
 [errorOnce]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_errorOnce
-[getLogger]:
-  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_getLogger
 [log]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_log
+[logger]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_logger
 [logOnce]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_logOnce
 [PSR-3]: https://www.php-fig.org/psr/psr-3/

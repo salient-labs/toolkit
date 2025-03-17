@@ -2,15 +2,15 @@
 
 namespace Salient\Cli;
 
-use Salient\Console\Format\ConsoleFormatter as Formatter;
-use Salient\Console\Format\ConsoleLoopbackFormat as LoopbackFormat;
-use Salient\Console\Format\ConsoleManPageFormat as ManPageFormat;
-use Salient\Console\Format\ConsoleMarkdownFormat as MarkdownFormat;
+use Salient\Console\Format\Formatter;
+use Salient\Console\Format\LoopbackFormat;
+use Salient\Console\Format\ManPageFormat;
+use Salient\Console\Format\MarkdownFormat;
 use Salient\Contract\Cli\CliHelpSectionName;
 use Salient\Contract\Cli\CliHelpStyleInterface;
 use Salient\Contract\Cli\CliHelpTarget;
 use Salient\Contract\Cli\CliOptionVisibility;
-use Salient\Contract\Console\Format\ConsoleFormatterInterface as FormatterInterface;
+use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Utility\Regex;
@@ -69,7 +69,7 @@ final class CliHelpStyle implements CliHelpStyleInterface
                 $this->Bold = '__';
                 $this->Width ??= self::getConsoleWidth();
                 $this->Margin = 4;
-                $this->Formatter = $formatter ?? Console::getFormatter();
+                $this->Formatter = $formatter ?? Console::getTtyTarget()->getFormatter();
                 break;
 
             case CliHelpTarget::MARKDOWN:
@@ -267,7 +267,7 @@ final class CliHelpStyle implements CliHelpStyleInterface
 
     public static function getConsoleWidth(): ?int
     {
-        $width = Console::getWidth();
+        $width = Console::getTtyTarget()->getWidth();
 
         return $width === null
             ? null

@@ -14,7 +14,7 @@ use LogicException;
 /**
  * Writes console output to a PHP stream
  */
-final class StreamTarget extends ConsoleStreamTarget
+final class StreamTarget extends AbstractStreamTarget
 {
     public const DEFAULT_TIMESTAMP_FORMAT = '[d M y H:i:s.vO] ';
 
@@ -111,6 +111,14 @@ final class StreamTarget extends ConsoleStreamTarget
     /**
      * @inheritDoc
      */
+    public function getUri(): ?string
+    {
+        return $this->Path ?? $this->Uri;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function close(): void
     {
         if (!$this->Stream) {
@@ -131,7 +139,6 @@ final class StreamTarget extends ConsoleStreamTarget
         $this->IsStderr = false;
         $this->IsTty = false;
         $this->Path = null;
-        $this->setPrefix(null);
     }
 
     /**
@@ -212,7 +219,7 @@ final class StreamTarget extends ConsoleStreamTarget
     /**
      * @inheritDoc
      */
-    protected function writeToTarget(int $level, string $message, array $context): void
+    protected function doWrite(int $level, string $message, array $context): void
     {
         $this->assertIsValid();
 
