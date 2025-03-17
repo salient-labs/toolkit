@@ -139,7 +139,6 @@ final class StreamTarget extends AbstractStreamTarget
         $this->IsStderr = false;
         $this->IsTty = false;
         $this->Path = null;
-        $this->setPrefix(null);
     }
 
     /**
@@ -220,7 +219,7 @@ final class StreamTarget extends AbstractStreamTarget
     /**
      * @inheritDoc
      */
-    protected function writeToTarget(int $level, string $message, array $context): void
+    protected function doWrite(int $level, string $message, array $context): void
     {
         $this->assertIsValid();
 

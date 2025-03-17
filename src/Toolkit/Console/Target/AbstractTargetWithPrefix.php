@@ -6,19 +6,18 @@ use Salient\Contract\Console\Format\FormatterInterface as Formatter;
 use Salient\Contract\Console\Target\HasPrefix;
 
 /**
- * Base class for console output targets that apply an optional prefix to each
- * line of output
+ * @api
  */
 abstract class AbstractTargetWithPrefix extends AbstractTarget implements HasPrefix
 {
     private ?string $Prefix = null;
-    private int $PrefixLength = 0;
+    private int $PrefixWidth = 0;
 
     /**
      * @param self::LEVEL_* $level
      * @param array<string,mixed> $context
      */
-    abstract protected function writeToTarget(int $level, string $message, array $context): void;
+    abstract protected function doWrite(int $level, string $message, array $context): void;
 
     /**
      * @inheritDoc
@@ -27,16 +26,11 @@ abstract class AbstractTargetWithPrefix extends AbstractTarget implements HasPre
     {
         $this->assertIsValid();
 
-        if ($this->Prefix === null) {
-            $this->writeToTarget($level, $message, $context);
-            return;
+        if ($this->Prefix !== null) {
+            $message = $this->Prefix . str_replace("\n", "\n" . $this->Prefix, $message);
         }
 
-        $this->writeToTarget(
-            $level,
-            $this->Prefix . str_replace("\n", "\n{$this->Prefix}", $message),
-            $context
-        );
+        $this->doWrite($level, $message, $context);
     }
 
     /**
@@ -44,18 +38,19 @@ abstract class AbstractTargetWithPrefix extends AbstractTarget implements HasPre
      */
     final public function setPrefix(?string $prefix)
     {
-        if ($prefix === null || $prefix === '') {
-            $this->Prefix = null;
-            $this->PrefixLength = 0;
-
-            return $this;
-        }
-
         $this->assertIsValid();
 
-        $this->PrefixLength = strlen($prefix);
-        $this->Prefix = $this->getFormatter()->getTagFormat(Formatter::TAG_LOW_PRIORITY)->apply($prefix);
-
+        if ($prefix === null || $prefix === '') {
+            $this->Prefix = null;
+            $this->PrefixWidth = 0;
+        } else {
+            $formatted = $this
+                ->getFormatter()
+                ->getTagFormat(Formatter::TAG_LOW_PRIORITY)
+                ->apply($prefix);
+            $this->PrefixWidth = mb_strlen($prefix);
+            $this->Prefix = $formatted;
+        }
         return $this;
     }
 
@@ -76,6 +71,6 @@ abstract class AbstractTargetWithPrefix extends AbstractTarget implements HasPre
     {
         $this->assertIsValid();
 
-        return 80 - $this->PrefixLength;
+        return 80 - $this->PrefixWidth;
     }
 }

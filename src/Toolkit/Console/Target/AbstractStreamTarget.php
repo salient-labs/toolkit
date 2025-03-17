@@ -8,7 +8,7 @@ use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\HasEscapeSequence;
 
 /**
- * Base class for console output targets with an underlying PHP stream
+ * @api
  */
 abstract class AbstractStreamTarget extends AbstractTargetWithPrefix implements
     StreamTargetInterface,
