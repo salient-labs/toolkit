@@ -10,7 +10,7 @@ use Salient\Contract\Console\ConsoleInterface as Console;
 /**
  * Writes console output to a PSR-3 logger
  */
-final class LoggerTarget extends ConsoleTarget implements LoggerAwareInterface
+final class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
 {
     /**
      * @var array<Console::LEVEL_*,LogLevel::*>

@@ -9,7 +9,7 @@ use Salient\Contract\Console\Target\HasPrefix;
  * Base class for console output targets that apply an optional prefix to each
  * line of output
  */
-abstract class ConsolePrefixTarget extends ConsoleTarget implements HasPrefix
+abstract class AbstractTargetWithPrefix extends AbstractTarget implements HasPrefix
 {
     private ?string $Prefix = null;
     private int $PrefixLength = 0;

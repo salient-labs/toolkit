@@ -14,7 +14,7 @@ use LogicException;
 /**
  * Writes console output to a PHP stream
  */
-final class StreamTarget extends ConsoleStreamTarget
+final class StreamTarget extends AbstractStreamTarget
 {
     public const DEFAULT_TIMESTAMP_FORMAT = '[d M y H:i:s.vO] ';
 

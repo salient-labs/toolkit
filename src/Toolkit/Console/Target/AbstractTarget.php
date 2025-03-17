@@ -9,7 +9,7 @@ use Salient\Contract\Console\Target\TargetInterface;
 /**
  * @api
  */
-abstract class ConsoleTarget implements TargetInterface
+abstract class AbstractTarget implements TargetInterface
 {
     private FormatterInterface $Formatter;
 

@@ -10,7 +10,7 @@ use Salient\Contract\HasEscapeSequence;
 /**
  * Base class for console output targets with an underlying PHP stream
  */
-abstract class ConsoleStreamTarget extends ConsolePrefixTarget implements
+abstract class AbstractStreamTarget extends AbstractTargetWithPrefix implements
     StreamTargetInterface,
     HasEscapeSequence
 {
