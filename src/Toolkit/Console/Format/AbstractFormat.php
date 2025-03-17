@@ -8,7 +8,7 @@ use Salient\Contract\Console\ConsoleInterface as Console;
 use Closure;
 
 /**
- * @api
+ * @internal
  */
 abstract class AbstractFormat implements FormatInterface
 {

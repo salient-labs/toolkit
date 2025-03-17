@@ -10,6 +10,16 @@ use Salient\Contract\Console\Format\MessageFormatInterface;
  */
 final class NullMessageFormat implements MessageFormatInterface
 {
+    private NullFormat $Format;
+
+    /**
+     * @api
+     */
+    public function __construct()
+    {
+        $this->Format = new NullFormat();
+    }
+
     /**
      * @inheritDoc
      */
@@ -19,6 +29,18 @@ final class NullMessageFormat implements MessageFormatInterface
         string $prefix,
         MessageAttributesInterface $attributes
     ): string {
-        return $prefix . $msg1 . $msg2;
+        return (
+            $prefix !== ''
+                ? $this->Format->apply($prefix, $attributes->withPrefix())
+                : ''
+        ) . (
+            $msg1 !== ''
+                ? $this->Format->apply($msg1, $attributes->withMsg1())
+                : ''
+        ) . (
+            $msg2 !== null && $msg2 !== ''
+                ? $this->Format->apply($msg2, $attributes->withMsg2())
+                : ''
+        );
     }
 }

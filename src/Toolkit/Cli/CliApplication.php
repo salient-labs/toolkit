@@ -464,12 +464,12 @@ class CliApplication extends Application implements CliApplicationInterface
 
         switch ($target) {
             case CliHelpTarget::MARKDOWN:
-                $formats = MarkdownFormat::getTagFormats();
+                $formatter = MarkdownFormat::getFormatter(fn() => 80);
                 $collapseSynopsis = Get::boolean($args[0] ?? null);
                 break;
 
             case CliHelpTarget::MAN_PAGE:
-                $formats = ManPageFormat::getTagFormats();
+                $formatter = ManPageFormat::getFormatter(fn() => 80);
                 $progName = $this->getProgramName();
                 printf(
                     '%% %s(%d) %s | %s%s',
@@ -485,7 +485,6 @@ class CliApplication extends Application implements CliApplicationInterface
                 throw new InvalidArgumentException(sprintf('Invalid CliHelpTarget: %d', $target));
         }
 
-        $formatter = new Formatter($formats, null, fn(): int => 80);
         $style = new CliHelpStyle($target, 80, $formatter);
 
         if ($collapseSynopsis !== null) {

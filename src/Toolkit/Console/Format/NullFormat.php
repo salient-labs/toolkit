@@ -7,11 +7,17 @@ namespace Salient\Console\Format;
  */
 final class NullFormat extends AbstractFormat
 {
+    use IndentCodeBlockTrait;
+
     /**
      * @inheritDoc
      */
     public function apply(string $string, $attributes = null): string
     {
-        return $string;
+        if ($string === '') {
+            return '';
+        }
+
+        return $this->indentCodeBlock($string, $attributes);
     }
 }

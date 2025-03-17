@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Console;
 
-use Salient\Console\Format\ConsoleFormatterFactory;
+use Salient\Console\Format\AbstractFormat;
 use Salient\Console\Format\Formatter;
 use Salient\Console\Format\LoopbackFormat;
 use Salient\Console\Format\ManPageFormat;
@@ -21,7 +21,7 @@ final class ConsoleFormatterTest extends TestCase
     /**
      * @dataProvider formatProvider
      *
-     * @param class-string<ConsoleFormatterFactory>|null $factory
+     * @param class-string<AbstractFormat>|null $factory
      * @param int|array{int,int}|null $wrapToWidth
      */
     public function testFormat(
@@ -50,7 +50,7 @@ final class ConsoleFormatterTest extends TestCase
     }
 
     /**
-     * @return array<array{string,class-string<ConsoleFormatterFactory>|null,string,3?:bool,4?:int|array{int,int}|null,5?:bool,6?:string}>
+     * @return array<array{string,class-string<AbstractFormat>|null,string,3?:bool,4?:int|array{int,int}|null,5?:bool,6?:string}>
      */
     public static function formatProvider(): array
     {

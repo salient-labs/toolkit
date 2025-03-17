@@ -2,7 +2,6 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\TagAttributesInterface;
 use Salient\Contract\HasEscapeSequence;
 
 /**
@@ -10,9 +9,8 @@ use Salient\Contract\HasEscapeSequence;
  */
 class TtyFormat extends AbstractFormat implements HasEscapeSequence
 {
-    use EncloseAndReplaceFormatTrait {
-        apply as private doApply;
-    }
+    use EncloseAndReplaceTrait;
+    use IndentCodeBlockTrait;
 
     /**
      * @inheritDoc
@@ -23,24 +21,9 @@ class TtyFormat extends AbstractFormat implements HasEscapeSequence
             return '';
         }
 
-        // With fenced code blocks:
-        // - remove block indentation from the first line of code
-        // - add a level of indentation to the block
-        if (
-            $attributes instanceof TagAttributesInterface
-            && $attributes->getTag() === self::TAG_CODE_BLOCK
-        ) {
-            $indent = (string) $attributes->getIndent();
-            if ($indent !== '') {
-                $length = strlen($indent);
-                if (substr($string, 0, $length) === $indent) {
-                    $string = substr($string, $length);
-                }
-            }
-            $string = '    ' . str_replace("\n", "\n    ", $string);
-        }
+        $string = $this->indentCodeBlock($string, $attributes);
 
-        return $this->doApply($string, $attributes);
+        return $this->encloseAndReplace($string);
     }
 
     /**
@@ -87,17 +70,26 @@ class TtyFormat extends AbstractFormat implements HasEscapeSequence
         $yellow = self::getColour(self::YELLOW_FG);
         $cyan = self::getColour(self::CYAN_FG);
 
+        $boldRedNull = new MessageFormat($boldRed, $null, $boldRed);
+        $yellowNullBoldYellow = new MessageFormat($yellow, $null, $boldYellow);
+        $boldCyanBoldCyan = new MessageFormat($bold, $cyan, $boldCyan);
+        $nullYellowYellow = new MessageFormat($null, $yellow, $yellow);
+        $faint = new MessageFormat($faint, $faint, $faint);
+        $boldMagentaNull = new MessageFormat($boldMagenta, $null, $boldMagenta);
+        $nullNullBold = new MessageFormat($null, $null, $bold);
+        $greenNullBoldGreen = new MessageFormat($green, $null, $boldGreen);
+
         return (new MessageFormats())
-            ->set(self::LEVELS_ERRORS, self::TYPES_ALL, new MessageFormat($boldRed, $null, $boldRed))
-            ->set(self::LEVEL_WARNING, self::TYPES_ALL, new MessageFormat($yellow, $null, $boldYellow))
-            ->set(self::LEVEL_NOTICE, self::TYPES_ALL, new MessageFormat($bold, $cyan, $boldCyan))
-            ->set(self::LEVEL_INFO, self::TYPES_ALL, new MessageFormat($null, $yellow, $yellow))
-            ->set(self::LEVEL_DEBUG, self::TYPES_ALL, new MessageFormat($faint, $faint, $faint))
-            ->set(self::LEVELS_INFO, self::TYPE_PROGRESS, new MessageFormat($null, $yellow, $yellow))
-            ->set(self::LEVELS_INFO, self::TYPES_GROUP, new MessageFormat($boldMagenta, $null, $boldMagenta))
-            ->set(self::LEVELS_INFO, self::TYPE_SUMMARY, new MessageFormat($null, $null, $bold))
-            ->set(self::LEVELS_INFO, self::TYPE_SUCCESS, new MessageFormat($green, $null, $boldGreen))
-            ->set(self::LEVELS_ERRORS_AND_WARNINGS, self::TYPE_FAILURE, new MessageFormat($yellow, $null, $boldYellow));
+            ->withFormat(self::LEVELS_ERRORS, self::TYPES_ALL, $boldRedNull)
+            ->withFormat(self::LEVEL_WARNING, self::TYPES_ALL, $yellowNullBoldYellow)
+            ->withFormat(self::LEVEL_NOTICE, self::TYPES_ALL, $boldCyanBoldCyan)
+            ->withFormat(self::LEVEL_INFO, self::TYPES_ALL, $nullYellowYellow)
+            ->withFormat(self::LEVEL_DEBUG, self::TYPES_ALL, $faint)
+            ->withFormat(self::LEVELS_INFO, self::TYPE_PROGRESS, $nullYellowYellow)
+            ->withFormat(self::LEVELS_INFO, self::TYPES_GROUP, $boldMagentaNull)
+            ->withFormat(self::LEVELS_INFO, self::TYPE_SUMMARY, $nullNullBold)
+            ->withFormat(self::LEVELS_INFO, self::TYPE_SUCCESS, $greenNullBoldGreen)
+            ->withFormat(self::LEVELS_ERRORS_AND_WARNINGS, self::TYPE_FAILURE, $yellowNullBoldYellow);
     }
 
     /**

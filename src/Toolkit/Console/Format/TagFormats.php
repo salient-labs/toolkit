@@ -9,9 +9,9 @@ use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Arr;
 
 /**
- * Maps inline formatting tags to formats
+ * @api
  */
-final class TagFormats implements Immutable
+class TagFormats implements Immutable
 {
     use ImmutableTrait;
 
@@ -19,20 +19,23 @@ final class TagFormats implements Immutable
     private array $Formats = [];
     private bool $RemoveEscapes;
     private bool $WrapAfterFormatting;
-    private Format $FallbackFormat;
+    private NullFormat $FallbackFormat;
 
+    /**
+     * @api
+     */
     public function __construct(
         bool $removeEscapes = true,
-        bool $wrapAfterFormatting = false,
-        ?Format $fallbackFormat = null
+        bool $wrapAfterFormatting = false
     ) {
         $this->RemoveEscapes = $removeEscapes;
         $this->WrapAfterFormatting = $wrapAfterFormatting;
-        $this->FallbackFormat = $fallbackFormat
-            ?? new NullFormat();
+        $this->FallbackFormat = new NullFormat();
     }
 
     /**
+     * Get an instance where escapes are removed from strings
+     *
      * @return static
      */
     public function withRemoveEscapes(bool $remove = true)
@@ -41,6 +44,8 @@ final class TagFormats implements Immutable
     }
 
     /**
+     * Get an instance where strings are wrapped after formatting
+     *
      * @return static
      */
     public function withWrapAfterFormatting(bool $value = true)
@@ -49,7 +54,7 @@ final class TagFormats implements Immutable
     }
 
     /**
-     * True if text should be unescaped for the target
+     * Check if escapes should be removed from strings
      */
     public function removesEscapes(): bool
     {
@@ -57,7 +62,7 @@ final class TagFormats implements Immutable
     }
 
     /**
-     * True if text should be wrapped after formatting
+     * Check if strings should be wrapped after formatting
      */
     public function wrapsAfterFormatting(): bool
     {
@@ -65,12 +70,12 @@ final class TagFormats implements Immutable
     }
 
     /**
-     * Get an instance with a format assigned to a tag
+     * Get an instance where a format is assigned to a tag
      *
      * @param Format::TAG_* $tag
      * @return static
      */
-    public function withFormat($tag, Format $format)
+    public function withFormat(int $tag, Format $format)
     {
         return $this->with('Formats', Arr::set($this->Formats, $tag, $format));
     }
@@ -80,17 +85,20 @@ final class TagFormats implements Immutable
      *
      * @param Format::TAG_* $tag
      */
-    public function getFormat($tag): Format
+    public function getFormat(int $tag): Format
     {
         return $this->Formats[$tag] ?? $this->FallbackFormat;
     }
 
     /**
-     * Format tagged text before it is written to the target
+     * @internal
      */
-    public function apply(string $string, TagAttributesInterface $attributes): string
-    {
-        $format = $this->Formats[$attributes->getTag()] ?? $this->FallbackFormat;
+    public function apply(
+        string $string,
+        TagAttributesInterface $attributes
+    ): string {
+        $tag = $attributes->getTag();
+        $format = $this->Formats[$tag] ?? $this->FallbackFormat;
         return $format->apply($string, $attributes);
     }
 }

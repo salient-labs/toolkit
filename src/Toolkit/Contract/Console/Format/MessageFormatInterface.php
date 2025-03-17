@@ -2,10 +2,13 @@
 
 namespace Salient\Contract\Console\Format;
 
+use Salient\Contract\Console\HasMessageType;
+use Salient\Contract\HasMessageLevel;
+
 /**
  * @api
  */
-interface MessageFormatInterface
+interface MessageFormatInterface extends HasMessageLevel, HasMessageType
 {
     /**
      * Format a console message

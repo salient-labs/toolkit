@@ -7,14 +7,17 @@ use Salient\Contract\Console\Format\MessageAttributesInterface;
 use Salient\Contract\Console\Format\MessageFormatInterface;
 
 /**
- * Applies formats to the components of a console message
+ * @api
  */
-final class MessageFormat implements MessageFormatInterface
+class MessageFormat implements MessageFormatInterface
 {
     private Format $Msg1Format;
     private Format $Msg2Format;
     private Format $PrefixFormat;
 
+    /**
+     * @api
+     */
     public function __construct(
         Format $msg1Format,
         Format $msg2Format,
@@ -34,8 +37,18 @@ final class MessageFormat implements MessageFormatInterface
         string $prefix,
         MessageAttributesInterface $attributes
     ): string {
-        return ($prefix !== '' ? $this->PrefixFormat->apply($prefix, $attributes->withPrefix()) : '')
-            . ($msg1 !== '' ? $this->Msg1Format->apply($msg1, $attributes->withMsg1()) : '')
-            . ($msg2 !== null && $msg2 !== '' ? $this->Msg2Format->apply($msg2, $attributes->withMsg2()) : '');
+        return (
+            $prefix !== ''
+                ? $this->PrefixFormat->apply($prefix, $attributes->withPrefix())
+                : ''
+        ) . (
+            $msg1 !== ''
+                ? $this->Msg1Format->apply($msg1, $attributes->withMsg1())
+                : ''
+        ) . (
+            $msg2 !== null && $msg2 !== ''
+                ? $this->Msg2Format->apply($msg2, $attributes->withMsg2())
+                : ''
+        );
     }
 }

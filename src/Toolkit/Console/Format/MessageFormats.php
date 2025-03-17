@@ -2,52 +2,57 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\MessageFormatInterface;
-use Salient\Contract\Console\ConsoleInterface as Console;
+use Salient\Contract\Console\Format\MessageFormatInterface as Format;
+use Salient\Contract\Core\Immutable;
+use Salient\Core\Concern\ImmutableTrait;
 
 /**
- * Maps message levels and types to formats
- *
- * If multiple formats are assigned to the same level and type, the format
- * assigned last takes precedence.
+ * @api
  */
-final class MessageFormats
+class MessageFormats implements Immutable
 {
-    /** @var array<Console::LEVEL_*,array<Console::TYPE_*,MessageFormatInterface>> */
-    private array $Formats = [];
-    private MessageFormatInterface $FallbackFormat;
+    use ImmutableTrait;
 
-    public function __construct(?MessageFormatInterface $fallbackFormat = null)
+    /** @var array<Format::LEVEL_*,array<Format::TYPE_*,Format>> */
+    private array $Formats = [];
+    private NullMessageFormat $FallbackFormat;
+
+    /**
+     * @api
+     */
+    public function __construct()
     {
-        $this->FallbackFormat = $fallbackFormat
-            ?? new NullMessageFormat();
+        $this->FallbackFormat = new NullMessageFormat();
     }
 
     /**
-     * Assign a format to one or more message levels and types
+     * Get an instance where a format is assigned to the given message levels
+     * and types
      *
-     * @param array<Console::LEVEL_*>|Console::LEVEL_* $level
-     * @param array<Console::TYPE_*>|Console::TYPE_* $type
-     * @return $this
+     * @param array<Format::LEVEL_*>|Format::LEVEL_* $level
+     * @param array<Format::TYPE_*>|Format::TYPE_* $type
+     * @return static
      */
-    public function set($level, $type, MessageFormatInterface $format)
+    public function withFormat($level, $type, Format $format)
     {
-        foreach ((array) $level as $level) {
-            foreach ((array) $type as $_type) {
-                $this->Formats[$level][$_type] = $format;
+        $formats = $this->Formats;
+        $levels = (array) $level;
+        $types = (array) $type;
+        foreach ($levels as $level) {
+            foreach ($types as $type) {
+                $formats[$level][$type] = $format;
             }
         }
-
-        return $this;
+        return $this->with('Formats', $formats);
     }
 
     /**
-     * Get the format assigned to a message level and type
+     * Get the format assigned to a given message level and type
      *
-     * @param Console::LEVEL_* $level
-     * @param Console::TYPE_* $type
+     * @param Format::LEVEL_* $level
+     * @param Format::TYPE_* $type
      */
-    public function get(int $level, $type): MessageFormatInterface
+    public function getFormat(int $level, int $type): Format
     {
         return $this->Formats[$level][$type] ?? $this->FallbackFormat;
     }

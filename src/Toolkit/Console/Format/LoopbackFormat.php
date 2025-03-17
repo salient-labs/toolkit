@@ -2,24 +2,16 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\FormatInterface;
+use Salient\Contract\Console\Format\TagAttributesInterface;
 
 /**
- * Reapplies the output's original inline formatting tags
+ * Reapplies inline formatting tags as they originally appeared
+ *
+ * @api
  */
-final class LoopbackFormat implements
-    FormatInterface,
-    ConsoleFormatterFactory,
-    ConsoleTagFormatFactory
+class LoopbackFormat extends AbstractFormat
 {
-    private string $Before;
-    private string $After;
-
-    public function __construct(string $before = '', string $after = '')
-    {
-        $this->Before = $before;
-        $this->After = $after;
-    }
+    use EncloseTrait;
 
     /**
      * @inheritDoc
@@ -34,7 +26,7 @@ final class LoopbackFormat implements
         $after = $this->After;
 
         if (
-            $attributes instanceof TagAttributes
+            $attributes instanceof TagAttributesInterface
             && $attributes->getOpenTag() !== ''
         ) {
             $before = $attributes->getOpenTag();
@@ -42,34 +34,30 @@ final class LoopbackFormat implements
         }
 
         if ($before === '##') {
-            return '## ' . $string . ' ##';
+            return $this->enclose($string, '## ', ' ##');
         }
 
         if ($this->Before === '```') {
-            return $attributes instanceof TagAttributes
-                ? $before . $attributes->getInfoString() . "\n"
-                    . $string . "\n"
-                    . $attributes->getIndent() . $after
-                : $before . "\n"
-                    . $string . "\n"
-                    . $after;
+            return $attributes instanceof TagAttributesInterface
+                ? $this->enclose(
+                    $string,
+                    $before . $attributes->getInfoString() . "\n",
+                    "\n" . $attributes->getIndent() . $after,
+                )
+                : $this->enclose(
+                    $string,
+                    $before . "\n",
+                    "\n" . $after,
+                );
         }
 
-        return $before . $string . $after;
+        return $this->enclose($string, $before, $after);
     }
 
     /**
      * @inheritDoc
      */
-    public static function getFormatter(): Formatter
-    {
-        return new Formatter(self::getTagFormats());
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public static function getTagFormats(): TagFormats
+    protected static function getTagFormats(): ?TagFormats
     {
         return (new TagFormats(false))
             ->withFormat(self::TAG_HEADING, new self('***', '***'))

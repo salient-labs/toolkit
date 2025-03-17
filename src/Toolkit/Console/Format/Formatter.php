@@ -2,9 +2,9 @@
 
 namespace Salient\Console\Format;
 
-use Salient\Contract\Console\Format\FormatInterface as Format;
+use Salient\Contract\Console\Format\FormatInterface;
 use Salient\Contract\Console\Format\FormatterInterface;
-use Salient\Contract\Console\Format\MessageFormatInterface as MessageFormat;
+use Salient\Contract\Console\Format\MessageFormatInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Regex;
@@ -186,7 +186,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function getTagFormat(int $tag): Format
+    public function getTagFormat(int $tag): FormatInterface
     {
         return $this->TagFormats->getFormat($tag);
     }
@@ -197,8 +197,8 @@ REGEX;
     public function getMessageFormat(
         int $level,
         int $type = Console::TYPE_STANDARD
-    ): MessageFormat {
-        return $this->MessageFormats->get($level, $type);
+    ): MessageFormatInterface {
+        return $this->MessageFormats->getFormat($level, $type);
     }
 
     /**
@@ -553,7 +553,7 @@ REGEX;
         if ($type === Console::TYPE_UNFORMATTED) {
             return $this
                 ->getDefaultMessageFormats()
-                ->get($level, $type)
+                ->getFormat($level, $type)
                 ->apply($msg1, $msg2, '', $attributes);
         }
 
@@ -561,7 +561,7 @@ REGEX;
 
         return $this
             ->MessageFormats
-            ->get($level, $type)
+            ->getFormat($level, $type)
             ->apply($msg1, $msg2, $prefix, $attributes);
     }
 
@@ -643,7 +643,7 @@ REGEX;
 
     private static function getLoopbackTagFormats(): TagFormats
     {
-        return self::$LoopbackTagFormats ??= LoopbackFormat::getTagFormats();
+        return self::$LoopbackTagFormats ??= LoopbackFormat::getFormatter()->TagFormats;
     }
 
     /**
