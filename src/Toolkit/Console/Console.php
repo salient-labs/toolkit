@@ -46,7 +46,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function logger(): LoggerInterface
     {
-        return $this->State->Logger ??= new ConsoleLogger($this);
+        return $this->State->Logger ??= new ConsoleLogger($this->getReturnable());
     }
 
     /**
@@ -60,10 +60,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         $this->removeDeregisteredTargets();
     }
 
-    /**
-     * @return $this
-     */
-    private function maybeRegisterStdioTargets()
+    private function maybeRegisterStdioTargets(): void
     {
         $output = Env::get('console_target', null);
 
@@ -74,7 +71,8 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
                     // No break
                 case 'stdout':
                     $target ??= $this->getStdoutTarget();
-                    return $this->registerStdioTarget($target);
+                    $this->registerStdioTarget($target);
+                    return;
 
                 default:
                     throw new InvalidEnvironmentException(
@@ -84,10 +82,10 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         }
 
         if (stream_isatty(\STDERR) && !stream_isatty(\STDOUT)) {
-            return $this->registerStderrTarget();
+            $this->registerStderrTarget();
+        } else {
+            $this->registerStdioTargets();
         }
-
-        return $this->registerStdioTargets();
     }
 
     /**
@@ -948,6 +946,16 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
             }
         }
         return $filtered ?? [];
+    }
+
+    /**
+     * @return static
+     */
+    protected function getReturnable()
+    {
+        return $this->Facade === null
+            ? $this
+            : $this->withoutFacade($this->Facade, false);
     }
 }
 

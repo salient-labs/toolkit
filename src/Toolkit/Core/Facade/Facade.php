@@ -105,7 +105,11 @@ abstract class Facade implements FacadeInterface
     final public static function __callStatic(string $name, array $arguments)
     {
         $instance = self::$Instances[static::class] ??= self::doLoad();
-        return $instance->$name(...$arguments);
+        $result = $instance->$name(...$arguments);
+        return $result === (self::$Instances[static::class] ?? null)
+            && $result instanceof FacadeAwareInterface
+                ? $result->withoutFacade(static::class, false)
+                : $result;
     }
 
     /**
