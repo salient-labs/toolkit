@@ -3,11 +3,14 @@
 namespace Salient\Tests\Console;
 
 use Salient\Console\Format\Formatter;
-use Salient\Console\Format\TtyFormat;
+use Salient\Console\Target\AnalogTarget;
+use Salient\Console\Target\StreamTarget;
 use Salient\Console\Console as ConsoleService;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
+use Salient\Testing\Core\MockPhpStream;
 use Salient\Tests\TestCase;
+use Salient\Utility\File;
 use Salient\Utility\Get;
 
 /**
@@ -22,25 +25,38 @@ use Salient\Utility\Get;
  * @covers \Salient\Console\Format\NullFormat
  * @covers \Salient\Console\Format\NullMessageFormat
  * @covers \Salient\Console\Format\TtyFormat
+ * @covers \Salient\Console\Target\StreamTarget
+ * @covers \Salient\Console\Target\AbstractStreamTarget
+ * @covers \Salient\Console\Target\AbstractTargetWithPrefix
+ * @covers \Salient\Console\Target\AbstractTarget
  */
 final class ConsoleTest extends TestCase
 {
     private ConsoleService $Console;
     private Formatter $Formatter;
+    private Formatter $StreamFormatter;
     private MockTarget $TtyTarget;
     private MockTarget $StdoutTarget;
-    private MockTarget $ColourTarget;
+    private MockTarget $FileTarget;
+    private StreamTarget $StreamTarget;
 
     protected function setUp(): void
     {
+        MockPhpStream::register('mock');
+
         $this->Formatter = new Formatter(null, null, fn() => $this->TtyTarget->getWidth());
         $this->TtyTarget = new MockTarget(null, false, true, true, 80, $this->Formatter);
         $this->StdoutTarget = new MockTarget(null, true, false, false, 80, $this->Formatter);
-        $this->ColourTarget = new MockTarget(null, false, false, false, 80, TtyFormat::getFormatter(fn() => $this->ColourTarget->getWidth()));
+        $this->FileTarget = new MockTarget(null, false, false, false, null, new Formatter(null, null, fn() => $this->FileTarget->getWidth()));
+        $this->StreamTarget = new FakeTtyStreamTarget(File::open('mock://output', 'w'), true);
+        /** @var Formatter */
+        $streamFormatter = $this->StreamTarget->getFormatter();
+        $this->StreamFormatter = $streamFormatter;
         $this->Console = (new ConsoleService())
             ->registerTarget($this->TtyTarget)
             ->registerTarget($this->StdoutTarget, Console::LEVELS_ALL_EXCEPT_DEBUG)
-            ->registerTarget($this->ColourTarget);
+            ->registerTarget($this->FileTarget)
+            ->registerTarget($this->StreamTarget);
 
         Console::load($this->Console);
     }
@@ -48,30 +64,60 @@ final class ConsoleTest extends TestCase
     protected function tearDown(): void
     {
         Console::unload();
+
+        $this->StreamTarget->close();
+
+        MockPhpStream::deregister();
+        MockPhpStream::reset();
+    }
+
+    public function testSetPrefix(): void
+    {
+        $console = $this->Console;
+        $console->setPrefix('DRY RUN ');
+        $console->info('Foo:', 'bar');
+        $console->log('Foo:', "\nbar");
+        $console->print('foo bar');
+
+        $this->assertSameTargetMessages([
+            [5, '➤ Foo: bar'],
+            [6, "- Foo:\n  bar"],
+            [6, 'foo bar'],
+        ], $this->TtyTarget);
+
+        $this->assertSameTargetOutput(
+            "\e[2mDRY RUN \e[22m\e[1m\e[36m➤ \e[39m\e[22m\e[1mFoo:\e[22m\e[36m bar\e[39m\n"
+                . "\e[2mDRY RUN \e[22m\e[33m- \e[39mFoo:\e[33m\n"
+                . "\e[2mDRY RUN \e[22m  bar\e[39m\n"
+                . "\e[2mDRY RUN \e[22mfoo bar\n",
+            ["\n" => '"\n"' . \PHP_EOL],
+        );
     }
 
     public function testGetTargets(): void
     {
-        $all = [$this->TtyTarget, $this->StdoutTarget, $this->ColourTarget];
-        $stdio = [$this->TtyTarget, $this->StdoutTarget];
-        $stderr = [$this->TtyTarget];
-        $stdout = [$this->StdoutTarget];
-        $colour = [$this->ColourTarget];
-        $notTty = [$this->StdoutTarget, $this->ColourTarget];
-        $debug = [$this->TtyTarget, $this->ColourTarget];
         $console = $this->Console;
+        $console->registerTarget($analogTarget = new AnalogTarget(), Console::LEVELS_ALL_EXCEPT_DEBUG);
+        $all = [$this->TtyTarget, $this->StdoutTarget, $this->FileTarget, $this->StreamTarget, $analogTarget];
+        $stdio = [$this->TtyTarget, $this->StdoutTarget, $this->StreamTarget];
+        $stderr = [$this->TtyTarget, $this->StreamTarget];
+        $stdout = [$this->StdoutTarget];
+        $notStdio = [$this->FileTarget, $analogTarget];
+        $notTty = [$this->StdoutTarget, $this->FileTarget, $analogTarget];
+        $debug = [$this->TtyTarget, $this->FileTarget, $this->StreamTarget];
         $this->assertSame($all, $console->getTargets());
         $this->assertSame($stdio, $console->getTargets(null, Console::TARGET_STDIO));
-        $this->assertSame($colour, $console->getTargets(null, Console::TARGET_STDIO | Console::TARGET_INVERT));
+        $this->assertSame($notStdio, $console->getTargets(null, Console::TARGET_STDIO | Console::TARGET_INVERT));
         $this->assertSame($stderr, $console->getTargets(null, Console::TARGET_TTY));
         $this->assertSame($notTty, $console->getTargets(null, Console::TARGET_TTY | Console::TARGET_INVERT));
         $this->assertSame($stderr, $console->getTargets(null, Console::TARGET_STDERR));
         $this->assertSame($stdout, $console->getTargets(null, Console::TARGET_STDOUT));
         $this->assertSame($debug, $console->getTargets(Console::LEVEL_DEBUG));
         $this->assertSame([], $console->getTargets(Console::LEVEL_DEBUG, Console::TARGET_STDOUT));
+        $this->assertSame($all, $console->getTargets(null, Console::TARGET_INVERT));
     }
 
-    public function testMessageOutput(): void
+    public function testOutput(): void
     {
         $console = $this->Console;
         $console->info('info(<msg1>)');
@@ -125,6 +171,7 @@ final class ConsoleTest extends TestCase
         $console->warnOnce('warnOnce(<msg1>)');
 
         $console->deregisterTarget($this->TtyTarget);
+        $console->deregisterTarget($this->StreamTarget);
         $console->logProgress('logProgress(<msg1>,<msg2>)', '<msg2>');
         $console->logProgress('logProgress(<msg1>)');
         $console->clearProgress();
@@ -173,41 +220,50 @@ final class ConsoleTest extends TestCase
             [7, ': {' . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 3) . '} debugOnce(msg1)'],
             [7, ': {' . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 4) . '} debugOnce(msg1,msg2) <msg2>'],
         ]);
-        $expectedColour = [
-            [5, "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m"],
-            [5, "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m"],
-            [5, "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m)\e[39m\e[22m"],
-            [5, "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m)\e[39m\e[22m <msg2>"],
-            [5, "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m"],
-            [5, "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m"],
-            [5, "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m <msg2>"],
-            [6, "\e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m)"],
-            [5, "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,\e[33m\e[4mendMsg1\e[24m\e[35m)\e[39m\e[22m"],
-            [6, "  \e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[33m <msg2>\e[39m"],
-            [5, "  \e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m"],
-            [5, "\e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m <endMsg2>"],
-            [6, "\e[33m- \e[39mlogOnce(\e[33m\e[4mmsg1\e[24m\e[39m)"],
-            [6, "\e[33m- \e[39mlogOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[33m <msg2>\e[39m"],
-            [5, "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,null,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m"],
-            [5, "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,\e[33m\e[4mendMsg1\e[24m\e[35m,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m"],
-            [3, "  \e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merror(\e[33m\e[4mmsg1\e[24m\e[31m)\e[39m\e[22m"],
-            [3, "  \e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merror(\e[33m\e[4mmsg1\e[24m\e[31m,\e[33m\e[4mmsg2\e[24m\e[31m)\e[39m\e[22m <msg2>"],
-            [5, "  \e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m <endMsg2>"],
-            [3, "\e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merrorOnce(\e[33m\e[4mmsg1\e[24m\e[31m)\e[39m\e[22m"],
-            [3, "\e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merrorOnce(\e[33m\e[4mmsg1\e[24m\e[31m,\e[33m\e[4mmsg2\e[24m\e[31m)\e[39m\e[22m <msg2>"],
-            [5, "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m)\e[39m\e[22m <msg2>"],
-            [5, "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m)\e[39m\e[22m"],
-            [4, "  \e[1m\e[33m^ \e[39m\e[22m\e[33mwarn(\e[33m\e[4mmsg1\e[24m\e[33m)\e[39m"],
-            [4, "  \e[1m\e[33m^ \e[39m\e[22m\e[33mwarn(\e[33m\e[4mmsg1\e[24m\e[33m,\e[33m\e[4mmsg2\e[24m\e[33m)\e[39m <msg2>"],
-            [5, "\e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m"],
-            [4, "\e[1m\e[33m^ \e[39m\e[22m\e[33mwarnOnce(\e[33m\e[4mmsg1\e[24m\e[33m)\e[39m"],
-            [4, "\e[1m\e[33m^ \e[39m\e[22m\e[33mwarnOnce(\e[33m\e[4mmsg1\e[24m\e[33m,\e[33m\e[4mmsg2\e[24m\e[33m)\e[39m <msg2>"],
-            [7, "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line) . "} \e[1mdebug(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22;2m\e[22m"],
-            [7, "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 1) . "} \e[1mdebug(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22;2m\e[22m\e[2m <msg2>\e[22m"],
-            [7, "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 3) . "} \e[1mdebugOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22;2m\e[22m"],
-            [7, "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 4) . "} \e[1mdebugOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22;2m\e[22m\e[2m <msg2>\e[22m"],
-        ];
+        $expectedFile = array_values(array_filter(
+            $expectedTty,
+            fn($msg) => $msg !== [5, ''] && $msg !== [5, '  '],
+        ));
+        $expectedStream = "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
+            . "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
+            . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m)\e[39m\e[22m\n"
+            . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
+            . "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
+            . "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
+            . "  \n"
+            . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
+            . "\e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m)\n"
+            . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,\e[33m\e[4mendMsg1\e[24m\e[35m)\e[39m\e[22m\n"
+            . "  \e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[33m <msg2>\e[39m\n"
+            . "  \e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m\n"
+            . "  \n"
+            . "\e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m <endMsg2>\n"
+            . "\n"
+            . "\e[33m- \e[39mlogOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\n"
+            . "\e[33m- \e[39mlogOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[33m <msg2>\e[39m\n"
+            . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,null,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m\n"
+            . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,\e[33m\e[4mendMsg1\e[24m\e[35m,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m\n"
+            . "  \e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merror(\e[33m\e[4mmsg1\e[24m\e[31m)\e[39m\e[22m\n"
+            . "  \e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merror(\e[33m\e[4mmsg1\e[24m\e[31m,\e[33m\e[4mmsg2\e[24m\e[31m)\e[39m\e[22m <msg2>\n"
+            . "  \e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m <endMsg2>\n"
+            . "  \n"
+            . "\e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merrorOnce(\e[33m\e[4mmsg1\e[24m\e[31m)\e[39m\e[22m\n"
+            . "\e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merrorOnce(\e[33m\e[4mmsg1\e[24m\e[31m,\e[33m\e[4mmsg2\e[24m\e[31m)\e[39m\e[22m <msg2>\n"
+            . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
+            . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m)\e[39m\e[22m\n"
+            . "  \e[1m\e[33m^ \e[39m\e[22m\e[33mwarn(\e[33m\e[4mmsg1\e[24m\e[33m)\e[39m\n"
+            . "  \e[1m\e[33m^ \e[39m\e[22m\e[33mwarn(\e[33m\e[4mmsg1\e[24m\e[33m,\e[33m\e[4mmsg2\e[24m\e[33m)\e[39m <msg2>\n"
+            . "  \n"
+            . "\e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m\n"
+            . "\n"
+            . "\e[1m\e[33m^ \e[39m\e[22m\e[33mwarnOnce(\e[33m\e[4mmsg1\e[24m\e[33m)\e[39m\n"
+            . "\e[1m\e[33m^ \e[39m\e[22m\e[33mwarnOnce(\e[33m\e[4mmsg1\e[24m\e[33m,\e[33m\e[4mmsg2\e[24m\e[33m)\e[39m <msg2>\n"
+            . "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line) . "} \e[1mdebug(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22;2m\e[22m\n"
+            . "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 1) . "} \e[1mdebug(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22;2m\e[22m\e[2m <msg2>\e[22m\n"
+            . "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 3) . "} \e[1mdebugOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22;2m\e[22m\n"
+            . "\e[2m: \e[22m\e[2m{" . __CLASS__ . '->' . __FUNCTION__ . ':' . ($line + 4) . "} \e[1mdebugOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22;2m\e[22m\e[2m <msg2>\e[22m\n";
         $constants = [
+            "\n" => '"\n"' . \PHP_EOL,
             __CLASS__ => '__CLASS__',
             __FUNCTION__ => '__FUNCTION__',
             ':' . ($line) => "':' . (\$line)",
@@ -215,69 +271,132 @@ final class ConsoleTest extends TestCase
             ':' . ($line + 3) => "':' . (\$line + 3)",
             ':' . ($line + 4) => "':' . (\$line + 4)",
         ];
-
-        $actualTty = $this->TtyTarget->getMessages();
-        $actualStdout = $this->StdoutTarget->getMessages();
-        $actualColour = $this->ColourTarget->getMessages();
-        $this->assertSameConsoleMessages($expectedTty, $actualTty, self::getMessage($actualTty, $constants, '$expectedTty'));
-        $this->assertSameConsoleMessages($expectedStdout, $actualStdout, self::getMessage($actualStdout, $constants, '$expectedStdout'));
-        $this->assertSameConsoleMessages($expectedColour, $actualColour, self::getMessage($actualColour, $constants, '$expectedColour'));
+        $this->assertSameTargetMessages($expectedTty, $this->TtyTarget, $constants, '$expectedTty');
+        $this->assertSameTargetMessages($expectedStdout, $this->StdoutTarget, $constants, '$expectedStdout');
+        $this->assertSameTargetMessages($expectedFile, $this->FileTarget, $constants, '$expectedFile');
+        $this->assertSameTargetOutput($expectedStream, $constants, '$expectedStream');
         $this->assertSame(6, $console->errors());
         $this->assertSame(7, $console->warnings());
     }
 
     public function testLogProgress(): void
     {
-        $spinnerState = &$this->getSpinnerState();
+        $console = $this->Console;
+        $spinnerState = &$this->getSpinnerState($this->Formatter);
+        $streamSpinnerState = &$this->getSpinnerState($this->StreamFormatter);
         for ($i = 0; $i < 11; $i++) {
             if ($spinnerState[1] !== null) {
-                $spinnerState[1] = (float) (hrtime(true) / 1000) - 80000;
-                Console::logProgress('Complete:', sprintf('%d%%', ($i + 1) * 100 / 11));
+                $streamSpinnerState[1] = $spinnerState[1] = (float) (hrtime(true) / 1000) - 80000;
+                $console->logProgress('Complete:', sprintf('%d%%', ($i + 1) * 100 / 11));
             } else {
-                Console::logProgress('Starting');
+                $console->logProgress('Starting');
             }
         }
-        Console::clearProgress();
+        $console->clearProgress();
 
-        $this->assertSameConsoleMessages([
-            [Console::LEVEL_INFO, "⠋ Starting\r"],
-            [Console::LEVEL_INFO, "⠙ Complete: 18%\r"],
-            [Console::LEVEL_INFO, "⠹ Complete: 27%\r"],
-            [Console::LEVEL_INFO, "⠸ Complete: 36%\r"],
-            [Console::LEVEL_INFO, "⠼ Complete: 45%\r"],
-            [Console::LEVEL_INFO, "⠴ Complete: 54%\r"],
-            [Console::LEVEL_INFO, "⠦ Complete: 63%\r"],
-            [Console::LEVEL_INFO, "⠧ Complete: 72%\r"],
-            [Console::LEVEL_INFO, "⠇ Complete: 81%\r"],
-            [Console::LEVEL_INFO, "⠏ Complete: 90%\r"],
-            [Console::LEVEL_INFO, "⠋ Complete: 100%\r"],
-            [Console::LEVEL_INFO, "\r"],
-        ], $this->TtyTarget->getMessages());
-        $this->assertSame([], $this->StdoutTarget->getMessages());
+        $this->assertSameTargetMessages([
+            [6, "⠋ Starting\r"],
+            [6, "⠙ Complete: 18%\r"],
+            [6, "⠹ Complete: 27%\r"],
+            [6, "⠸ Complete: 36%\r"],
+            [6, "⠼ Complete: 45%\r"],
+            [6, "⠴ Complete: 54%\r"],
+            [6, "⠦ Complete: 63%\r"],
+            [6, "⠧ Complete: 72%\r"],
+            [6, "⠇ Complete: 81%\r"],
+            [6, "⠏ Complete: 90%\r"],
+            [6, "⠋ Complete: 100%\r"],
+            [6, "\r"],
+        ], $this->TtyTarget);
+        $this->assertSameTargetMessages([], $this->StdoutTarget);
+        $this->assertSameTargetMessages([], $this->FileTarget);
+        $this->assertSameTargetOutput(
+            "\e[?7l\e[33m⠋ \e[39mStarting\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠙ \e[39mComplete:\e[33m 18%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠹ \e[39mComplete:\e[33m 27%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠸ \e[39mComplete:\e[33m 36%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠼ \e[39mComplete:\e[33m 45%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠴ \e[39mComplete:\e[33m 54%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠦ \e[39mComplete:\e[33m 63%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠧ \e[39mComplete:\e[33m 72%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠇ \e[39mComplete:\e[33m 81%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠏ \e[39mComplete:\e[33m 90%\e[39m\r"
+                . "\e[K\e[?7h\e[?7l\e[33m⠋ \e[39mComplete:\e[33m 100%\e[39m\r"
+                . "\e[K\e[?7h",
+            ["\r" => '"\r"' . \PHP_EOL],
+        );
+    }
+
+    public function testCloseAfterLogProgress(): void
+    {
+        $console = $this->Console;
+        $console->logProgress('Starting');
+
+        $this->assertSameTargetOutput("\e[?7l\e[33m⠋ \e[39mStarting");
+
+        $console->deregisterTarget($this->TtyTarget);
+        $console->deregisterTarget($this->StreamTarget);
+        $this->TtyTarget->close();
+        $this->StreamTarget->close();
+
+        $this->assertSameTargetMessages([[6, "⠋ Starting\r"]], $this->TtyTarget);
+        $this->assertSameTargetOutput("\e[?7l\e[33m⠋ \e[39mStarting\r\e[K\e[?7h");
     }
 
     /**
      * @return array{int<0,max>,float|null}
      */
-    private function &getSpinnerState(): array
+    private function &getSpinnerState(Formatter $formatter): array
     {
         return (function &() {
             /** @var Formatter $this */
             // @phpstan-ignore varTag.nativeType, property.private
             return $this->SpinnerState;
-        })->bindTo($this->Formatter, $this->Formatter)();
+        })->bindTo($formatter, $formatter)();
+    }
+
+    /**
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $expected
+     * @param array<non-empty-string,string> $constants
+     */
+    private function assertSameTargetMessages(array $expected, MockTarget $target, array $constants = [], string $expectedName = '$expected'): void
+    {
+        $actual = $target->getMessages();
+        $this->assertSameConsoleMessages($expected, $actual, self::getMessage($actual, $constants, $expectedName));
+    }
+
+    /**
+     * @param array<non-empty-string,string> $constants
+     */
+    private function assertSameTargetOutput(string $expected, array $constants = [], string $expectedName = '$expected'): void
+    {
+        $actual = File::getContents('mock://output');
+        $this->assertSame($expected, $actual, self::getMessage($actual, $constants, $expectedName));
     }
 
     /**
      * @param mixed $actual
      * @param array<non-empty-string,string> $constants
      */
-    private static function getMessage($actual, array $constants, string $expectedName = '$expected'): string
+    private static function getMessage($actual, array $constants = [], string $expectedName = '$expected'): string
     {
         return sprintf(
             'If output changed, replace %s with: %s',
             $expectedName,
             Get::code($actual, ', ', ' => ', null, '    ', [], $constants),
         );
+    }
+}
+
+class FakeTtyStreamTarget extends StreamTarget
+{
+    /**
+     * @inheritDoc
+     */
+    protected function applyStream($stream): void
+    {
+        parent::applyStream($stream);
+        $this->IsStderr = true;
+        $this->IsTty = true;
     }
 }

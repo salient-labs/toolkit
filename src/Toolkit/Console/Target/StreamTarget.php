@@ -20,16 +20,16 @@ class StreamTarget extends AbstractStreamTarget
     public const DEFAULT_TIMESTAMP_FORMAT = '[d M y H:i:s.vO] ';
 
     /** @var resource|null */
-    private $Stream;
-    private ?string $Uri;
-    private bool $IsStdout;
-    private bool $IsStderr;
-    private bool $IsTty;
-    private bool $Close;
-    private bool $AddTimestamp;
-    private string $TimestampFormat;
-    private ?DateTimeZone $Timezone;
-    private ?string $Filename = null;
+    protected $Stream;
+    protected ?string $Uri;
+    protected bool $IsStdout;
+    protected bool $IsStderr;
+    protected bool $IsTty;
+    protected bool $Close;
+    protected bool $AddTimestamp;
+    protected string $TimestampFormat;
+    protected ?DateTimeZone $Timezone;
+    protected ?string $Filename = null;
 
     private static bool $HasPendingClearLine = false;
 
@@ -213,7 +213,7 @@ class StreamTarget extends AbstractStreamTarget
     /**
      * @param resource $stream
      */
-    private function applyStream($stream): void
+    protected function applyStream($stream): void
     {
         $this->Stream = $stream;
         $this->Uri = stream_get_meta_data($stream)['uri'] ?? null;
