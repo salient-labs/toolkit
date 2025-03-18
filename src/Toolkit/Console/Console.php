@@ -29,7 +29,7 @@ use Throwable;
 /**
  * @implements FacadeAwareInterface<ConsoleInterface>
  */
-final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
+class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
 {
     /** @use FacadeAwareInstanceTrait<ConsoleInterface> */
     use FacadeAwareInstanceTrait;
@@ -319,7 +319,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function getStdoutTarget(): StreamTargetInterface
     {
-        return $this->State->StdoutTarget ??= StreamTarget::fromStream(\STDOUT);
+        return $this->State->StdoutTarget ??= new StreamTarget(\STDOUT);
     }
 
     /**
@@ -327,7 +327,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
      */
     public function getStderrTarget(): StreamTargetInterface
     {
-        return $this->State->StderrTarget ??= StreamTarget::fromStream(\STDERR);
+        return $this->State->StderrTarget ??= new StreamTarget(\STDERR);
     }
 
     /**
@@ -878,7 +878,7 @@ final class Console implements ConsoleInterface, FacadeAwareInterface, Unloadabl
         bool $msg2HasTags = false
     ) {
         if (!$this->State->Targets) {
-            $logTarget = StreamTarget::fromPath(sprintf(
+            $logTarget = StreamTarget::fromFile(sprintf(
                 '%s/%s-%s-%s.log',
                 Sys::getTempDir(),
                 Sys::getProgramBasename(),

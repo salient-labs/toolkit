@@ -6,8 +6,10 @@ use Analog\Analog;
 
 /**
  * Writes console output to Analog
+ *
+ * @api
  */
-final class AnalogTarget extends AbstractTarget
+class AnalogTarget extends AbstractTarget
 {
     /**
      * @inheritDoc

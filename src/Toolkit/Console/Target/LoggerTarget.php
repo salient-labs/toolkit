@@ -9,8 +9,10 @@ use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
  * Writes console output to a PSR-3 logger
+ *
+ * @api
  */
-final class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
+class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
 {
     /**
      * @var array<Console::LEVEL_*,LogLevel::*>
@@ -28,6 +30,9 @@ final class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
 
     private LoggerInterface $Logger;
 
+    /**
+     * @api
+     */
     public function __construct(LoggerInterface $logger)
     {
         $this->setLogger($logger);
@@ -36,7 +41,7 @@ final class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
     /**
      * @inheritDoc
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->Logger = $logger;
     }
