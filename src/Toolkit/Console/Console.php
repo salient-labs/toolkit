@@ -900,7 +900,7 @@ class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
             $formatter = $target->getFormatter();
 
             $indent = mb_strlen($formatter->getMessagePrefix($level, $type));
-            $indent = max(0, strpos($msg1, "\n") !== false ? $indent : $indent - 4);
+            $indent = $indent < 4 || strpos($msg1, "\n") !== false ? $indent : $indent - 4;
 
             $_msg1 = $msg1 === '' ? '' : $formatter->format($msg1);
 

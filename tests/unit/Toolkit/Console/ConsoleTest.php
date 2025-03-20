@@ -81,14 +81,14 @@ final class ConsoleTest extends TestCase
 
         $this->assertSameTargetMessages([
             [5, '➤ Foo: bar'],
-            [6, "- Foo:\n  bar"],
+            [6, "- Foo:\n    bar"],
             [6, 'foo bar'],
         ], $this->TtyTarget);
 
         $this->assertSameTargetOutput(
             "\e[2mDRY RUN \e[22m\e[1m\e[36m➤ \e[39m\e[22m\e[1mFoo:\e[22m\e[36m bar\e[39m\n"
                 . "\e[2mDRY RUN \e[22m\e[33m- \e[39mFoo:\e[33m\n"
-                . "\e[2mDRY RUN \e[22m  bar\e[39m\n"
+                . "\e[2mDRY RUN \e[22m    bar\e[39m\n"
                 . "\e[2mDRY RUN \e[22mfoo bar\n",
             ["\n" => '"\n"' . \PHP_EOL],
         );
@@ -277,6 +277,110 @@ final class ConsoleTest extends TestCase
         $this->assertSameTargetOutput($expectedStream, $constants, '$expectedStream');
         $this->assertSame(6, $console->errors());
         $this->assertSame(7, $console->warnings());
+    }
+
+    public function testOutputWithNewlines(): void
+    {
+        $target3 = new MockTarget(null, false, false, false, null, new Formatter(null, null, null, [5 => '=> ', 6 => '-> '], [4 => '>> ']));
+        $target4 = new MockTarget(null, false, false, false, null, new Formatter(null, null, null, [5 => '==> ', 6 => ' -> '], [4 => '>>> ']));
+        $console = $this->Console;
+        $console->registerTarget($target3);
+        $console->registerTarget($target4);
+        $console->info('foo:', "\nbar");
+        $console->info('foo:', "bar\nbaz");
+        $console->info("foo\nbar:", 'baz');
+        $console->info("foo\nbar:", "\nbaz");
+        $console->info("foo\nbar:", "baz\nqux");
+        $console->log('foo:', "\nbar");
+        $console->log('foo:', "bar\nbaz");
+        $console->log("foo\nbar:", 'baz');
+        $console->log("foo\nbar:", "\nbaz");
+        $console->log("foo\nbar:", "baz\nqux");
+        $console->group('foo');
+        $console->group('bar');
+        $console->info('foo:', "\nbar");
+        $console->info('foo:', "bar\nbaz");
+        $console->info("foo\nbar:", 'baz');
+        $console->info("foo\nbar:", "\nbaz");
+        $console->info("foo\nbar:", "baz\nqux");
+        $console->log('foo:', "\nbar");
+        $console->log('foo:', "bar\nbaz");
+        $console->log("foo\nbar:", 'baz');
+        $console->log("foo\nbar:", "\nbaz");
+        $console->log("foo\nbar:", "baz\nqux");
+
+        $this->assertSameTargetMessages([
+            [5, "➤ foo:\n    bar"],
+            [5, "➤ foo:\n    bar\n    baz"],
+            [5, "➤ foo\n  bar: baz"],
+            [5, "➤ foo\n  bar:\n    baz"],
+            [5, "➤ foo\n  bar:\n    baz\n    qux"],
+            [6, "- foo:\n    bar"],
+            [6, "- foo:\n    bar\n    baz"],
+            [6, "- foo\n  bar: baz"],
+            [6, "- foo\n  bar:\n    baz"],
+            [6, "- foo\n  bar:\n    baz\n    qux"],
+            [5, '» foo'],
+            [5, '  » bar'],
+            [5, "  ➤ foo:\n      bar"],
+            [5, "  ➤ foo:\n      bar\n      baz"],
+            [5, "  ➤ foo\n    bar: baz"],
+            [5, "  ➤ foo\n    bar:\n      baz"],
+            [5, "  ➤ foo\n    bar:\n      baz\n      qux"],
+            [6, "  - foo:\n      bar"],
+            [6, "  - foo:\n      bar\n      baz"],
+            [6, "  - foo\n    bar: baz"],
+            [6, "  - foo\n    bar:\n      baz"],
+            [6, "  - foo\n    bar:\n      baz\n      qux"],
+        ], $this->TtyTarget);
+        $this->assertSameTargetMessages([
+            [5, "=> foo:\n     bar"],
+            [5, "=> foo:\n     bar\n     baz"],
+            [5, "=> foo\n   bar: baz"],
+            [5, "=> foo\n   bar:\n     baz"],
+            [5, "=> foo\n   bar:\n     baz\n     qux"],
+            [6, "-> foo:\n     bar"],
+            [6, "-> foo:\n     bar\n     baz"],
+            [6, "-> foo\n   bar: baz"],
+            [6, "-> foo\n   bar:\n     baz"],
+            [6, "-> foo\n   bar:\n     baz\n     qux"],
+            [5, '>> foo'],
+            [5, '  >> bar'],
+            [5, "  => foo:\n       bar"],
+            [5, "  => foo:\n       bar\n       baz"],
+            [5, "  => foo\n     bar: baz"],
+            [5, "  => foo\n     bar:\n       baz"],
+            [5, "  => foo\n     bar:\n       baz\n       qux"],
+            [6, "  -> foo:\n       bar"],
+            [6, "  -> foo:\n       bar\n       baz"],
+            [6, "  -> foo\n     bar: baz"],
+            [6, "  -> foo\n     bar:\n       baz"],
+            [6, "  -> foo\n     bar:\n       baz\n       qux"],
+        ], $target3);
+        $this->assertSameTargetMessages([
+            [5, "==> foo:\n  bar"],
+            [5, "==> foo:\n  bar\n  baz"],
+            [5, "==> foo\n    bar: baz"],
+            [5, "==> foo\n    bar:\n      baz"],
+            [5, "==> foo\n    bar:\n      baz\n      qux"],
+            [6, " -> foo:\n  bar"],
+            [6, " -> foo:\n  bar\n  baz"],
+            [6, " -> foo\n    bar: baz"],
+            [6, " -> foo\n    bar:\n      baz"],
+            [6, " -> foo\n    bar:\n      baz\n      qux"],
+            [5, '>>> foo'],
+            [5, '  >>> bar'],
+            [5, "  ==> foo:\n    bar"],
+            [5, "  ==> foo:\n    bar\n    baz"],
+            [5, "  ==> foo\n      bar: baz"],
+            [5, "  ==> foo\n      bar:\n        baz"],
+            [5, "  ==> foo\n      bar:\n        baz\n        qux"],
+            [6, "   -> foo:\n    bar"],
+            [6, "   -> foo:\n    bar\n    baz"],
+            [6, "   -> foo\n      bar: baz"],
+            [6, "   -> foo\n      bar:\n        baz"],
+            [6, "   -> foo\n      bar:\n        baz\n        qux"],
+        ], $target4);
     }
 
     public function testLogProgress(): void
