@@ -6,10 +6,13 @@ use Salient\Console\Format\Formatter;
 use Salient\Console\Target\AnalogTarget;
 use Salient\Console\Target\StreamTarget;
 use Salient\Console\Console as ConsoleService;
+use Salient\Core\Exception\Exception;
+use Salient\Core\Exception\MultipleErrorException;
 use Salient\Core\Facade\Console;
 use Salient\Testing\Console\MockTarget;
 use Salient\Testing\Core\MockPhpStream;
 use Salient\Tests\TestCase;
+use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 use Salient\Utility\Get;
 
@@ -448,6 +451,204 @@ final class ConsoleTest extends TestCase
     }
 
     /**
+     * @backupGlobals enabled
+     */
+    public function testException(): void
+    {
+        $_ENV['DEBUG'] = '0';
+        $console = $this->Console;
+        $line = __LINE__ + 1;
+        $ex1 = new InvalidArgumentTypeException(1, 'class', 'class-string', 71);
+        $ex2 = new Exception('message2', $ex1);
+        $ex3 = new MultipleErrorException('message3', 'error1', 'error2');
+        $ex4 = new ExceptionWithMetadata('message4');
+        $console->exception($ex2);
+        $console->exception($ex3, Console::LEVEL_ERROR, null);
+        $ex3->reportErrors($console);
+        $console->exception($ex3, Console::LEVEL_ERROR, null);
+        $console->exception($ex4, Console::LEVEL_WARNING);
+        $_ENV['DEBUG'] = '1';
+        $console->exception($ex4, Console::LEVEL_WARNING, null, false);
+
+        $this->assertSameConsoleMessages([
+            [3, sprintf(
+                "! Exception:\n    message2 in %s:%d\n    Caused by InvalidArgumentTypeException: Argument #1 (\$class) must be of type class-string, int given in %s:%d",
+                __FILE__,
+                $line + 1,
+                __FILE__,
+                $line,
+            )],
+            [7, sprintf(
+                ": Stack trace:\n    %s",
+                str_replace("\n", "\n    ", $ex2->getTraceAsString()),
+            )],
+            [3, sprintf(
+                "! MultipleErrorException:\n    message3:\n    - error1\n    - error2 in %s:%d",
+                __FILE__,
+                $line + 2,
+            )],
+            [3, 'Error: error1'],
+            [3, 'Error: error2'],
+            [3, sprintf(
+                '! MultipleErrorException: message3 in %s:%d',
+                __FILE__,
+                $line + 2,
+            )],
+            [4, '^ ExceptionWithMetadata: message4'],
+            [7, sprintf(
+                ": Stack trace:\n    %s",
+                str_replace("\n", "\n    ", $ex4->getTraceAsString()),
+            )],
+            [7, ": foo:\n    bar"],
+            [7, ": baz:\n    1"],
+            [4, sprintf(
+                '^ ExceptionWithMetadata: message4 in %s:%d',
+                __FILE__,
+                $line + 3,
+            )],
+        ], $this->TtyTarget->getMessages());
+        $this->assertSame(5, $console->errors());
+        $this->assertSame(1, $console->warnings());
+    }
+
+    /**
+     * @dataProvider summaryProvider
+     *
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $expected
+     */
+    public function testSummary(
+        array $expected,
+        int $errors,
+        int $warnings,
+        string $finishedText = 'Command finished',
+        string $successText = 'without errors',
+        bool $withResourceUsage = false,
+        bool $withoutErrorsAndWarnings = false,
+        bool $withGenericType = false,
+        bool $expectedHasPatterns = false
+    ): void {
+        $console = $this->Console;
+        for ($i = 0; $i < $errors; $i++) {
+            $console->count(Console::LEVEL_ERROR);
+        }
+        for ($i = 0; $i < $warnings; $i++) {
+            $console->count(Console::LEVEL_WARNING);
+        }
+        $console->summary(
+            $finishedText,
+            $successText,
+            $withResourceUsage,
+            $withoutErrorsAndWarnings,
+            $withGenericType,
+        );
+
+        if ($expectedHasPatterns) {
+            $this->assertConsoleMessagesMatch($expected, $this->TtyTarget->getMessages());
+        } else {
+            $this->assertSameConsoleMessages($expected, $this->TtyTarget->getMessages());
+        }
+    }
+
+    /**
+     * @return array<array{array<array{Console::LEVEL_*,string,2?:array<string,mixed>}>,int,int,3?:string,4?:string,5?:bool,6?:bool,7?:bool,8?:bool}>
+     */
+    public static function summaryProvider(): array
+    {
+        return [
+            [
+                [[6, '✔ Command finished without errors']],
+                0,
+                0,
+            ],
+            [
+                [[3, '✘ Command finished with 1 error']],
+                1,
+                0,
+            ],
+            [
+                [[3, '✘ Command finished with 2 errors and 1 warning']],
+                2,
+                1,
+            ],
+            [
+                [[4, '✘ Command finished with 0 errors and 2 warnings']],
+                0,
+                2,
+            ],
+            [
+                [[6, '✔ Done successfully']],
+                0,
+                0,
+                'Done',
+                'successfully',
+                false,
+                true,
+            ],
+            [
+                [[6, '» Done']],
+                1,
+                0,
+                'Done',
+                'successfully',
+                false,
+                true,
+            ],
+            [
+                [[6, '» Done successfully']],
+                0,
+                0,
+                'Done',
+                'successfully',
+                false,
+                false,
+                true,
+            ],
+            [
+                [[6, '» Done with 1 error']],
+                1,
+                0,
+                'Done',
+                'successfully',
+                false,
+                false,
+                true,
+            ],
+            [
+                [[6, '» Done with 0 errors and 2 warnings']],
+                0,
+                2,
+                'Done',
+                'successfully',
+                false,
+                false,
+                true,
+            ],
+            [
+                [[6, '/^✔ Done successfully in (0|[1-9][0-9]*+)\.[0-9]{3}s \((0|[1-9][0-9]*+)\.[0-9]{3}(B|[KMGTPEZY]iB) memory used\)$/D']],
+                0,
+                0,
+                'Done',
+                'successfully',
+                true,
+                false,
+                false,
+                true,
+            ],
+            [
+                [[3, '/^✘ Done with 1 error in (0|[1-9][0-9]*+)\.[0-9]{3}s \((0|[1-9][0-9]*+)\.[0-9]{3}(B|[KMGTPEZY]iB) memory used\)$/D']],
+                1,
+                0,
+                'Done',
+                'successfully',
+                true,
+                false,
+                false,
+                true,
+            ],
+        ];
+    }
+
+    /**
      * @return array{int<0,max>,float|null}
      */
     private function &getSpinnerState(Formatter $formatter): array
@@ -502,5 +703,16 @@ class FakeTtyStreamTarget extends StreamTarget
         parent::applyStream($stream);
         $this->IsStderr = true;
         $this->IsTty = true;
+    }
+}
+
+class ExceptionWithMetadata extends Exception
+{
+    public function getMetadata(): array
+    {
+        return [
+            'foo' => 'bar',
+            'baz' => 1,
+        ];
     }
 }
