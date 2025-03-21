@@ -291,7 +291,7 @@ interface ConsoleInterface extends
     );
 
     /**
-     * Print "$msg1 $msg2" or similar with level- and type-base formatting
+     * Print "$msg1 $msg2" or similar with level- and type-based formatting
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
      * @param string|null $msg2 Inline formatting tags have no special meaning.
@@ -309,7 +309,7 @@ interface ConsoleInterface extends
     );
 
     /**
-     * Print "$msg1 $msg2" or similar with level- and type-base formatting once
+     * Print "$msg1 $msg2" or similar with level- and type-based formatting once
      * per run
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).

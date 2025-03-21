@@ -1,71 +1,57 @@
-## Terminal output and logging
+# Console
 
-With a similar API to the `console` object provided by web browsers, the
-[Console][] class[^1] provides:
+The Console component provides terminal output and message logging via an API
+similar to `console` in web browsers.
 
-- Familiar methods like `Console::log()` and `Console::error()`
-- Variants like `Console::logOnce()` and `Console::errorOnce()` to output
-  messages once per run
+- Familiar methods like [Console::log()][log()] and [Console::error()][error()]
+- Variants like [Console::logOnce()][logOnce()] and
+  [Console::errorOnce()][errorOnce()] to output messages once per run
 - Output to multiple targets
 - Messages filtered by log level
-- Formatting to reflect message priority and improve readability
+- Formatting that reflects message priority and improves readability
+- Optional Markdown-like syntax for additional formatting
 - Colour output to TTYs
+- [PSR-3 (Logger Interface)][PSR-3] support via [Console::logger()][logger()]
 
-### Default targets
+## Default targets
 
-By default, [Console][] output is appended to a file in the default temporary
-directory, created with mode `0600` if it doesn't already exist:
+If no targets are registered to receive [Console][] output when a message is
+written:
 
-```php
-<?php
-sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
-```
+1. Output is appended to a log file in PHP's default temporary directory,
+   created with mode `0600` if it doesn't already exist:
 
-If the value of environment variable `console_target` is `stderr` or `stdout`,
-[Console][] output is also written to `STDERR` or `STDOUT` respectively.
+   ```php
+   sys_get_temp_dir() . '/<script_basename>-<realpath_hash>-<user_id>.log'
+   ```
 
-If `console_target` is not set and the script is running on the command line:
+2. If the script is running on the command line, output is also written to
+   `STDERR`.
 
-- If `STDERR` is a TTY and `STDOUT` is not, console messages are written to
-  `STDERR` so output to `STDOUT` isn't tainted
-- Otherwise, errors and warnings are written to `STDERR`, and informational
-  messages are written to `STDOUT`
+Debug messages are suppressed unless debug mode is enabled in the environment,
+e.g. by setting `DEBUG=1`.
 
-Debug messages are written to the output log but are not written to `STDOUT` or
-`STDERR` if environment variable `DEBUG` is empty or not set.
+To override these defaults:
 
-To override these defaults, register at least one [Console][] output target,
-e.g. by calling [registerTarget()][], before any other `Console` methods are
-called, preferably while bootstrapping your application.
+- register at least one [Console][] output target while bootstrapping your
+  application, or
+- create an [Application][] or [CliApplication][] and optionally use
+  [logOutput()][] to write output a persistent log file
 
-> [Application][] and [CliApplication][] always call [registerStderrTarget()][],
-> which registers the default `STDOUT` and `STDERR` targets and prevents
-> creation of the default output log. To create a log file that persists between
-> reboots (in your project's `var/log` directory by default), call the app
-> container's [logOutput()][] method.
-
-### Output methods
+## Message methods
 
 <!-- prettier-ignore -->
-| Method          | Message level         | Default prefix   | Default output target     |
-| --------------- | --------------------- | ---------------- | ------------------------- |
-| `error[Once]()` | `LEVEL_ERROR` = `3`   | ` !  `           | `STDERR`                  |
-| `warn[Once]()`  | `LEVEL_WARNING` = `4` | ` ^  `           | `STDERR`                  |
-| `info[Once]()`  | `LEVEL_NOTICE` = `5`  | ` ➤  `           | `STDOUT`                  |
-| `log[Once]()`   | `LEVEL_INFO` = `6`    | ` -  `           | `STDOUT`                  |
-| `debug[Once]()` | `LEVEL_DEBUG` = `7`   | ` :  `           | `STDOUT` (if `DEBUG` set) |
-| `group()`[^2]   | `LEVEL_NOTICE` = `5`  | ` »  `           | `STDOUT`                  |
-| `logProgress()` | `LEVEL_INFO` = `6`    | ` ⠋  ` (spinner) | `STDOUT`                  |
+| Method                             | Message level         | Default prefix             |
+| ---------------------------------- | --------------------- | -------------------------- |
+| `error()`, `errorOnce()`           | `LEVEL_ERROR` = `3`   | ` !  `                     |
+| `warn()`, `warnOnce()`             | `LEVEL_WARNING` = `4` | ` ^  `                     |
+| `group()`,`groupEnd()`             | `LEVEL_NOTICE` = `5`  | ` »  `, ` «  `             |
+| `info()`, `infoOnce()`             | `LEVEL_NOTICE` = `5`  | ` ➤  `                     |
+| `log()`, `logOnce()`               | `LEVEL_INFO` = `6`    | ` -  `                     |
+| `logProgress()`, `clearProgress()` | `LEVEL_INFO` = `6`    | ` ⠋  ` (spinner, TTY only) |
+| `debug()`, `debugOnce()`           | `LEVEL_DEBUG` = `7`   | ` :  `                     |
 
-[^1]:
-    Actually a facade for [ConsoleInterface][], which is backed by a shared
-    instance of [Console][ConsoleService] by default.
-
-[^2]:
-    `Console::group()` adds a level of indentation to all `Console` output until
-    `Console::groupEnd()` is called.
-
-### Formatting
+## Formatting
 
 The following Markdown-like syntax is supported in [Console][] messages:
 
@@ -98,13 +84,16 @@ hard line break.
   https://salient-labs.github.io/toolkit/Salient.Cli.CliApplication.html
 [Console]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html
-[ConsoleInterface]:
-  https://salient-labs.github.io/toolkit/Salient.Contract.Console.ConsoleInterface.html
-[ConsoleService]:
-  https://salient-labs.github.io/toolkit/Salient.Console.Console.html
+[error()]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_error
+[errorOnce()]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_errorOnce
+[log()]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_log
+[logger()]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_logger
+[logOnce()]:
+  https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_logOnce
 [logOutput()]:
   https://salient-labs.github.io/toolkit/Salient.Container.Application.html#_logOutput
-[registerStderrTarget()]:
-  https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerStderrTarget
-[registerTarget()]:
-  https://salient-labs.github.io/toolkit/Salient.Console.Console.html#_registerTarget
+[PSR-3]: https://www.php-fig.org/psr/psr-3/

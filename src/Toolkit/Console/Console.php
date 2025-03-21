@@ -25,6 +25,8 @@ use Salient\Utility\Sys;
 use Throwable;
 
 /**
+ * @api
+ *
  * @implements FacadeAwareInterface<ConsoleInterface>
  */
 class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
