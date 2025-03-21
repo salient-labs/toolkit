@@ -20,7 +20,7 @@ abstract class AbstractFormat implements FormatInterface
     /**
      * Get a formatter for the format
      *
-     * @param TargetInterface|(Closure(): int|null)|null $targetOrWidthCallback
+     * @param TargetInterface|(Closure(): (int|null))|null $targetOrWidthCallback
      */
     public static function getFormatter($targetOrWidthCallback = null): Formatter
     {

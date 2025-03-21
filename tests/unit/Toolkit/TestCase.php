@@ -79,6 +79,30 @@ abstract class TestCase extends PHPUnitTestCase
     }
 
     /**
+     * Assert that console messages matching the given regular expressions are
+     * written
+     *
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $expected
+     * @param array<array{Console::LEVEL_*,string,2?:array<string,mixed>}> $actual
+     */
+    public static function assertConsoleMessagesMatch(
+        array $expected,
+        array $actual,
+        string $message = ''
+    ): void {
+        foreach ($expected as $i => $expectedMessage) {
+            self::assertMatchesRegularExpression($expectedMessage[1], $actual[$i][1], $message);
+            $_expected[$i][0] = $expectedMessage[0];
+            $_actual[$i][0] = $actual[$i][0];
+            if (isset($expectedMessage[2])) {
+                $_expected[$i][2] = $expectedMessage[2];
+                $_actual[$i][2] = $actual[$i][2] ?? null;
+            }
+        }
+        self::assertEquals($_expected ?? [], $_actual ?? [], $message);
+    }
+
+    /**
      * Expect an exception if a given value is a string
      *
      * If `$expected` is a string with no commas, it is passed to

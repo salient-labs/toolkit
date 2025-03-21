@@ -14,25 +14,25 @@
 `salient/console` provides terminal output and message logging via an API
 similar to `console` in web browsers.
 
-- Familiar methods like [Console::log()][log] and [Console::error()][error]
-- Variants like [Console::logOnce()][logOnce] and
-  [Console::errorOnce()][errorOnce] to output messages once per run
+- Familiar methods like [Console::log()][log()] and [Console::error()][error()]
+- Variants like [Console::logOnce()][logOnce()] and
+  [Console::errorOnce()][errorOnce()] to output messages once per run
 - Output to multiple targets
 - Messages filtered by log level
 - Formatting that reflects message priority and improves readability
 - Optional Markdown-like syntax for additional formatting
 - Colour output to TTYs
-- [PSR-3 (Logger Interface)][PSR-3] support via [Console::logger()][logger]
+- [PSR-3 (Logger Interface)][PSR-3] support via [Console::logger()][logger()]
 
-[error]:
+[error()]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_error
-[errorOnce]:
+[errorOnce()]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_errorOnce
-[log]:
+[log()]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_log
-[logger]:
+[logger()]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_logger
-[logOnce]:
+[logOnce()]:
   https://salient-labs.github.io/toolkit/Salient.Core.Facade.Console.html#_logOnce
 [PSR-3]: https://www.php-fig.org/psr/psr-3/
 

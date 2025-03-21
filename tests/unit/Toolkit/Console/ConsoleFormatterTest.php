@@ -12,6 +12,7 @@ use Salient\Utility\Str;
 
 /**
  * @covers \Salient\Console\Format\Formatter
+ * @covers \Salient\Console\Format\AbstractFormat
  * @covers \Salient\Console\Format\LoopbackFormat
  * @covers \Salient\Console\Format\ManPageFormat
  * @covers \Salient\Console\Format\MarkdownFormat

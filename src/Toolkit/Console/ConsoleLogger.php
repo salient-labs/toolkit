@@ -12,7 +12,7 @@ use Throwable;
 /**
  * A PSR-3 logger backed by a console service
  */
-final class ConsoleLogger implements LoggerInterface
+class ConsoleLogger implements LoggerInterface
 {
     private const LOG_LEVEL_MAP = [
         LogLevel::EMERGENCY => Console::LEVEL_EMERGENCY,

@@ -403,10 +403,10 @@ class Application extends Container implements ApplicationInterface
             throw new LogicException('Output log already registered');
         }
         $name ??= $this->Name;
-        $target = StreamTarget::fromPath($this->getLogPath() . "/$name.log");
+        $target = StreamTarget::fromFile($this->getLogPath() . "/$name.log");
         Console::registerTarget($target, Console::LEVELS_ALL_EXCEPT_DEBUG);
         if ($debug ?? Env::getDebug()) {
-            $target = StreamTarget::fromPath($this->getLogPath() . "/$name.debug.log");
+            $target = StreamTarget::fromFile($this->getLogPath() . "/$name.debug.log");
             Console::registerTarget($target, Console::LEVELS_ALL);
         }
         $this->OutputLogIsRegistered = true;

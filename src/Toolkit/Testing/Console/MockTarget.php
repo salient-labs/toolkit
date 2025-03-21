@@ -46,6 +46,14 @@ final class MockTarget implements StreamTargetInterface
     }
 
     /**
+     * @internal
+     */
+    public function __destruct()
+    {
+        $this->close();
+    }
+
+    /**
      * @inheritDoc
      */
     public function isStdout(): bool
@@ -135,10 +143,7 @@ final class MockTarget implements StreamTargetInterface
         $this->IsStdout = false;
         $this->IsStderr = false;
         $this->IsTty = false;
-        $this->Width = null;
         $this->Stream = null;
-        unset($this->Formatter);
-
         $this->IsValid = false;
     }
 

@@ -16,7 +16,7 @@ use UnexpectedValueException;
 /**
  * Formats messages for a console output target
  */
-final class Formatter implements FormatterInterface
+class Formatter implements FormatterInterface
 {
     use ImmutableTrait;
 

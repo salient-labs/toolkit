@@ -6,54 +6,61 @@ use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Facade\Err;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
-use Salient\Utility\Str;
 use DateTime;
 use DateTimeZone;
 use LogicException;
 
 /**
- * Writes console output to a PHP stream
+ * Writes console output to a file or stream
+ *
+ * @api
  */
-final class StreamTarget extends AbstractStreamTarget
+class StreamTarget extends AbstractStreamTarget
 {
     public const DEFAULT_TIMESTAMP_FORMAT = '[d M y H:i:s.vO] ';
 
     /** @var resource|null */
-    private $Stream;
-    private bool $IsCloseable;
-    private ?string $Uri;
-    private bool $AddTimestamp;
-    private string $TimestampFormat;
-    private ?DateTimeZone $Timezone;
-    private bool $IsStdout;
-    private bool $IsStderr;
-    private bool $IsTty;
-    private ?string $Path = null;
+    protected $Stream;
+    protected ?string $Uri;
+    protected bool $IsStdout;
+    protected bool $IsStderr;
+    protected bool $IsTty;
+    protected bool $Close;
+    protected bool $AddTimestamp;
+    protected string $TimestampFormat;
+    protected ?DateTimeZone $Timezone;
+    protected ?string $Filename = null;
+
     private static bool $HasPendingClearLine = false;
 
     /**
+     * @api
+     *
      * @param resource $stream
-     * @param DateTimeZone|string|null $timezone
+     * @param bool $close If `true`, the stream is closed when the target is
+     * closed.
+     * @param bool|null $addTimestamp If `null` (the default), timestamps are
+     * added if `$stream` is not `STDOUT` or `STDERR`.
+     * @param DateTimeZone|string|null $timezone If `null`, the timezone
+     * returned by {@see date_default_timezone_get()} is used.
      */
-    private function __construct(
+    public function __construct(
         $stream,
-        bool $closeable,
-        ?bool $addTimestamp,
-        ?string $timestampFormat,
-        $timezone
+        bool $close = false,
+        ?bool $addTimestamp = null,
+        string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
+        $timezone = null
     ) {
+        if (!File::isStream($stream)) {
+            throw new InvalidArgumentTypeException(1, 'stream', 'resource (stream)', $stream);
+        }
+
         $this->applyStream($stream);
-
-        $this->IsCloseable = $closeable;
-        $this->AddTimestamp = $addTimestamp || (
-            $addTimestamp === null && !$this->IsStdout && !$this->IsStderr
-        );
-
+        $this->Close = $close;
+        $this->AddTimestamp = $addTimestamp
+            || ($addTimestamp === null && !$this->IsStdout && !$this->IsStderr);
         if ($this->AddTimestamp) {
-            $this->TimestampFormat = Str::coalesce(
-                $timestampFormat,
-                self::DEFAULT_TIMESTAMP_FORMAT,
-            );
+            $this->TimestampFormat = $timestampFormat;
             $this->Timezone = is_string($timezone)
                 ? new DateTimeZone($timezone)
                 : $timezone;
@@ -61,19 +68,26 @@ final class StreamTarget extends AbstractStreamTarget
     }
 
     /**
-     * @param resource $stream
+     * Opens a file in append mode and creates a new StreamTarget object for it
+     *
+     * @param string $filename Created with file mode `0600` if it doesn't
+     * exist.
+     * @param bool|null $addTimestamp If `null` (the default), timestamps are
+     * added if `$filename` does not resolve to `STDOUT` or `STDERR`.
+     * @param DateTimeZone|string|null $timezone If `null`, the timezone
+     * returned by {@see date_default_timezone_get()} is used.
      */
-    private function applyStream($stream): void
-    {
-        $meta = stream_get_meta_data($stream);
-
-        $this->Stream = $stream;
-        $this->Uri = $meta['uri'] ?? null;
-        $this->IsStdout = $this->Uri === 'php://stdout';
-        $this->IsStderr = $this->Uri === 'php://stderr';
-        $this->IsTty = stream_isatty($stream);
-
-        stream_set_write_buffer($stream, 0);
+    public static function fromFile(
+        string $filename,
+        ?bool $addTimestamp = null,
+        string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
+        $timezone = null
+    ): self {
+        File::create($filename, 0600);
+        $stream = File::open($filename, 'a');
+        $instance = new self($stream, true, $addTimestamp, $timestampFormat, $timezone);
+        $instance->Filename = $filename;
+        return $instance;
     }
 
     /**
@@ -82,6 +96,35 @@ final class StreamTarget extends AbstractStreamTarget
     public function __destruct()
     {
         $this->close();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function close(): void
+    {
+        if (!$this->Stream) {
+            return;
+        }
+
+        if (
+            $this->IsTty
+            && self::$HasPendingClearLine
+            && File::isStream($this->Stream)
+        ) {
+            $this->clearLine(true);
+        }
+
+        if ($this->Close) {
+            File::close($this->Stream, $this->Filename ?? $this->Uri);
+        }
+
+        $this->Stream = null;
+        $this->Uri = null;
+        $this->IsStdout = false;
+        $this->IsStderr = false;
+        $this->IsTty = false;
+        $this->Filename = null;
     }
 
     /**
@@ -113,107 +156,27 @@ final class StreamTarget extends AbstractStreamTarget
      */
     public function getUri(): ?string
     {
-        return $this->Path ?? $this->Uri;
+        return $this->Filename ?? $this->Uri;
     }
 
     /**
      * @inheritDoc
      */
-    public function close(): void
-    {
-        if (!$this->Stream) {
-            return;
-        }
-
-        if ($this->IsTty && self::$HasPendingClearLine && is_resource($this->Stream)) {
-            $this->clearLine(true);
-        }
-
-        if ($this->IsCloseable) {
-            File::close($this->Stream, $this->Path);
-        }
-
-        $this->Stream = null;
-        $this->Uri = null;
-        $this->IsStdout = false;
-        $this->IsStderr = false;
-        $this->IsTty = false;
-        $this->Path = null;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function reopen(?string $path = null): void
+    public function reopen(?string $filename = null): void
     {
         $this->assertIsValid();
 
-        if ($this->Path === null) {
-            throw new LogicException(sprintf(
-                'Only instances created by %s::fromPath() can be reopened',
-                static::class,
-            ));
+        // Do nothing if there is nothing to reopen, or if the stream can't be
+        // closed
+        $filename ??= $this->Filename;
+        if ($filename === null || !$this->Close) {
+            return;
         }
 
-        if ($path === null || $path === '') {
-            $path = $this->Path;
-        }
-
-        File::close($this->Stream, $this->Path);
-
-        if (!File::same($path, $this->Path)) {
-            File::create($path, 0600);
-        }
-
-        $stream = File::open($path, 'a');
-        $this->applyStream($stream);
-        $this->Path = $path;
-    }
-
-    /**
-     * Creates a new StreamTarget object backed by an open PHP stream
-     *
-     * @param resource $stream
-     * @param bool $closeable If `true`, call {@see File::close()} to close
-     * `$stream` when the target is closed.
-     * @param bool|null $addTimestamp If `null`, add timestamps if `$stream` is
-     * not `STDOUT` or `STDERR`.
-     * @param DateTimeZone|string|null $timezone If `null`, the timezone
-     * returned by {@see date_default_timezone_get()} is used.
-     */
-    public static function fromStream(
-        $stream,
-        bool $closeable = false,
-        ?bool $addTimestamp = null,
-        ?string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
-        $timezone = null
-    ): self {
-        if (!File::isStream($stream)) {
-            throw new InvalidArgumentTypeException(1, 'stream', 'resource (stream)', $stream);
-        }
-
-        return new self($stream, $closeable, $addTimestamp, $timestampFormat, $timezone);
-    }
-
-    /**
-     * Open a file in append mode and return a console output target for it
-     *
-     * @param bool|null $addTimestamp If `null`, add timestamps if `$path` does
-     * not resolve to `STDOUT` or `STDERR`.
-     * @param DateTimeZone|string|null $timezone If `null`, the timezone
-     * returned by {@see date_default_timezone_get()} is used.
-     */
-    public static function fromPath(
-        string $path,
-        ?bool $addTimestamp = null,
-        ?string $timestampFormat = StreamTarget::DEFAULT_TIMESTAMP_FORMAT,
-        $timezone = null
-    ): self {
-        File::create($path, 0600);
-        $stream = File::open($path, 'a');
-        $instance = new self($stream, true, $addTimestamp, $timestampFormat, $timezone);
-        $instance->Path = $path;
-        return $instance;
+        File::close($this->Stream, $this->Filename ?? $this->Uri);
+        File::create($filename, 0600);
+        $this->applyStream(File::open($filename, 'a'));
+        $this->Filename = $filename;
     }
 
     /**
@@ -247,9 +210,34 @@ final class StreamTarget extends AbstractStreamTarget
         File::write($this->Stream, rtrim($message, "\r") . "\n");
     }
 
-    public function getPath(): ?string
+    /**
+     * @param resource $stream
+     */
+    protected function applyStream($stream): void
     {
-        return $this->Path;
+        $this->Stream = $stream;
+        $this->Uri = stream_get_meta_data($stream)['uri'] ?? null;
+        $this->IsStdout = $this->Uri === 'php://stdout';
+        $this->IsStderr = $this->Uri === 'php://stderr';
+        $this->IsTty = stream_isatty($stream);
+
+        stream_set_write_buffer($stream, 0);
+    }
+
+    /**
+     * @phpstan-assert !null $this->Stream
+     */
+    private function clearLine(bool $checkForError = false): void
+    {
+        $this->assertIsValid();
+
+        $data = $checkForError
+            && Err::isLoaded()
+            && Err::isShuttingDownOnError()
+                ? self::AUTO_WRAP . "\n"
+                : "\r" . self::CLEAR_LINE . self::AUTO_WRAP;
+        File::write($this->Stream, $data);
+        self::$HasPendingClearLine = false;
     }
 
     /**
@@ -260,21 +248,5 @@ final class StreamTarget extends AbstractStreamTarget
         if (!$this->Stream) {
             throw new LogicException('Target is closed');
         }
-    }
-
-    /**
-     * @phpstan-assert !null $this->Stream
-     */
-    private function clearLine(bool $preserveOutputOnError = false): void
-    {
-        $this->assertIsValid();
-
-        $data = $preserveOutputOnError
-            && Err::isLoaded()
-            && Err::isShuttingDownOnError()
-                ? self::AUTO_WRAP . "\n"
-                : "\r" . self::CLEAR_LINE . self::AUTO_WRAP;
-        File::write($this->Stream, $data);
-        self::$HasPendingClearLine = false;
     }
 }

@@ -176,9 +176,9 @@ interface ConsoleInterface extends
      * Increase message indentation level and print "» $msg1 $msg2" or similar
      * with level LEVEL_NOTICE
      *
-     * If `$endMsg1` is not `null`, `"« $endMsg1 $endMsg2"` or similar is
-     * printed with level `LEVEL_NOTICE` when {@see groupEnd()} is called to
-     * close the group.
+     * If `$endMsg1` or `$endMsg2` are not `null`, `"« $endMsg1 $endMsg2"` or
+     * similar is printed with level `LEVEL_NOTICE` when {@see groupEnd()} is
+     * called to close the group.
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
      * @param string|null $msg2 Inline formatting tags have no special meaning.
@@ -291,7 +291,7 @@ interface ConsoleInterface extends
     );
 
     /**
-     * Print "$msg1 $msg2" or similar with level- and type-base formatting
+     * Print "$msg1 $msg2" or similar with level- and type-based formatting
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
      * @param string|null $msg2 Inline formatting tags have no special meaning.
@@ -309,7 +309,7 @@ interface ConsoleInterface extends
     );
 
     /**
-     * Print "$msg1 $msg2" or similar with level- and type-base formatting once
+     * Print "$msg1 $msg2" or similar with level- and type-based formatting once
      * per run
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
