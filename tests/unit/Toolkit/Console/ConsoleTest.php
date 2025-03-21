@@ -188,13 +188,13 @@ final class ConsoleTest extends TestCase
             [5, '  » group(msg1,msg2) <msg2>'],
             [5, '  ➤ infoOnce(msg1)'],
             [5, '  ➤ infoOnce(msg1,msg2) <msg2>'],
-            [5, '  '],
+            [5, ''],
             [5, '» group(msg1,msg2,endMsg1,endMsg2) <msg2>'],
             [6, '- log(msg1)'],
             [5, '  » group(msg1,null,endMsg1)'],
             [6, '  - log(msg1,msg2) <msg2>'],
             [5, '  « endMsg1'],
-            [5, '  '],
+            [5, ''],
             [5, '« endMsg1 <endMsg2>'],
             [5, ''],
             [6, '- logOnce(msg1)'],
@@ -204,14 +204,16 @@ final class ConsoleTest extends TestCase
             [3, '  ! error(msg1)'],
             [3, '  ! error(msg1,msg2) <msg2>'],
             [5, '  « endMsg1 <endMsg2>'],
-            [5, '  '],
+            [5, ''],
+            [5, '« <endMsg2>'],
+            [5, ''],
             [3, '! errorOnce(msg1)'],
             [3, '! errorOnce(msg1,msg2) <msg2>'],
             [5, '» group(msg1,msg2,endMsg1) <msg2>'],
             [5, '  » group(msg1)'],
             [4, '  ^ warn(msg1)'],
             [4, '  ^ warn(msg1,msg2) <msg2>'],
-            [5, '  '],
+            [5, ''],
             [5, '« endMsg1'],
             [5, ''],
             [4, '^ warnOnce(msg1)'],
@@ -225,7 +227,7 @@ final class ConsoleTest extends TestCase
         ]);
         $expectedFile = array_values(array_filter(
             $expectedTty,
-            fn($msg) => $msg !== [5, ''] && $msg !== [5, '  '],
+            fn($msg) => $msg !== [5, ''],
         ));
         $expectedStream = "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
             . "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
@@ -233,13 +235,13 @@ final class ConsoleTest extends TestCase
             . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
             . "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
             . "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
-            . "  \n"
+            . "\n"
             . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
             . "\e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m)\n"
             . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,null,\e[33m\e[4mendMsg1\e[24m\e[35m)\e[39m\e[22m\n"
             . "  \e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[33m <msg2>\e[39m\n"
             . "  \e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m\n"
-            . "  \n"
+            . "\n"
             . "\e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m <endMsg2>\n"
             . "\n"
             . "\e[33m- \e[39mlogOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\n"
@@ -249,14 +251,16 @@ final class ConsoleTest extends TestCase
             . "  \e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merror(\e[33m\e[4mmsg1\e[24m\e[31m)\e[39m\e[22m\n"
             . "  \e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merror(\e[33m\e[4mmsg1\e[24m\e[31m,\e[33m\e[4mmsg2\e[24m\e[31m)\e[39m\e[22m <msg2>\n"
             . "  \e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m <endMsg2>\n"
-            . "  \n"
+            . "\n"
+            . "\e[1m\e[35m« \e[39m\e[22m<endMsg2>\n"
+            . "\n"
             . "\e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merrorOnce(\e[33m\e[4mmsg1\e[24m\e[31m)\e[39m\e[22m\n"
             . "\e[1m\e[31m! \e[39m\e[22m\e[1m\e[31merrorOnce(\e[33m\e[4mmsg1\e[24m\e[31m,\e[33m\e[4mmsg2\e[24m\e[31m)\e[39m\e[22m <msg2>\n"
             . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
             . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m)\e[39m\e[22m\n"
             . "  \e[1m\e[33m^ \e[39m\e[22m\e[33mwarn(\e[33m\e[4mmsg1\e[24m\e[33m)\e[39m\n"
             . "  \e[1m\e[33m^ \e[39m\e[22m\e[33mwarn(\e[33m\e[4mmsg1\e[24m\e[33m,\e[33m\e[4mmsg2\e[24m\e[33m)\e[39m <msg2>\n"
-            . "  \n"
+            . "\n"
             . "\e[1m\e[35m« \e[39m\e[22m\e[1m\e[35m\e[33m\e[4mendMsg1\e[24m\e[35m\e[39m\e[22m\n"
             . "\n"
             . "\e[1m\e[33m^ \e[39m\e[22m\e[33mwarnOnce(\e[33m\e[4mmsg1\e[24m\e[33m)\e[39m\n"
@@ -591,6 +595,16 @@ final class ConsoleTest extends TestCase
                 'Done',
                 'successfully',
                 false,
+                true,
+            ],
+            [
+                [[6, '» Done successfully']],
+                0,
+                0,
+                'Done',
+                'successfully',
+                false,
+                true,
                 true,
             ],
             [
