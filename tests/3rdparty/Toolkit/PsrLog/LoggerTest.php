@@ -43,6 +43,13 @@ final class LoggerTest extends LoggerInterfaceTest
     public function getLogs(): array
     {
         foreach ($this->Target->getMessages() as [$level, $message]) {
+            if (
+                $level === Console::LEVEL_DEBUG
+                && Str::startsWith($message, '{')
+                && ($pos = strpos($message, '} ')) !== false
+            ) {
+                $message = substr($message, $pos + 2);
+            }
             $logs[] = sprintf('%s %s', Str::lower(substr(Reflect::getConstantName(HasMessageLevel::class, $level), 6)), $message);
         }
         return $logs ?? [];

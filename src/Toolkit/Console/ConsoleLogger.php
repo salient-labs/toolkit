@@ -10,7 +10,7 @@ use Salient\Utility\Format;
 use Throwable;
 
 /**
- * A PSR-3 logger backed by a console service
+ * @api
  */
 class ConsoleLogger implements LoggerInterface
 {
@@ -27,6 +27,9 @@ class ConsoleLogger implements LoggerInterface
 
     private Console $Console;
 
+    /**
+     * @api
+     */
     public function __construct(Console $console)
     {
         $this->Console = $console;
@@ -93,7 +96,8 @@ class ConsoleLogger implements LoggerInterface
      */
     public function debug($message, array $context = [])
     {
-        $this->log(LogLevel::DEBUG, $message, $context);
+        $msg1 = $this->applyContext((string) $message, $context, $ex);
+        $this->Console->debug($msg1, null, $ex, 1);
     }
 
     /**
@@ -105,6 +109,16 @@ class ConsoleLogger implements LoggerInterface
             throw new InvalidArgumentException('Invalid log level');
         }
 
+        $msg1 = $this->applyContext((string) $message, $context, $ex);
+        $level = self::LOG_LEVEL_MAP[$level];
+        $this->Console->message($msg1, null, $level, Console::TYPE_STANDARD, $ex);
+    }
+
+    /**
+     * @param mixed[] $context
+     */
+    private function applyContext(string $message, array $context, ?Throwable &$ex): string
+    {
         if ($context) {
             foreach ($context as $key => $value) {
                 $replace['{' . $key . '}'] = Format::value($value);
@@ -115,16 +129,10 @@ class ConsoleLogger implements LoggerInterface
                 isset($context['exception'])
                 && $context['exception'] instanceof Throwable
             ) {
-                $exception = $context['exception'];
+                $ex = $context['exception'];
             }
         }
 
-        $this->Console->message(
-            (string) $message,
-            null,
-            self::LOG_LEVEL_MAP[$level],
-            Console::TYPE_STANDARD,
-            $exception ?? null,
-        );
+        return $message;
     }
 }
