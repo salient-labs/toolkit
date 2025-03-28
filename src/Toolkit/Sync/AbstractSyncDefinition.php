@@ -504,6 +504,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         /** @var PipelineInterface<TEntity,mixed[],SyncPipelineArgument> */
         $pipeline = $pipeline->through(
             fn($payload, Closure $next) =>
+                // @phpstan-ignore instanceof.alwaysFalse
                 $payload instanceof SyncEntityInterface
                     ? $next($payload->toArray())
                     : $next($payload)
@@ -539,6 +540,7 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
         $ctx = null;
 
         return $pipeline
+            // @phpstan-ignore argument.type
             ->then(function (
                 array $data,
                 PipelineInterface $pipeline,

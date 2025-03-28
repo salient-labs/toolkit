@@ -32,7 +32,7 @@ class CurlerHarRecorder
     protected ?string $Uri;
     protected bool $IsRecording = false;
     /** @var int[] */
-    protected array $ListenerIds;
+    protected array $ListenerIds = [];
     protected ?RequestInterface $LastRequest = null;
     protected float $LastRequestTime;
     protected int $EntryCount = 0;
@@ -146,7 +146,7 @@ class CurlerHarRecorder
         foreach ($this->ListenerIds as $id) {
             Event::removeListener($id);
         }
-        unset($this->ListenerIds);
+        $this->ListenerIds = [];
 
         $this->IsRecording = false;
     }
@@ -172,7 +172,6 @@ class CurlerHarRecorder
         $requestTime = $this->LastRequestTime;
 
         $this->LastRequest = null;
-        unset($this->LastRequestTime);
 
         $handle = $event->getCurlHandle();
 

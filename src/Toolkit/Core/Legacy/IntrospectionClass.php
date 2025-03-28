@@ -740,8 +740,9 @@ class IntrospectionClass
                     $property,
                     $this->getWritableProperties()
                 );
-        }
 
-        return false;
+            default:
+                return false;
+        }
     }
 }
