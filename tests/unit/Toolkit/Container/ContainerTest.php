@@ -149,6 +149,7 @@ final class ContainerTest extends TestCase
         $container->bindIf(A::class);
         $this->assertInstanceOf(B::class, $container->get(A::class));
         $container->bind(A::class);
+        // @phpstan-ignore method.impossibleType
         $this->assertNotInstanceOf(B::class, $container->get(A::class));
     }
 
@@ -162,6 +163,7 @@ final class ContainerTest extends TestCase
         $container->singletonIf(A::class);
         $this->assertSame($a, $container->get(A::class));
         $container->singleton(A::class);
+        // @phpstan-ignore method.impossibleType
         $this->assertNotInstanceOf(B::class, $container->get(A::class));
     }
 

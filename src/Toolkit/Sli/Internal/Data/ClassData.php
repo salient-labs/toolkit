@@ -208,6 +208,7 @@ class ClassData implements JsonSerializable
                 if ($filter && !$filter($memberData, $type)) {
                     $memberData->Hide = true;
                 }
+                // @phpstan-ignore assign.propertyType, assign.propertyType, assign.propertyType
                 $data->$property[$name] = $memberData;
             }
         }
@@ -315,6 +316,7 @@ class ClassData implements JsonSerializable
                 if ($filter && !$filter($memberData, $type)) {
                     $memberData->Hide = true;
                 }
+                // @phpstan-ignore assign.propertyType, assign.propertyType, assign.propertyType
                 $data->$property[$member->getName()] = $memberData;
             }
         }
@@ -446,6 +448,7 @@ class ClassData implements JsonSerializable
             }
         }
 
+        // @phpstan-ignore return.type
         return $data;
     }
 

@@ -1202,7 +1202,7 @@
         },
         {
             "name": "salient/utils",
-            "version": "v0.99.77",
+            "version": "v0.99.78",
             "source": {
                 "type": "git",
                 "url": "https://github.com/salient-labs/toolkit-utils.git",

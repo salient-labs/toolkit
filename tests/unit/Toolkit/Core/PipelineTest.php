@@ -68,11 +68,11 @@ final class PipelineTest extends TestCase
         $out1 = [];
         $out2 = [];
         /** @var Pipeline<int,int,null> */
-        $pipeline = Pipeline::create()
-            ->stream($in)
-            ->through(fn($payload, Closure $next) => $next($payload * 6));
+        $pipeline = Pipeline::create();
         foreach (
             $pipeline
+                ->stream($in)
+                ->through(fn($payload, Closure $next) => $next($payload * 6))
                 ->cc(function ($result) use (&$out1) { $out1[] = round($result / 23, 3); })
                 ->start() as $_out
         ) {
