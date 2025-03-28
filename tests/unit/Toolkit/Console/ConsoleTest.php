@@ -83,13 +83,13 @@ final class ConsoleTest extends TestCase
         $console->print('foo bar');
 
         $this->assertSameTargetMessages([
-            [5, '➤ Foo: bar'],
+            [5, '> Foo: bar'],
             [6, "- Foo:\n    bar"],
             [6, 'foo bar'],
         ], $this->TtyTarget);
 
         $this->assertSameTargetOutput(
-            "\e[2mDRY RUN \e[22m\e[1m\e[36m➤ \e[39m\e[22m\e[1mFoo:\e[22m\e[36m bar\e[39m\n"
+            "\e[2mDRY RUN \e[22m\e[1m\e[36m> \e[39m\e[22m\e[1mFoo:\e[22m\e[36m bar\e[39m\n"
                 . "\e[2mDRY RUN \e[22m\e[33m- \e[39mFoo:\e[33m\n"
                 . "\e[2mDRY RUN \e[22m    bar\e[39m\n"
                 . "\e[2mDRY RUN \e[22mfoo bar\n",
@@ -182,12 +182,12 @@ final class ConsoleTest extends TestCase
         $console->count(Console::LEVEL_WARNING);
 
         $expectedStdout = [
-            [5, '➤ info(msg1)'],
-            [5, '➤ info(msg1,msg2) <msg2>'],
+            [5, '> info(msg1)'],
+            [5, '> info(msg1,msg2) <msg2>'],
             [5, '» group(msg1)'],
             [5, '  » group(msg1,msg2) <msg2>'],
-            [5, '  ➤ infoOnce(msg1)'],
-            [5, '  ➤ infoOnce(msg1,msg2) <msg2>'],
+            [5, '  > infoOnce(msg1)'],
+            [5, '  > infoOnce(msg1,msg2) <msg2>'],
             [5, ''],
             [5, '» group(msg1,msg2,endMsg1,endMsg2) <msg2>'],
             [6, '- log(msg1)'],
@@ -229,12 +229,12 @@ final class ConsoleTest extends TestCase
             $expectedTty,
             fn($msg) => $msg !== [5, ''],
         ));
-        $expectedStream = "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
-            . "\e[1m\e[36m➤ \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
+        $expectedStream = "\e[1m\e[36m> \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
+            . "\e[1m\e[36m> \e[39m\e[22m\e[1minfo(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
             . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m)\e[39m\e[22m\n"
             . "  \e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
-            . "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
-            . "  \e[1m\e[36m➤ \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
+            . "  \e[1m\e[36m> \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m)\e[22m\n"
+            . "  \e[1m\e[36m> \e[39m\e[22m\e[1minfoOnce(\e[33m\e[4mmsg1\e[24m\e[39m,\e[33m\e[4mmsg2\e[24m\e[39m)\e[22m\e[36m <msg2>\e[39m\n"
             . "\n"
             . "\e[1m\e[35m» \e[39m\e[22m\e[1m\e[35mgroup(\e[33m\e[4mmsg1\e[24m\e[35m,\e[33m\e[4mmsg2\e[24m\e[35m,\e[33m\e[4mendMsg1\e[24m\e[35m,\e[33m\e[4mendMsg2\e[24m\e[35m)\e[39m\e[22m <msg2>\n"
             . "\e[33m- \e[39mlog(\e[33m\e[4mmsg1\e[24m\e[39m)\n"
@@ -317,11 +317,11 @@ final class ConsoleTest extends TestCase
         $console->log("foo\nbar:", "baz\nqux");
 
         $this->assertSameTargetMessages([
-            [5, "➤ foo:\n    bar"],
-            [5, "➤ foo:\n    bar\n    baz"],
-            [5, "➤ foo\n  bar: baz"],
-            [5, "➤ foo\n  bar:\n    baz"],
-            [5, "➤ foo\n  bar:\n    baz\n    qux"],
+            [5, "> foo:\n    bar"],
+            [5, "> foo:\n    bar\n    baz"],
+            [5, "> foo\n  bar: baz"],
+            [5, "> foo\n  bar:\n    baz"],
+            [5, "> foo\n  bar:\n    baz\n    qux"],
             [6, "- foo:\n    bar"],
             [6, "- foo:\n    bar\n    baz"],
             [6, "- foo\n  bar: baz"],
@@ -329,11 +329,11 @@ final class ConsoleTest extends TestCase
             [6, "- foo\n  bar:\n    baz\n    qux"],
             [5, '» foo'],
             [5, '  » bar'],
-            [5, "  ➤ foo:\n      bar"],
-            [5, "  ➤ foo:\n      bar\n      baz"],
-            [5, "  ➤ foo\n    bar: baz"],
-            [5, "  ➤ foo\n    bar:\n      baz"],
-            [5, "  ➤ foo\n    bar:\n      baz\n      qux"],
+            [5, "  > foo:\n      bar"],
+            [5, "  > foo:\n      bar\n      baz"],
+            [5, "  > foo\n    bar: baz"],
+            [5, "  > foo\n    bar:\n      baz"],
+            [5, "  > foo\n    bar:\n      baz\n      qux"],
             [6, "  - foo:\n      bar"],
             [6, "  - foo:\n      bar\n      baz"],
             [6, "  - foo\n    bar: baz"],

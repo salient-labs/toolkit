@@ -2,7 +2,6 @@
 
 namespace Salient\Cli;
 
-use Salient\Console\Format\Formatter;
 use Salient\Console\Format\LoopbackFormat;
 use Salient\Console\Format\ManPageFormat;
 use Salient\Console\Format\MarkdownFormat;
@@ -262,7 +261,7 @@ final class CliHelpStyle implements CliHelpStyleInterface
         if ($this->HasMarkup) {
             return $string;
         }
-        return Formatter::escapeTags($string);
+        return Console::escape($string);
     }
 
     public static function getConsoleWidth(): ?int

@@ -3,7 +3,6 @@
 namespace Salient\Console;
 
 use Psr\Log\LoggerInterface;
-use Salient\Console\Format\Formatter;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Console\Target\HasPrefix;
 use Salient\Contract\Console\Target\StreamTargetInterface;
@@ -224,7 +223,23 @@ class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
      */
     public function escape(string $string, bool $escapeNewlines = false): string
     {
-        return Formatter::escapeTags($string, $escapeNewlines);
+        return ConsoleUtil::escape($string, $escapeNewlines);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeEscapes(string $string): string
+    {
+        return ConsoleUtil::removeEscapes($string);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removeTags(string $string): string
+    {
+        return ConsoleUtil::removeTags($string);
     }
 
     /**

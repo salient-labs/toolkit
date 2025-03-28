@@ -117,6 +117,16 @@ interface ConsoleInterface extends
     public function escape(string $string, bool $escapeNewlines = false): string;
 
     /**
+     * Remove escapes from inline formatting tags in a string
+     */
+    public function removeEscapes(string $string): string;
+
+    /**
+     * Remove inline formatting tags from a string
+     */
+    public function removeTags(string $string): string;
+
+    /**
      * Print "! $msg1 $msg2" or similar with level LEVEL_ERROR
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
@@ -202,7 +212,7 @@ interface ConsoleInterface extends
     public function groupEnd();
 
     /**
-     * Print "➤ $msg1 $msg2" or similar with level LEVEL_NOTICE
+     * Print "> $msg1 $msg2" or similar with level LEVEL_NOTICE
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
      * @param string|null $msg2 Inline formatting tags have no special meaning.
@@ -211,7 +221,7 @@ interface ConsoleInterface extends
     public function info(string $msg1, ?string $msg2 = null);
 
     /**
-     * Print "➤ $msg1 $msg2" or similar with level LEVEL_NOTICE once per run
+     * Print "> $msg1 $msg2" or similar with level LEVEL_NOTICE once per run
      *
      * @param string $msg1 May use inline formatting tags (see {@see escape()}).
      * @param string|null $msg2 Inline formatting tags have no special meaning.

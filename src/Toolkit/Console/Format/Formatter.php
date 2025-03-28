@@ -2,33 +2,34 @@
 
 namespace Salient\Console\Format;
 
+use Salient\Console\HasConsoleRegex;
 use Salient\Contract\Console\Format\FormatInterface;
 use Salient\Contract\Console\Format\FormatterInterface;
 use Salient\Contract\Console\Format\MessageFormatInterface;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Core\Concern\ImmutableTrait;
+use Salient\Utility\Exception\ShouldNotHappenException;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Closure;
 use LogicException;
-use UnexpectedValueException;
 
 /**
- * Formats messages for a console output target
+ * @api
  */
-class Formatter implements FormatterInterface
+class Formatter implements FormatterInterface, HasConsoleRegex
 {
     use ImmutableTrait;
 
     public const DEFAULT_LEVEL_PREFIX_MAP = [
-        Console::LEVEL_EMERGENCY => '! ',  // U+0021
-        Console::LEVEL_ALERT => '! ',  // U+0021
-        Console::LEVEL_CRITICAL => '! ',  // U+0021
-        Console::LEVEL_ERROR => '! ',  // U+0021
-        Console::LEVEL_WARNING => '^ ',  // U+005E
-        Console::LEVEL_NOTICE => '➤ ',  // U+27A4
-        Console::LEVEL_INFO => '- ',  // U+002D
-        Console::LEVEL_DEBUG => ': ',  // U+003A
+        Console::LEVEL_EMERGENCY => '! ',
+        Console::LEVEL_ALERT => '! ',
+        Console::LEVEL_CRITICAL => '! ',
+        Console::LEVEL_ERROR => '! ',
+        Console::LEVEL_WARNING => '^ ',
+        Console::LEVEL_NOTICE => '> ',
+        Console::LEVEL_INFO => '- ',
+        Console::LEVEL_DEBUG => ': ',
     ];
 
     public const DEFAULT_TYPE_PREFIX_MAP = [
@@ -40,12 +41,13 @@ class Formatter implements FormatterInterface
         Console::TYPE_FAILURE => '✘ ',  // U+2718
     ];
 
-    /** @link https://github.com/sindresorhus/cli-spinners */
-    private const SPINNER = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-
     /**
-     * @var array<string,self::TAG_*>
+     * @link https://github.com/sindresorhus/cli-spinners
+     *
+     * @var list<string>
      */
+    protected const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+
     private const TAG_MAP = [
         '___' => self::TAG_HEADING,
         '***' => self::TAG_HEADING,
@@ -58,82 +60,9 @@ class Formatter implements FormatterInterface
         '~~' => self::TAG_LOW_PRIORITY,
     ];
 
-    /**
-     * Splits the subject into formattable paragraphs, fenced code blocks and
-     * code spans
-     */
-    private const MARKUP = <<<'REGEX'
-/
-(?(DEFINE)
-  (?<endofline> \h*+ \n )
-  (?<endofblock> ^ \k<indent> \k<fence> \h*+ $ )
-  (?<endofspan> \k<backtickstring> (?! ` ) )
-)
-# Do not allow gaps between matches
-\G
-# Do not allow empty matches
-(?= . )
-# Claim indentation early so horizontal whitespace before fenced code
-# blocks is not mistaken for text
-(?<indent> ^ \h*+ )?
-(?:
-  # Whitespace before paragraphs
-  (?<breaks> (?&endofline)+ ) |
-  # Everything except unescaped backticks until the start of the next
-  # paragraph
-  (?<text> (?> (?: [^\\`\n]+ | \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~\n] | \\ | \n (?! (?&endofline) ) )+ (?&endofline)* ) ) |
-  # CommonMark-compliant fenced code blocks
-  (?> (?(indent)
-    (?> (?<fence> ```+ ) (?<infostring> [^\n]* ) \n )
-    # Match empty blocks--with no trailing newline--and blocks with an
-    # empty line by making the subsequent newline conditional on inblock
-    (?<block> (?> (?<inblock> (?: (?! (?&endofblock) ) (?: \k<indent> | (?= (?&endofline) ) ) [^\n]* (?: (?= \n (?&endofblock) ) | \n | \z ) )+ )? ) )
-    # Allow code fences to terminate at the end of the subject
-    (?: (?(inblock) \n ) (?&endofblock) | \z ) | \z
-  ) ) |
-  # CommonMark-compliant code spans
-  (?<backtickstring> (?> `+ ) ) (?<span> (?> (?: [^`]+ | (?! (?&endofspan) ) `+ )* ) ) (?&endofspan) |
-  # Unmatched backticks
-  (?<extra> `+ ) |
-  \z
-) /mxs
-REGEX;
-
-    /**
-     * Matches inline formatting tags used outside fenced code blocks and code
-     * spans
-     */
-    private const TAG = <<<'REGEX'
-/
-(?(DEFINE)
-  (?<esc> \\ [-\\!"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] | \\ )
-)
-(?<! \\ ) (?: \\\\ )* \K (?|
-  \b  (?<tag> _ {1,3}+ )  (?! \s ) (?> (?<text> (?: [^_\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> \b ) _ + )* ) ) (?<! \s ) \k<tag> \b |
-      (?<tag> \* {1,3}+ ) (?! \s ) (?> (?<text> (?: [^*\\]+ |    (?&esc) | (?! (?<! \s ) \k<tag> ) \* + )* ) )   (?<! \s ) \k<tag>    |
-      (?<tag> < )         (?! \s ) (?> (?<text> (?: [^>\\]+ |    (?&esc) | (?! (?<! \s ) > ) > + )* ) )          (?<! \s ) >          |
-      (?<tag> ~~ )        (?! \s ) (?> (?<text> (?: [^~\\]+ |    (?&esc) | (?! (?<! \s ) ~~ ) ~ + )* ) )         (?<! \s ) ~~         |
-  ^   (?<tag> \#\# ) \h+           (?> (?<text> (?: [^\#\s\\]+ | (?&esc) | \#+ (?! \h* $ ) | \h++ (?! (?: \#+ \h* )? $ ) )* ) ) (?: \h+ \#+ | \h* ) $
-) /mx
-REGEX;
-
-    /**
-     * Matches a CommonMark-compliant backslash escape, or an escaped line break
-     * with an optional leading space
-     */
-    private const ESCAPE = <<<'REGEX'
-/
-(?|
-  \\ ( [-\\ !"\#$%&'()*+,.\/:;<=>?@[\]^_`{|}~] ) |
-  # Lookbehind assertions are unnecessary because the first branch
-  # matches escaped spaces and backslashes
-  \  ? \\ ( \n )
-) /x
-REGEX;
-
-    private static Formatter $DefaultFormatter;
-    private static TagFormats $DefaultTagFormats;
-    private static MessageFormats $DefaultMessageFormats;
+    private static self $NullFormatter;
+    private static TagFormats $NullTagFormats;
+    private static MessageFormats $NullMessageFormats;
     private static TagFormats $LoopbackTagFormats;
     private TagFormats $TagFormats;
     private MessageFormats $MessageFormats;
@@ -147,6 +76,8 @@ REGEX;
     private array $SpinnerState;
 
     /**
+     * @api
+     *
      * @param (Closure(): (int|null))|null $widthCallback
      * @param array<Console::LEVEL_*,string> $levelPrefixMap
      * @param array<Console::TYPE_*,string> $typePrefixMap
@@ -158,13 +89,29 @@ REGEX;
         array $levelPrefixMap = Formatter::DEFAULT_LEVEL_PREFIX_MAP,
         array $typePrefixMap = Formatter::DEFAULT_TYPE_PREFIX_MAP
     ) {
-        $this->TagFormats = $tagFormats ?? $this->getDefaultTagFormats();
-        $this->MessageFormats = $messageFormats ?? $this->getDefaultMessageFormats();
+        $this->TagFormats = $tagFormats ?? self::getNullTagFormats();
+        $this->MessageFormats = $messageFormats ?? self::getNullMessageFormats();
         $this->WidthCallback = $widthCallback ?? fn() => null;
         $this->LevelPrefixMap = $levelPrefixMap;
         $this->TypePrefixMap = $typePrefixMap;
         $spinnerState = [0, null];
         $this->SpinnerState = &$spinnerState;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function removesEscapes(): bool
+    {
+        return $this->TagFormats->removesEscapes();
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function wrapsAfterFormatting(): bool
+    {
+        return $this->TagFormats->wrapsAfterFormatting();
     }
 
     /**
@@ -204,40 +151,29 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function removesEscapes(): bool
-    {
-        return $this->TagFormats->removesEscapes();
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function wrapsAfterFormatting(): bool
-    {
-        return $this->TagFormats->wrapsAfterFormatting();
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getMessagePrefix(
         int $level,
         int $type = Console::TYPE_STANDARD
     ): string {
-        if ($type === Console::TYPE_UNFORMATTED || $type === Console::TYPE_UNDECORATED) {
+        if (
+            $type === Console::TYPE_UNDECORATED
+            || $type === Console::TYPE_UNFORMATTED
+        ) {
             return '';
         }
+
         if ($type === Console::TYPE_PROGRESS) {
             $now = (float) (hrtime(true) / 1000);
             if ($this->SpinnerState[1] === null) {
                 $this->SpinnerState[1] = $now;
             } elseif ($now - $this->SpinnerState[1] >= 80000) {
                 $this->SpinnerState[0]++;
-                $this->SpinnerState[0] %= count(self::SPINNER);
+                $this->SpinnerState[0] %= count(static::SPINNER_FRAMES);
                 $this->SpinnerState[1] = $now;
             }
-            $prefix = self::SPINNER[$this->SpinnerState[0]] . ' ';
+            $prefix = static::SPINNER_FRAMES[$this->SpinnerState[0]] . ' ';
         }
+
         return $prefix
             ?? $this->TypePrefixMap[$type]
             ?? $this->LevelPrefixMap[$level]
@@ -258,17 +194,17 @@ REGEX;
             return $string;
         }
 
-        // [ [ Offset, length, replacement ] ]
+        // [ [ Offset, length, replacement ], ... ]
         /** @var array<array{int,int,string}> */
         $replace = [];
         $append = '';
         $removeEscapes = $this->removesEscapes();
         $wrapAfterFormatting = $this->wrapsAfterFormatting();
-        $textFormats = $wrapAfterFormatting
+        $wrapFormats = $wrapAfterFormatting
             ? $this->TagFormats
-            : $this->getDefaultTagFormats();
-        $formattedFormats = $unformat
-            ? $this->getLoopbackTagFormats()
+            : self::getNullTagFormats();
+        $formats = $unformat
+            ? self::getLoopbackTagFormats()
             : $this->TagFormats;
 
         // Preserve trailing carriage returns
@@ -277,17 +213,18 @@ REGEX;
             $string = substr($string, 0, -1);
         }
 
-        // Normalise line endings and split the string into formattable text,
-        // fenced code blocks and code spans
+        // Normalise line endings and split the string into text, code blocks
+        // and code spans
         if (!Regex::matchAll(
-            self::MARKUP,
+            self::FORMAT_REGEX,
             Str::setEol($string),
             $matches,
-            \PREG_SET_ORDER | \PREG_UNMATCHED_AS_NULL
+            \PREG_SET_ORDER | \PREG_UNMATCHED_AS_NULL,
         )) {
-            throw new UnexpectedValueException(
-                sprintf('Unable to parse: %s', $string)
-            );
+            throw new ShouldNotHappenException(sprintf(
+                'Unable to parse: %s',
+                $string,
+            ));
         }
 
         $string = '';
@@ -304,7 +241,7 @@ REGEX;
                 continue;
             }
 
-            // Treat unmatched backticks as plain text
+            // Treat unmatched backticks as text
             if ($match['extra'] !== null) {
                 $string .= $indent . $match['extra'];
                 continue;
@@ -321,28 +258,28 @@ REGEX;
 
                 $adjust = 0;
                 $text = Regex::replaceCallback(
-                    self::TAG,
+                    self::TAG_REGEX,
                     function ($matches) use (
                         &$replace,
-                        $textFormats,
-                        $formattedFormats,
+                        $wrapFormats,
+                        $formats,
                         $baseOffset,
                         &$adjust
                     ): string {
                         $text = $this->applyTags(
                             $matches,
                             true,
-                            $textFormats->removesEscapes(),
-                            $textFormats
+                            $wrapFormats->removesEscapes(),
+                            $wrapFormats,
                         );
                         $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
-                        $formatted = $textFormats === $formattedFormats
+                        $formatted = $wrapFormats === $formats
                             ? $text
                             : $this->applyTags(
                                 $matches,
                                 true,
-                                $formattedFormats->removesEscapes(),
-                                $formattedFormats
+                                $formats->removesEscapes(),
+                                $formats,
                             );
                         $replace[] = [
                             $baseOffset + $matches[0][1] + $adjust,
@@ -355,7 +292,7 @@ REGEX;
                     $text,
                     -1,
                     $count,
-                    \PREG_OFFSET_CAPTURE
+                    \PREG_OFFSET_CAPTURE,
                 );
 
                 $string .= $indent . $text;
@@ -369,7 +306,7 @@ REGEX;
                 }
 
                 /** @var array{fence:string,infostring:string,block:string} $match */
-                $formatted = $formattedFormats->apply(
+                $formatted = $formats->apply(
                     $match['block'],
                     new TagAttributes(
                         self::TAG_CODE_BLOCK,
@@ -407,11 +344,11 @@ REGEX;
                     self::TAG_CODE_SPAN,
                     $match['backtickstring'],
                 );
-                $text = $textFormats->apply($span, $attributes);
+                $text = $wrapFormats->apply($span, $attributes);
                 $placeholder = Regex::replace('/[^ ]/u', 'x', $text);
-                $formatted = $textFormats === $formattedFormats
+                $formatted = $wrapFormats === $formats
                     ? $text
-                    : $formattedFormats->apply($span, $attributes);
+                    : $formats->apply($span, $attributes);
                 $replace[] = [
                     $baseOffset,
                     strlen($placeholder),
@@ -432,7 +369,7 @@ REGEX;
         }
         $adjust = 0;
         $string = Regex::replaceCallback(
-            self::ESCAPE,
+            self::ESCAPE_REGEX,
             function ($matches) use (
                 $unformat,
                 $removeEscapes,
@@ -448,11 +385,7 @@ REGEX;
                         return $matches[0][0];
                     }
                     $placeholder = '\x';
-                    $replace[] = [
-                        $matches[0][1] + $adjust,
-                        strlen($placeholder),
-                        $matches[0][0],
-                    ];
+                    $replace[] = [$matches[0][1] + $adjust, 2, $matches[0][0]];
                     return $placeholder;
                 }
 
@@ -499,15 +432,11 @@ REGEX;
                     $wrapTo[$i] = max(0, $wrapTo[$i] + $width);
                 }
             }
-        } elseif (
-            is_int($wrapTo)
-            && $wrapTo <= 0
-        ) {
+        } elseif (is_int($wrapTo) && $wrapTo <= 0) {
             $width = ($this->WidthCallback)();
-            $wrapTo =
-                $width === null
-                    ? null
-                    : max(0, $wrapTo + $width);
+            $wrapTo = $width === null
+                ? null
+                : max(0, $wrapTo + $width);
         }
         if ($wrapTo !== null) {
             if ($break === "\n") {
@@ -527,7 +456,7 @@ REGEX;
         // Get `$replace` in reverse offset order, sorting from scratch if any
         // substitutions were made in the callbacks above
         if (count($replace) !== $replacements) {
-            usort($replace, fn(array $a, array $b): int => $b[0] <=> $a[0]);
+            usort($replace, fn($a, $b) => $b[0] <=> $a[0]);
         } else {
             $replace = array_reverse($replace);
         }
@@ -540,29 +469,42 @@ REGEX;
     }
 
     /**
-     * @inheritDoc
+     * @param array<int|string,array{string,int}|string> $matches
      */
-    public function formatMessage(
-        string $msg1,
-        ?string $msg2 = null,
-        int $level = Console::LEVEL_INFO,
-        int $type = Console::TYPE_STANDARD
+    private function applyTags(
+        array $matches,
+        bool $matchesHasOffset,
+        bool $unescape,
+        TagFormats $formats,
+        int $depth = 0
     ): string {
-        $attributes = new MessageAttributes($level, $type);
+        /** @var string */
+        $text = $matchesHasOffset ? $matches['text'][0] : $matches['text'];
+        /** @var string */
+        $tag = $matchesHasOffset ? $matches['tag'][0] : $matches['tag'];
 
-        if ($type === Console::TYPE_UNFORMATTED) {
-            return $this
-                ->getDefaultMessageFormats()
-                ->getFormat($level, $type)
-                ->apply($msg1, $msg2, '', $attributes);
+        $text = Regex::replaceCallback(
+            self::TAG_REGEX,
+            fn($matches) =>
+                $this->applyTags($matches, false, $unescape, $formats, $depth + 1),
+            $text,
+            -1,
+            $count,
+        );
+
+        if ($unescape) {
+            $text = Regex::replace(self::ESCAPE_REGEX, '$1', $text);
         }
 
-        $prefix = $this->getMessagePrefix($level, $type);
+        $tagId = self::TAG_MAP[$tag] ?? null;
+        if ($tagId === null) {
+            throw new LogicException(sprintf('Invalid tag: %s', $tag));
+        }
 
-        return $this
-            ->MessageFormats
-            ->getFormat($level, $type)
-            ->apply($msg1, $msg2, $prefix, $attributes);
+        return $formats->apply(
+            $text,
+            new TagAttributes($tagId, $tag, $depth, (bool) $count),
+        );
     }
 
     /**
@@ -588,104 +530,56 @@ REGEX;
 
         return Regex::replaceCallback(
             '/^(-{3}|\+{3}|[-+@]).*/m',
-            fn(array $matches) => $formats[$matches[1]]->apply($matches[0], $attributes[$matches[1]]),
+            fn($matches) =>
+                $formats[$matches[1]]->apply($matches[0], $attributes[$matches[1]]),
             $diff,
         );
     }
 
     /**
-     * Escape special characters, optionally including newlines, in a string
+     * @inheritDoc
      */
-    public static function escapeTags(string $string, bool $escapeNewlines = false): string
-    {
-        // Only escape recognised tag delimiters to minimise the risk of
-        // PREG_JIT_STACKLIMIT_ERROR
-        $escaped = addcslashes($string, '\#*<>_`~');
-        return $escapeNewlines
-            ? str_replace("\n", "\\\n", $escaped)
-            : $escaped;
+    public function formatMessage(
+        string $msg1,
+        ?string $msg2 = null,
+        int $level = Console::LEVEL_INFO,
+        int $type = Console::TYPE_STANDARD
+    ): string {
+        $attributes = new MessageAttributes($level, $type);
+
+        if ($type === Console::TYPE_UNFORMATTED) {
+            $formats = self::getNullMessageFormats();
+            $prefix = '';
+        } else {
+            $formats = $this->MessageFormats;
+            $prefix = $this->getMessagePrefix($level, $type);
+        }
+
+        return $formats
+            ->getFormat($level, $type)
+            ->apply($msg1, $msg2, $prefix, $attributes);
     }
 
     /**
-     * Unescape special characters in a string
+     * @internal
      */
-    public static function unescapeTags(string $string): string
+    public static function getNullFormatter(): self
     {
-        return Regex::replace(
-            self::ESCAPE,
-            '$1',
-            $string,
-        );
+        return self::$NullFormatter ??= new self();
     }
 
-    /**
-     * Remove inline formatting tags from a string
-     */
-    public static function removeTags(string $string): string
+    private static function getNullTagFormats(): TagFormats
     {
-        return self::getDefaultFormatter()->format($string);
+        return self::$NullTagFormats ??= new TagFormats();
     }
 
-    private static function getDefaultFormatter(): self
+    private static function getNullMessageFormats(): MessageFormats
     {
-        return self::$DefaultFormatter ??= new self();
-    }
-
-    private static function getDefaultTagFormats(): TagFormats
-    {
-        return self::$DefaultTagFormats ??= new TagFormats();
-    }
-
-    private static function getDefaultMessageFormats(): MessageFormats
-    {
-        return self::$DefaultMessageFormats ??= new MessageFormats();
+        return self::$NullMessageFormats ??= new MessageFormats();
     }
 
     private static function getLoopbackTagFormats(): TagFormats
     {
         return self::$LoopbackTagFormats ??= LoopbackFormat::getFormatter()->TagFormats;
-    }
-
-    /**
-     * @param array<int|string,array{string,int}|string> $matches
-     */
-    private function applyTags(
-        array $matches,
-        bool $matchesHasOffset,
-        bool $unescape,
-        TagFormats $formats,
-        int $depth = 0
-    ): string {
-        /** @var string */
-        $text = $matchesHasOffset ? $matches['text'][0] : $matches['text'];
-        /** @var string */
-        $tag = $matchesHasOffset ? $matches['tag'][0] : $matches['tag'];
-
-        $text = Regex::replaceCallback(
-            self::TAG,
-            fn(array $matches): string =>
-                $this->applyTags($matches, false, $unescape, $formats, $depth + 1),
-            $text,
-            -1,
-            $count,
-        );
-
-        if ($unescape) {
-            $text = Regex::replace(
-                self::ESCAPE,
-                '$1',
-                $text,
-            );
-        }
-
-        $tagId = self::TAG_MAP[$tag] ?? null;
-        if ($tagId === null) {
-            throw new LogicException(sprintf('Invalid tag: %s', $tag));
-        }
-
-        return $formats->apply(
-            $text,
-            new TagAttributes($tagId, $tag, $depth, (bool) $count)
-        );
     }
 }

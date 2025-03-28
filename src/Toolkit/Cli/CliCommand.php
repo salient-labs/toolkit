@@ -4,7 +4,6 @@ namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\Exception\CliUnknownValueException;
-use Salient\Console\Format\Formatter;
 use Salient\Contract\Cli\CliApplicationInterface;
 use Salient\Contract\Cli\CliCommandInterface;
 use Salient\Contract\Cli\CliHelpSectionName;
@@ -314,7 +313,7 @@ abstract class CliCommand implements CliCommandInterface
                 ) {
                     foreach ($option->AllowedValues ?: [true, false] as $optionValue) {
                         $optionValue = $option->normaliseValueForHelp($optionValue);
-                        $allowed[] = $em . Formatter::escapeTags($optionValue) . $em;
+                        $allowed[] = $em . Console::escape($optionValue) . $em;
                     }
                     if (!$option->AllowedValues) {
                         $booleanValue = true;
@@ -382,7 +381,7 @@ abstract class CliCommand implements CliCommandInterface
                         $booleanValue
                         || mb_strlen($formatter->wrapsAfterFormatting()
                             ? $formatter->format($indent . $_line)
-                            : Formatter::removeTags($indent . $_line)) <= ($width ?: 76)
+                            : Console::removeTags($indent . $_line)) <= ($width ?: 76)
                     ) {
                         $allowed = null;
                     } else {
@@ -428,7 +427,7 @@ abstract class CliCommand implements CliCommandInterface
                         continue;
                     }
                     $value = $option->normaliseValueForHelp($value);
-                    $default[] = $em . Formatter::escapeTags($value) . $em;
+                    $default[] = $em . Console::escape($value) . $em;
                 }
                 $default = implode(Str::coalesce($option->Delimiter, ' '), $default);
                 if ($default !== '') {
@@ -445,8 +444,8 @@ abstract class CliCommand implements CliCommandInterface
                 . ($lines ? $descriptionPrefix . ltrim(implode("\n\n", $lines)) : '');
         }
 
-        $name = Formatter::escapeTags($this->getNameWithProgram());
-        $summary = Formatter::escapeTags($this->getDescription());
+        $name = Console::escape($this->getNameWithProgram());
+        $summary = Console::escape($this->getDescription());
         $synopsis = $this->getSynopsis($style);
 
         $description = $this->getLongDescription() ?? '';
