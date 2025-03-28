@@ -2,6 +2,7 @@
 
 namespace Salient\Console\Format;
 
+use Salient\Console\ConsoleUtil;
 use Salient\Contract\Console\Format\TagAttributesInterface;
 
 /**
@@ -40,7 +41,7 @@ class MarkdownFormat extends AbstractFormat
             )
         ) {
             /** @var non-empty-string */
-            $string = Formatter::unescapeTags($string);
+            $string = ConsoleUtil::removeEscapes($string);
             return $this->enclose($string, '`', '`');
         }
 

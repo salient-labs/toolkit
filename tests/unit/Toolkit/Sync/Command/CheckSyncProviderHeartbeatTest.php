@@ -60,11 +60,11 @@ final class CheckSyncProviderHeartbeatTest extends SyncCommandTestCase
         return [
             [
                 <<<EOF
-➤ Sending heartbeat request to 1 provider
+> Sending heartbeat request to 1 provider
 Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
 - Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
 ✔ 1 provider checked without errors
-➤ Sending heartbeat request to 1 provider
+> Sending heartbeat request to 1 provider
 - Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
 ✔ 1 provider checked without errors
 
@@ -78,7 +78,7 @@ EOF,
             ],
             [
                 <<<EOF
-➤ Sending heartbeat request to 2 providers
+> Sending heartbeat request to 2 providers
 Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
 - Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
 - Heartbeat check not supported: MockProvider [#2]
@@ -228,7 +228,7 @@ EOF,
             ],
             [
                 <<<EOF
-➤ Sending heartbeat request to 1 provider
+> Sending heartbeat request to 1 provider
 Connected to JSONPlaceholder { http://localhost:3001 } as Leanne Graham
 - Heartbeat OK: JSONPlaceholder { http://localhost:3001 } [#1]
 ✔ 1 provider checked without errors

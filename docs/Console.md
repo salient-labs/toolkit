@@ -46,7 +46,7 @@ To override these defaults:
 | `error()`, `errorOnce()`           | `LEVEL_ERROR` = `3`   | ` !  `                     |
 | `warn()`, `warnOnce()`             | `LEVEL_WARNING` = `4` | ` ^  `                     |
 | `group()`,`groupEnd()`             | `LEVEL_NOTICE` = `5`  | ` »  `, ` «  `             |
-| `info()`, `infoOnce()`             | `LEVEL_NOTICE` = `5`  | ` ➤  `                     |
+| `info()`, `infoOnce()`             | `LEVEL_NOTICE` = `5`  | ` >  `                     |
 | `log()`, `logOnce()`               | `LEVEL_INFO` = `6`    | ` -  `                     |
 | `logProgress()`, `clearProgress()` | `LEVEL_INFO` = `6`    | ` ⠋  ` (spinner, TTY only) |
 | `debug()`, `debugOnce()`           | `LEVEL_DEBUG` = `7`   | ` :  `                     |

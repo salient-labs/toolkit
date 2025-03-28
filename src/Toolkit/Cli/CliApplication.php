@@ -3,7 +3,6 @@
 namespace Salient\Cli;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
-use Salient\Console\Format\Formatter;
 use Salient\Console\Format\ManPageFormat;
 use Salient\Console\Format\MarkdownFormat;
 use Salient\Container\Application;
@@ -233,7 +232,7 @@ class CliApplication extends Application implements CliApplicationInterface
         foreach ($node as $childName => $childNode) {
             $command = $this->getNodeCommand(trim("$name $childName"), $childNode);
             if ($command) {
-                $synopses[] = '__' . $childName . '__ - ' . Formatter::escapeTags($command->getDescription());
+                $synopses[] = '__' . $childName . '__ - ' . Console::escape($command->getDescription());
             } elseif (is_array($childNode)) {
                 $synopses[] = '__' . $childName . '__';
             }
@@ -260,7 +259,7 @@ class CliApplication extends Application implements CliApplicationInterface
 
         if ($command) {
             return $command->getSynopsis($style)
-                . Formatter::escapeTags("\n\nSee '"
+                . Console::escape("\n\nSee '"
                     . ($name === '' ? "$progName --help" : "$progName help $name")
                     . "' for more information.");
         }
@@ -279,7 +278,7 @@ class CliApplication extends Application implements CliApplicationInterface
                 $synopsis = $command->getSynopsis($style);
             } elseif (is_array($childNode)) {
                 $synopsis = "$fullName $childName <command>";
-                $synopsis = Formatter::escapeTags($synopsis);
+                $synopsis = Console::escape($synopsis);
             } else {
                 continue;
             }
@@ -287,7 +286,7 @@ class CliApplication extends Application implements CliApplicationInterface
         }
 
         return implode("\n", $synopses)
-            . Formatter::escapeTags("\n\nSee '"
+            . Console::escape("\n\nSee '"
                 . Arr::implode(' ', ["$progName help", $name, '<command>'])
                 . "' for more information.");
     }

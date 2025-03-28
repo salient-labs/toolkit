@@ -7,6 +7,7 @@ use Salient\Console\Format\Formatter;
 use Salient\Console\Format\LoopbackFormat;
 use Salient\Console\Format\ManPageFormat;
 use Salient\Console\Format\MarkdownFormat;
+use Salient\Console\ConsoleUtil;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
@@ -16,6 +17,7 @@ use Salient\Utility\Str;
  * @covers \Salient\Console\Format\LoopbackFormat
  * @covers \Salient\Console\Format\ManPageFormat
  * @covers \Salient\Console\Format\MarkdownFormat
+ * @covers \Salient\Console\ConsoleUtil
  */
 final class ConsoleFormatterTest extends TestCase
 {
@@ -553,7 +555,7 @@ EOF,
      */
     public function testEscape(string $expected, string $string, bool $newlines = false): void
     {
-        $escaped = Formatter::escapeTags($string, $newlines);
+        $escaped = ConsoleUtil::escape($string, $newlines);
         $this->assertSame($expected, $escaped);
     }
 

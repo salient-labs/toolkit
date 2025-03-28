@@ -65,7 +65,7 @@ final class GetSyncEntityTest extends SyncCommandTestCase
         return [
             [
                 <<<'EOF'
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
 id,name,username,email,address,phone,company,tasks,posts,albums
 1,"Leanne Graham",Bret,Sincere@april.biz,"{""street"":""Kulas Light"",""suite"":""Apt. 556"",""city"":""Gwenborough"",""zipcode"":""92998-3874"",""geo"":{""lat"":""-37.3159"",""lng"":""81.1496""}}","1-770-736-8031 x56442","{""name"":""Romaguera-Crona"",""catchPhrase"":""Multi-layered client-server neural-net"",""bs"":""harness real-time e-markets""}",,,
 2,"Ervin Howell",Antonette,Shanna@melissa.tv,"{""street"":""Victor Plains"",""suite"":""Suite 879"",""city"":""Wisokyburgh"",""zipcode"":""90566-7771"",""geo"":{""lat"":""-43.9509"",""lng"":""-34.4618""}}","010-692-6593 x09125","{""name"":""Deckow-Crist"",""catchPhrase"":""Proactive didactic contingency"",""bs"":""synergize scalable supply-chains""}",,,
@@ -88,7 +88,7 @@ EOF,
             ],
             [
                 <<<'EOF'
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
 id,name,postcode
 1,"Leanne Graham",92998-3874
 2,"Ervin Howell",90566-7771
@@ -111,7 +111,7 @@ EOF,
             ],
             [
                 <<<'EOF'
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/7
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/7
 id,name,username,email,address,phone,company,tasks,posts,albums
 7,"Kurtis Weissnat",Elwyn.Skiles,Telly.Hoeger@billy.biz,"{""street"":""Rex Trail"",""suite"":""Suite 280"",""city"":""Howemouth"",""zipcode"":""58804-1099"",""geo"":{""lat"":""24.8918"",""lng"":""21.8984""}}",210.067.6132,"{""name"":""Johns Group"",""catchPhrase"":""Configurable multimedia task-force"",""bs"":""generate enterprise e-tailers""}",,,
 ✔ 1 entity retrieved without errors
@@ -125,7 +125,7 @@ EOF,
             ],
             [
                 <<<'EOF'
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
 [
     {
         "id": 1,
@@ -179,7 +179,7 @@ EOF,
             ],
             [
                 <<<'EOF'
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
 {
     "id": 1,
     "name": "Leanne Graham"
@@ -231,7 +231,7 @@ EOF,
             ],
             [
                 <<<'EOF'
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/7
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/7
 {
     "id": 7,
     "name": "Kurtis Weissnat",
@@ -268,7 +268,7 @@ EOF,
             ],
             [
                 sprintf(<<<EOF
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/-1
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User/-1
 Error: entity not found: -1 (JSONPlaceholder { http://localhost:3001 } [#1] does not have %s with id = {-1})
 
 app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]
@@ -285,7 +285,7 @@ EOF, User::class),
             ],
             [
                 <<<EOF
-➤ Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
+> Retrieving from JSONPlaceholder { http://localhost:3001 }: /Salient/Tests/Sync/Entity/User
 Error: Invalid field: address.postcode
 
 app [-IMscH] [-p <provider>] [-f <term=value>,...] [--shallow]

@@ -10,6 +10,153 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.78] - 2025-03-28
+
+### Added
+
+#### `Console`
+
+- Add and implement `ConsoleInterface` methods:
+  - `getTtyTarget()`
+  - `removeEscapes()`
+  - `removeTags()`
+- Add and implement `StreamTargetInterface` method `getUri()`
+- In `ConsoleInterface`:
+  - Add optional `$debug` parameters to `registerStderrTarget()` and `registerStdioTargets()`
+  - Add optional `$escapeNewlines` parameter to `escape()`
+  - Add optional `$count` parameter to `exception()`
+
+#### `Container`
+
+- Allow closures to be bound to the container
+- Add `$container` parameter to `HasBindings` methods and allow them to return closures
+- Add `$container` parameter to `getContextualBindings()` and allow it to return parameter and unmapped services, closures and instances
+- Add and implement `ApplicationInterface` methods:
+  - `getVersion()`
+  - `getVersionString()`
+  - `reportVersion()`
+
+#### `PHPStan`
+
+- Add `ContainerRule` to report when calls to `ContainerInterface::getAs()` have an `$id` that isn't a subtype of `$service`
+
+### Changed
+
+#### `Console`
+
+- **Change default `Console::info()` prefix from `➤ ` to `> ` to address inconsistent output width on some platforms**
+- In `ConsoleLogger`, pass debug messages to `Console::debug()` so the caller is output
+- In `StreamTarget::reopen()`, don't throw an exception if the stream can't be reopened
+- Don't close targets when they are deregistered
+- Rename `ConsoleInterface` methods:
+  - `getLogger()` -> `logger()`
+  - `setTargetPrefix()` -> `setPrefix()`
+  - `printOut()` -> `printStdio()`
+  - `getErrorCount()` -> `errors()`
+  - `getWarningCount()` -> `warnings()`
+- Remove `$type` parameters from `print()` methods in `ConsoleInterface`
+- Rename `StreamTarget` method `fromPath()` to more accurate `fromFile()`
+- Rename:
+  - `ConsoleFormatInterface` -> `FormatInterface`
+  - `ConsoleFormatterInterface` -> `FormatterInterface`
+  - `ConsoleMessageAttributesInterface` -> `MessageAttributesInterface`
+  - `ConsoleMessageFormatInterface` -> `MessageFormatInterface`
+  - `ConsoleTagAttributesInterface` -> `TagAttributesInterface`
+  - `ConsoleTargetInterface` -> `TargetInterface`
+  - `ConsoleTargetPrefixInterface` -> `HasPrefix`
+  - `ConsoleTargetStreamInterface` -> `StreamTargetInterface`
+  - `ConsoleFormat` -> `TtyFormat`
+  - `ConsoleFormatter` -> `Formatter`
+  - `ConsoleLoopbackFormat` -> `LoopbackFormat`
+  - `ConsoleManPageFormat` -> `ManPageFormat`
+  - `ConsoleMarkdownFormat` -> `MarkdownFormat`
+  - `ConsoleMessageAttributes` -> `MessageAttributes`
+  - `ConsoleMessageFormat` -> `MessageFormat`
+  - `ConsoleMessageFormats` -> `MessageFormats`
+  - `ConsolePrefixTarget` -> `AbstractTargetWithPrefix`
+  - `ConsoleStreamTarget` -> `AbstractStreamTarget`
+  - `ConsoleTag` -> `HasTag` and add `TAG_` prefix to the names of its constants
+  - `ConsoleTagAttributes` -> `TagAttributes`
+  - `ConsoleTagFormats` -> `TagFormats`
+  - `ConsoleTarget` -> `AbstractTarget`
+  - `ConsoleTargetTypeFlag` -> `HasTargetFlag` and add `TARGET_` prefix to the names of its constants
+- Rename methods:
+  - `withUnescape()` -> `withRemoveEscapes()`
+  - `getUnescape()` -> `removesEscapes()`
+  - `withWrapAfterApply()` -> `withWrapAfterFormatting()`
+  - `getWrapAfterApply()` -> `wrapsAfterFormatting()`
+- Replace "dim" with "faint" in method names and documentation
+
+#### `Container`
+
+- **Remove `$args` parameters from `bind()`, `bindIf()`, `singleton()` and `singletonIf()`**
+- **Rename `getName()` -> `getClass()`**
+- In `getAs()`, throw an exception if `$id` doesn't extend or implement `$service`
+- In `providers()`, map unmapped providers to themselves
+- Rename event and exception interfaces for consistency
+- Rename `ArgumentsNotUsedException` -> `UnusedArgumentsException`
+- Rename `ServiceLifetime` -> `HasServiceLifetime` and add `LIFETIME_` prefix to the names of its constants
+- Rename `ApplicationInterface` methods:
+  - `getAppName()` -> `getName()`
+  - `isProduction()` -> `isRunningInProduction()`
+  - `registerSyncNamespace()` -> `sync()` and start the entity store implicitly when called
+  - `getWorkingDirectory()` -> `getInitialWorkingDirectory()`
+  - `setWorkingDirectory()` -> `setInitialWorkingDirectory()` and remove nullability from parameter
+- In `Application`:
+  - **Always load `.env` files (previously, they were only loaded when running from source)**
+  - **Write console messages to `STDERR` when running on the command line (previously, warnings and errors were written to `STDERR` and everything else was written to `STDOUT` by default)**
+  - Retrieve application name from configuration value `"app.name"` before falling back to script basename
+  - Only stop cache and sync store instances started by the container
+
+### Removed
+
+#### `Cli`
+
+- Remove redundant `CliApplicationInterface` methods `reportVersion()` and `getVersionString()`
+
+#### `Console`
+
+- Remove `ConsoleInterface` methods:
+  - `getFormatter()` (retrieve via `getTtyTarget()`)
+  - `getWidth()` (retrieve via `getTtyTarget()`)
+  - `printStderr()` (unused)
+- Remove `FormatterInterface::withSpinnerState()`
+- Remove `StreamTargetInterface::getEol()`
+- Remove `StreamTarget::fromStream()` in favour of a public constructor
+- Remove unused `StreamTarget` method `getPath()`
+
+#### `Container`
+
+- Remove unused `unbind()` method
+- Remove implementation-specific `resumeCache()` method from `ApplicationInterface`
+- Remove implementation-specific arguments from `startSync()` method in `ApplicationInterface`
+
+### Fixed
+
+#### `Console`
+
+- Fix issue where `$msg2` is not indented when prefix width is 2
+- Fix issue where trailing carriage returns may not be preserved in `LoopbackFormat`, `ManPageFormat` and `MarkdownFormat`
+
+#### `Container`
+
+- Fix issue where calling `bind()` with `$class = null` does not replace an existing binding to a different class
+- Fix issue where parameter bindings only work for untyped and scalar constructor parameters
+- Fix issue where objects cannot be bound to constructor parameters via contextual bindings
+- Fix `addContextualBinding()` issue where `$class` cannot be `null`
+- Fix `inContextOf()` issue where contextual callbacks are not used
+- Fix issue where `Application::logOutput()` can be called repeatedly
+
+#### `Core`
+
+- Fix issue where methods that return `$this` from behind a facade return a facade-bound instance
+
+### Security
+
+#### `Console`
+
+- Fix issue where `StreamTarget::reopen()` may not apply file permissions correctly in some log rotation scenarios
+
 ## [v0.99.77] - 2025-03-04
 
 ### Added
@@ -4770,6 +4917,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.78]: https://github.com/salient-labs/toolkit/compare/v0.99.77...v0.99.78
 [v0.99.77]: https://github.com/salient-labs/toolkit/compare/v0.99.76...v0.99.77
 [v0.99.76]: https://github.com/salient-labs/toolkit/compare/v0.99.75...v0.99.76
 [v0.99.75]: https://github.com/salient-labs/toolkit/compare/v0.99.74...v0.99.75

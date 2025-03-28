@@ -33,8 +33,8 @@ use Throwable;
  * @method static StreamTargetInterface getTtyTarget() Get a TTY target, creating an unregistered one if necessary (see {@see ConsoleInterface::getTtyTarget()})
  * @method static ConsoleInterface group(string $msg1, string|null $msg2 = null, string|null $endMsg1 = null, string|null $endMsg2 = null) Increase message indentation level and print "» $msg1 $msg2" or similar with level LEVEL_NOTICE (see {@see ConsoleInterface::group()})
  * @method static ConsoleInterface groupEnd() Close the group of messages most recently opened with group()
- * @method static ConsoleInterface info(string $msg1, string|null $msg2 = null) Print "➤ $msg1 $msg2" or similar with level LEVEL_NOTICE (see {@see ConsoleInterface::info()})
- * @method static ConsoleInterface infoOnce(string $msg1, string|null $msg2 = null) Print "➤ $msg1 $msg2" or similar with level LEVEL_NOTICE once per run (see {@see ConsoleInterface::infoOnce()})
+ * @method static ConsoleInterface info(string $msg1, string|null $msg2 = null) Print "> $msg1 $msg2" or similar with level LEVEL_NOTICE (see {@see ConsoleInterface::info()})
+ * @method static ConsoleInterface infoOnce(string $msg1, string|null $msg2 = null) Print "> $msg1 $msg2" or similar with level LEVEL_NOTICE once per run (see {@see ConsoleInterface::infoOnce()})
  * @method static ConsoleInterface log(string $msg1, string|null $msg2 = null) Print "- $msg1 $msg2" or similar with level LEVEL_INFO (see {@see ConsoleInterface::log()})
  * @method static ConsoleInterface logOnce(string $msg1, string|null $msg2 = null) Print "- $msg1 $msg2" or similar with level LEVEL_INFO once per run (see {@see ConsoleInterface::logOnce()})
  * @method static ConsoleInterface logProgress(string $msg1, string|null $msg2 = null) Print "⠋ $msg1 $msg2" or similar with level LEVEL_INFO to TTY targets without moving to the next line (see {@see ConsoleInterface::logProgress()})
@@ -48,6 +48,8 @@ use Throwable;
  * @method static ConsoleInterface registerStderrTarget(bool|null $debug = null) Register STDERR for console output if running on the command line (see {@see ConsoleInterface::registerStderrTarget()})
  * @method static ConsoleInterface registerStdioTargets(bool|null $debug = null) Register STDOUT and STDERR for console output if running on the command line (see {@see ConsoleInterface::registerStdioTargets()})
  * @method static ConsoleInterface registerTarget(TargetInterface $target, array<ConsoleInterface::LEVEL_*> $levels = ConsoleInterface::LEVELS_ALL) Register a target to receive output with each of the given message levels from the console
+ * @method static string removeEscapes(string $string) Remove escapes from inline formatting tags in a string
+ * @method static string removeTags(string $string) Remove inline formatting tags from a string
  * @method static ConsoleInterface setPrefix(string|null $prefix, int-mask-of<ConsoleInterface::TARGET_*> $targetFlags = 0) Set or unset the prefix applied to each line of output by registered targets that implement HasPrefix after optionally filtering them by flag
  * @method static ConsoleInterface summary(string $finishedText = 'Command finished', string $successText = 'without errors', bool $withResourceUsage = false, bool $withoutErrorsAndWarnings = false, bool $withGenericType = false) Print a "command finished" message with a summary of errors, warnings and resource usage (see {@see ConsoleInterface::summary()})
  * @method static ConsoleInterface warn(string $msg1, string|null $msg2 = null, Throwable|null $ex = null, bool $count = true) Print "^ $msg1 $msg2" or similar with level LEVEL_WARNING (see {@see ConsoleInterface::warn()})
