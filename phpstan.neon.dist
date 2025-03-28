@@ -24,6 +24,11 @@ parameters:
 		-
 			identifier: trait.unused
 		-
+			identifier: unset.possiblyHookedProperty
+			paths:
+				- src/Toolkit/Sli/Command/Generate/AbstractGenerateCommand.php
+				- tests/*
+		-
 			identifier: method.alreadyNarrowedType
 			paths:
 				- tests/unit/*
