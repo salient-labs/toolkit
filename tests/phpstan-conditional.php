@@ -17,7 +17,15 @@ $parameters = [
 
 $dir = dirname(__DIR__);
 
-$ignoreErrors = \PHP_VERSION_ID >= 80400 ? [] : [
+$ignoreErrors = \PHP_VERSION_ID >= 80400 ? [
+    [
+        'identifier' => 'unset.possiblyHookedProperty',
+        'paths' => [
+            "$dir/src/Toolkit/Sli/Command/Generate/AbstractGenerateCommand.php",
+            "$dir/tests/*",
+        ],
+    ],
+] : [
     [
         'message' => '#^Call to method getName\(\) on an unknown class ReflectionConstant\.$#',
         'identifier' => 'class.notFound',

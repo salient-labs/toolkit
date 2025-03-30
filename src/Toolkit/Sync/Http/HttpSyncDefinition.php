@@ -535,14 +535,15 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
                         ->unlessIf(fn($entity) => $entity === null)
                         ->start();
                 };
-        }
 
-        // @codeCoverageIgnoreStart
-        throw new LogicException(sprintf(
-            'Invalid SyncOperation: %d',
-            $operation,
-        ));
-        // @codeCoverageIgnoreEnd
+            default:
+                // @codeCoverageIgnoreStart
+                throw new LogicException(sprintf(
+                    'Invalid SyncOperation: %d',
+                    $operation,
+                ));
+                // @codeCoverageIgnoreEnd
+        }
     }
 
     /**
@@ -559,7 +560,6 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
             && Env::getDryRun()
         ) {
             /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): mixed[] */
-            // @phpstan-ignore varTag.nativeType
             return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                 $payload ?? [];
         }

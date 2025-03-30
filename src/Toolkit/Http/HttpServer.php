@@ -28,10 +28,10 @@ class HttpServer implements Immutable
     protected string $Host;
     protected int $Port;
     protected int $Timeout;
-    protected string $ProxyHost;
-    protected int $ProxyPort;
-    protected bool $ProxyTls;
-    protected string $ProxyBasePath;
+    private string $ProxyHost;
+    private int $ProxyPort;
+    private bool $ProxyTls;
+    private string $ProxyBasePath;
     private string $Socket;
     /** @var resource|null */
     private $Server;
