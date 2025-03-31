@@ -86,7 +86,7 @@ OPTIONS
         Output a stream of entities when pagination is used
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -118,7 +118,7 @@ OPTIONS
         The path to JSON-serialized data to submit with the request
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -158,7 +158,7 @@ OPTIONS
         Output a stream of entities when pagination is used
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -191,7 +191,7 @@ OPTIONS
         A query parameter to apply to the request
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,

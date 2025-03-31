@@ -250,18 +250,20 @@ EOF,
     /**
      * @backupGlobals enabled
      */
-    public function testExportHar(): void
+    public function testRecordHar(): void
     {
         $_ENV['app_env'] = 'test';
         $app = $this->getApp();
+        $this->assertFalse($app->hasHarRecorder());
         /** @var string|null */
         $uuid = null;
-        $app->exportHar(
+        $app->recordHar(
             null,
             'app',
             'v1.0.0',
             function () use (&$uuid) { return $uuid = Get::uuid(); },
         );
+        $this->assertTrue($app->hasHarRecorder());
         $this->assertNull($uuid);
         $this->assertNull($app->getHarFilename());
         $this->startHttpServer();
@@ -271,7 +273,9 @@ EOF,
         // @phpstan-ignore method.impossibleType
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
+        $this->assertTrue($app->hasHarRecorder());
         $app->unload();
+        $this->assertFalse($app->hasHarRecorder());
         $this->assertTrue(File::same($file, $this->BasePath . '/var/log/har/' . basename($file)));
         $this->assertStringStartsWith(
             '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[{',
@@ -282,11 +286,11 @@ EOF,
     /**
      * @backupGlobals enabled
      */
-    public function testExportHarWithoutRequests(): void
+    public function testRecordHarWithoutRequests(): void
     {
         $_ENV['app_env'] = 'test';
         $app = $this->getApp();
-        $app->exportHar();
+        $app->recordHar();
         $app->unload();
         $this->assertDirectoryDoesNotExist($this->BasePath . '/var/log/har');
     }
@@ -294,11 +298,11 @@ EOF,
     /**
      * @backupGlobals enabled
      */
-    public function testExportHarWithSync(): void
+    public function testRecordHarWithSync(): void
     {
         $_ENV['app_env'] = 'test';
         $app = ($this->getApp())
-            ->exportHar(null, 'app', 'v1.0.0')
+            ->recordHar(null, 'app', 'v1.0.0')
             ->provider(JsonPlaceholderApi::class)
             ->startSync(static::class, []);
         $this->assertNull($app->getHarFilename());

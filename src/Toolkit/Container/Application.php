@@ -397,6 +397,14 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
+    public function hasOutputLog(): bool
+    {
+        return $this->OutputLogIsRegistered;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function logOutput(?string $name = null, ?bool $debug = null)
     {
         if ($this->OutputLogIsRegistered) {
@@ -416,7 +424,15 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
-    public function exportHar(
+    public function hasHarRecorder(): bool
+    {
+        return $this->HarListenerId !== null || $this->HarRecorder;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function recordHar(
         ?string $name = null,
         ?string $creatorName = null,
         ?string $creatorVersion = null,
@@ -490,22 +506,28 @@ class Application extends Container implements ApplicationInterface
     /**
      * @inheritDoc
      */
+    public function hasCache(): bool
+    {
+        return $this->CacheStore || (
+            Cache::isLoaded() && $this->globalCacheIsValid()
+        );
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function startCache()
     {
         if ($this->CacheStore) {
             throw new LogicException('Cache already started');
         }
         if (Cache::isLoaded()) {
-            $cache = Cache::getInstance();
-            if (
-                $cache instanceof CacheStore
-                && File::same($this->getCacheDb(false), $file = $cache->getFilename())
-            ) {
+            if ($this->globalCacheIsValid($name)) {
                 return $this;
             }
             throw new LogicException(sprintf(
                 'Global cache already started: %s',
-                $file ?? get_class($cache),
+                $name,
             ));
         }
         $this->CacheStore = new CacheStore($this->getCacheDb());
@@ -540,9 +562,31 @@ class Application extends Container implements ApplicationInterface
         return $this;
     }
 
+    /**
+     * @param-out string $name
+     */
+    private function globalCacheIsValid(?string &$name = null): bool
+    {
+        $cache = Cache::getInstance();
+        $isValid = $cache instanceof CacheStore
+            && File::same($this->getCacheDb(false), $file = $cache->getFilename());
+        $name = $file ?? get_class($cache);
+        return $isValid;
+    }
+
     private function getCacheDb(bool $create = true): string
     {
         return $this->getCachePath($create) . '/cache.db';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasSync(): bool
+    {
+        return $this->SyncStore || (
+            Sync::isLoaded() && $this->globalSyncIsValid()
+        );
     }
 
     /**
@@ -554,16 +598,12 @@ class Application extends Container implements ApplicationInterface
             throw new LogicException('Sync entity store already started');
         }
         if (Sync::isLoaded()) {
-            $store = Sync::getInstance();
-            if (
-                $store instanceof SyncStore
-                && File::same($this->getSyncDb(false), $file = $store->getFilename())
-            ) {
+            if ($this->globalSyncIsValid($name)) {
                 return $this;
             }
             throw new LogicException(sprintf(
                 'Global sync entity store already started: %s',
-                $file ?? get_class($store),
+                $name,
             ));
         }
         if ($arguments === null && $command === null) {
@@ -613,6 +653,18 @@ class Application extends Container implements ApplicationInterface
         }
         Sync::registerNamespace($prefix, $uri, $namespace, $helper);
         return $this;
+    }
+
+    /**
+     * @param-out string $name
+     */
+    private function globalSyncIsValid(?string &$name = null): bool
+    {
+        $store = Sync::getInstance();
+        $isValid = $store instanceof SyncStore
+            && File::same($this->getSyncDb(false), $file = $store->getFilename());
+        $name = $file ?? get_class($store);
+        return $isValid;
     }
 
     private function getSyncDb(bool $create = true): string
