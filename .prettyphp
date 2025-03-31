@@ -4,7 +4,6 @@
         "src",
         "tests/3rdparty",
         "tests/fixtures",
-        "tests/legacy",
         "tests/stubs",
         "tests/unit",
         "tests/bootstrap.php",
