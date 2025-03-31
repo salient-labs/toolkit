@@ -240,7 +240,7 @@ EOF)
         $dataUri = null;
 
         if ($json !== null) {
-            $entity = $this->getJson($json, $entityUri);
+            $entity = $this->getJsonOptionData($json, $entityUri);
             if (!is_array($entity)) {
                 throw new CliInvalidArgumentsException(sprintf(
                     'not a reference entity: %s',
@@ -252,13 +252,7 @@ EOF)
             $query = Get::filter($this->HttpQuery) ?: null;
             $data = $this->HttpDataFile === null
                 ? null
-                : $this->getJson($this->HttpDataFile, $dataUri, false);
-            if ($data !== null && !is_array($data) && !is_object($data)) {
-                throw new CliInvalidArgumentsException(sprintf(
-                    'not an array or object: %s',
-                    $this->HttpDataFile,
-                ));
-            }
+                : $this->getJsonOptionData($this->HttpDataFile, $dataUri, false);
             $method = $data !== null && $endpoint !== null
                 ? HttpRequestMethod::POST
                 : $this->HttpMethod;

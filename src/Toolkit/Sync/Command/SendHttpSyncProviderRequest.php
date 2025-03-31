@@ -4,6 +4,7 @@ namespace Salient\Sync\Command;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Cli\CliUtil;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Http\HttpRequestMethod as Method;
@@ -149,7 +150,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
         }
 
         $data = $this->Data !== null
-            ? $this->getJson($this->Data, false)
+            ? CliUtil::getJson($this->Data, false)
             : null;
 
         $curler = $provider->getCurler($this->Endpoint);
