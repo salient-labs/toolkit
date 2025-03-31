@@ -353,7 +353,7 @@ OPTIONS
         Generate CSV output (implies --shallow if --field is not given)
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -418,7 +418,7 @@ OPTIONS
         Generate CSV output (implies --shallow if --field is not given)
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -474,7 +474,7 @@ OPTIONS
         Generate CSV output (implies --shallow if --field is not given)
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,

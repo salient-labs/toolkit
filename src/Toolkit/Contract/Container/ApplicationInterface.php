@@ -67,6 +67,12 @@ interface ApplicationInterface extends ContainerInterface
     public function isRunningInProduction(): bool;
 
     /**
+     * Check if console output is being logged to the application's log
+     * directory
+     */
+    public function hasOutputLog(): bool;
+
+    /**
      * Log console output to the application's log directory
      *
      * Messages with levels between `LEVEL_EMERGENCY` and `LEVEL_INFO` are
@@ -83,7 +89,15 @@ interface ApplicationInterface extends ContainerInterface
     public function logOutput(?string $name = null, ?bool $debug = null);
 
     /**
-     * Export the application's HTTP requests to an HTTP Archive (HAR) file in
+     * Check if the application's HTTP requests are being recorded
+     *
+     * Returns `true` if {@see recordHar()} has been called, even if no
+     * subsequent HTTP requests have been made.
+     */
+    public function hasHarRecorder(): bool;
+
+    /**
+     * Record the application's HTTP requests to an HTTP Archive (HAR) file in
      * its log directory
      *
      * If any HTTP requests are made via {@see CurlerInterface} implementations,
@@ -94,7 +108,7 @@ interface ApplicationInterface extends ContainerInterface
      * @return $this
      * @throws LogicException if HTTP requests are already being recorded.
      */
-    public function exportHar(
+    public function recordHar(
         ?string $name = null,
         ?string $creatorName = null,
         ?string $creatorVersion = null,
@@ -104,12 +118,17 @@ interface ApplicationInterface extends ContainerInterface
     /**
      * Get the name of the application's HTTP Archive (HAR) file if it exists
      *
-     * Returns `null` if {@see exportHar()} has been called but no HTTP requests
+     * Returns `null` if {@see recordHar()} has been called but no HTTP requests
      * have been made.
      *
      * @throws LogicException if HTTP requests are not being recorded.
      */
     public function getHarFilename(): ?string;
+
+    /**
+     * Check if a cache has been started for the application
+     */
+    public function hasCache(): bool;
 
     /**
      * Start a cache for the application and make it the global cache
@@ -118,6 +137,8 @@ interface ApplicationInterface extends ContainerInterface
      * cache directory.
      *
      * @return $this
+     * @throws LogicException if a cache has already been started for the
+     * application.
      */
     public function startCache();
 
@@ -129,6 +150,11 @@ interface ApplicationInterface extends ContainerInterface
     public function stopCache();
 
     /**
+     * Check if a sync entity store has been started for the application
+     */
+    public function hasSync(): bool;
+
+    /**
      * Start a sync entity store for the application and make it the global sync
      * entity store
      *
@@ -136,6 +162,8 @@ interface ApplicationInterface extends ContainerInterface
      * application's data directory.
      *
      * @return $this
+     * @throws LogicException if a sync entity store has already been started
+     * for the application.
      */
     public function startSync();
 

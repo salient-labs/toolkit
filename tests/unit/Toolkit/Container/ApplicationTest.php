@@ -3,14 +3,17 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Cache\CacheStore;
 use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Sync;
+use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Entity\Provider\PostProvider;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
@@ -250,18 +253,20 @@ EOF,
     /**
      * @backupGlobals enabled
      */
-    public function testExportHar(): void
+    public function testRecordHar(): void
     {
         $_ENV['app_env'] = 'test';
         $app = $this->getApp();
+        $this->assertFalse($app->hasHarRecorder());
         /** @var string|null */
         $uuid = null;
-        $app->exportHar(
+        $app->recordHar(
             null,
             'app',
             'v1.0.0',
             function () use (&$uuid) { return $uuid = Get::uuid(); },
         );
+        $this->assertTrue($app->hasHarRecorder());
         $this->assertNull($uuid);
         $this->assertNull($app->getHarFilename());
         $this->startHttpServer();
@@ -271,7 +276,9 @@ EOF,
         // @phpstan-ignore method.impossibleType
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
+        $this->assertTrue($app->hasHarRecorder());
         $app->unload();
+        $this->assertFalse($app->hasHarRecorder());
         $this->assertTrue(File::same($file, $this->BasePath . '/var/log/har/' . basename($file)));
         $this->assertStringStartsWith(
             '{"log":{"version":"1.2","creator":{"name":"app","version":"v1.0.0"},"pages":[],"entries":[{',
@@ -282,11 +289,11 @@ EOF,
     /**
      * @backupGlobals enabled
      */
-    public function testExportHarWithoutRequests(): void
+    public function testRecordHarWithoutRequests(): void
     {
         $_ENV['app_env'] = 'test';
         $app = $this->getApp();
-        $app->exportHar();
+        $app->recordHar();
         $app->unload();
         $this->assertDirectoryDoesNotExist($this->BasePath . '/var/log/har');
     }
@@ -294,11 +301,11 @@ EOF,
     /**
      * @backupGlobals enabled
      */
-    public function testExportHarWithSync(): void
+    public function testRecordHarWithSync(): void
     {
         $_ENV['app_env'] = 'test';
         $app = ($this->getApp())
-            ->exportHar(null, 'app', 'v1.0.0')
+            ->recordHar(null, 'app', 'v1.0.0')
             ->provider(JsonPlaceholderApi::class)
             ->startSync(static::class, []);
         $this->assertNull($app->getHarFilename());
@@ -308,6 +315,38 @@ EOF,
         // @phpstan-ignore method.impossibleType
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
+    }
+
+    public function testHasCache(): void
+    {
+        $app = $this->getApp();
+        $this->assertFalse($app->hasCache());
+        Cache::getInstance();
+        $this->assertFalse($app->hasCache());
+        Cache::swap(new CacheStore($app->getCachePath() . '/cache.db'));
+        $this->assertTrue($app->hasCache());
+        Cache::unload();
+        $this->assertFalse($app->hasCache());
+        $app->startCache();
+        $this->assertTrue($app->hasCache());
+        $app->stopCache();
+        $this->assertFalse($app->hasCache());
+    }
+
+    public function testHasSync(): void
+    {
+        $app = $this->getApp();
+        $this->assertFalse($app->hasSync());
+        Sync::getInstance();
+        $this->assertFalse($app->hasSync());
+        Sync::swap(new SyncStore($app->getDataPath() . '/sync.db'));
+        $this->assertTrue($app->hasSync());
+        Sync::unload();
+        $this->assertFalse($app->hasSync());
+        $app->startSync(static::class, []);
+        $this->assertTrue($app->hasSync());
+        $app->stopSync();
+        $this->assertFalse($app->hasSync());
     }
 
     /**

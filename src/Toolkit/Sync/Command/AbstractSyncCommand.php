@@ -25,7 +25,7 @@ use JsonException;
  */
 abstract class AbstractSyncCommand extends CliCommand
 {
-    protected bool $ExportHar = false;
+    protected bool $RecordHar = false;
 
     // --
 
@@ -147,8 +147,8 @@ abstract class AbstractSyncCommand extends CliCommand
             CliOption::build()
                 ->long('har')
                 ->short('H')
-                ->description('Export HTTP requests to an HTTP Archive file in the log directory')
-                ->bindTo($this->ExportHar),
+                ->description('Record HTTP requests to an HTTP Archive file in the log directory')
+                ->bindTo($this->RecordHar),
         ];
     }
 
@@ -156,8 +156,8 @@ abstract class AbstractSyncCommand extends CliCommand
     {
         Console::registerStderrTarget();
 
-        if ($this->ExportHar) {
-            $this->App->exportHar();
+        if ($this->RecordHar) {
+            $this->App->recordHar();
         }
     }
 

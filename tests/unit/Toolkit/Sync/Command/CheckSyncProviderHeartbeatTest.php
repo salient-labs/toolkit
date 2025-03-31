@@ -131,7 +131,7 @@ OPTIONS
         If a check fails, exit without checking other providers
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -175,7 +175,7 @@ OPTIONS
         If a check fails, exit without checking other providers
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
@@ -216,7 +216,7 @@ OPTIONS
         If a check fails, exit without checking other providers
 
     -H, --har
-        Export HTTP requests to an HTTP Archive file in the log directory
+        Record HTTP requests to an HTTP Archive file in the log directory
 
 EOF,
                 0,
