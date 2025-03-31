@@ -3,14 +3,17 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
+use Salient\Cache\CacheStore;
 use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Container\ApplicationInterface;
 use Salient\Contract\Container\ContainerInterface;
+use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Config;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Err;
 use Salient\Core\Facade\Sync;
+use Salient\Sync\SyncStore;
 use Salient\Tests\Sync\Entity\Provider\PostProvider;
 use Salient\Tests\Sync\Entity\Post;
 use Salient\Tests\Sync\Provider\JsonPlaceholderApi;
@@ -312,6 +315,38 @@ EOF,
         // @phpstan-ignore method.impossibleType
         $this->assertNotNull($file = $app->getHarFilename());
         $this->assertStringEndsWith('-' . $uuid . '.har', $file);
+    }
+
+    public function testHasCache(): void
+    {
+        $app = $this->getApp();
+        $this->assertFalse($app->hasCache());
+        Cache::getInstance();
+        $this->assertFalse($app->hasCache());
+        Cache::swap(new CacheStore($app->getCachePath() . '/cache.db'));
+        $this->assertTrue($app->hasCache());
+        Cache::unload();
+        $this->assertFalse($app->hasCache());
+        $app->startCache();
+        $this->assertTrue($app->hasCache());
+        $app->stopCache();
+        $this->assertFalse($app->hasCache());
+    }
+
+    public function testHasSync(): void
+    {
+        $app = $this->getApp();
+        $this->assertFalse($app->hasSync());
+        Sync::getInstance();
+        $this->assertFalse($app->hasSync());
+        Sync::swap(new SyncStore($app->getDataPath() . '/sync.db'));
+        $this->assertTrue($app->hasSync());
+        Sync::unload();
+        $this->assertFalse($app->hasSync());
+        $app->startSync(static::class, []);
+        $this->assertTrue($app->hasSync());
+        $app->stopSync();
+        $this->assertFalse($app->hasSync());
     }
 
     /**
