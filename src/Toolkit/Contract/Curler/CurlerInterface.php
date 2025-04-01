@@ -11,6 +11,7 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\FormDataFlag;
+use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -26,7 +27,7 @@ use Stringable;
 /**
  * @api
  */
-interface CurlerInterface extends ClientInterface, Immutable
+interface CurlerInterface extends ClientInterface, HasHttpHeaders, Immutable
 {
     /**
      * Get the endpoint URI applied to the instance
@@ -269,6 +270,14 @@ interface CurlerInterface extends ClientInterface, Immutable
      * Get the value of a request header as a string of comma-delimited values
      */
     public function getHeaderLine(string $name): string;
+
+    /**
+     * Get an array that maps lowercase request header names to comma-separated
+     * values
+     *
+     * @return array<string,string>
+     */
+    public function getHeaderLines(): array;
 
     /**
      * Get the value of a request header as a list of values, splitting any

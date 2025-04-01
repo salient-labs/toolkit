@@ -5,7 +5,6 @@ namespace Salient\Contract\Http;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Stringable;
 
 /**
@@ -13,6 +12,7 @@ use Stringable;
  */
 interface HttpHeadersInterface extends
     CollectionInterface,
+    HasHeaders,
     Immutable,
     Stringable
 {
@@ -115,64 +115,6 @@ interface HttpHeadersInterface extends
         string $format = '%s: %s',
         ?string $emptyFormat = null
     ): array;
-
-    /**
-     * Get an array that maps header names to values, preserving the original
-     * case of the first appearance of each header
-     *
-     * @return array<string,string[]>
-     */
-    public function getHeaders(): array;
-
-    /**
-     * Get an array that maps lowercase header names to comma-separated values
-     *
-     * @return array<string,string>
-     */
-    public function getHeaderLines(): array;
-
-    /**
-     * True if a header is found in the collection
-     */
-    public function hasHeader(string $name): bool;
-
-    /**
-     * Get the value of a header as a list of values
-     *
-     * @return string[]
-     */
-    public function getHeader(string $name): array;
-
-    /**
-     * Get the value of a header as a string of comma-delimited values
-     */
-    public function getHeaderLine(string $name): string;
-
-    /**
-     * Get the value of a header as a list of values, splitting any
-     * comma-separated values
-     *
-     * @return string[]
-     */
-    public function getHeaderValues(string $name): array;
-
-    /**
-     * Get the first value of a header after splitting any comma-separated
-     * values
-     */
-    public function getFirstHeaderValue(string $name): string;
-
-    /**
-     * Get the last value of a header after splitting any comma-separated values
-     */
-    public function getLastHeaderValue(string $name): string;
-
-    /**
-     * Get the only value of a header after splitting any comma-separated values
-     *
-     * @throws InvalidHeaderException if the header has more than one value.
-     */
-    public function getOnlyHeaderValue(string $name, bool $orSame = false): string;
 
     /**
      * Get header names and values in their original order as a list of HTTP

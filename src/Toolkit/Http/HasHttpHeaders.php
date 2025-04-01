@@ -2,9 +2,15 @@
 
 namespace Salient\Http;
 
+use Salient\Contract\Http\HasHttpHeaders as HasHttpHeadersInterface;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 
+/**
+ * @api
+ *
+ * @phpstan-require-implements HasHttpHeadersInterface
+ */
 trait HasHttpHeaders
 {
     use ImmutableTrait;
@@ -49,6 +55,14 @@ trait HasHttpHeaders
     public function getHeaderLine(string $name): string
     {
         return $this->Headers->getHeaderLine($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeaderLines(): array
+    {
+        return $this->Headers->getHeaderLines();
     }
 
     /**

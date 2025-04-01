@@ -6,12 +6,14 @@ use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\Http\Exception\InvalidHeaderException;
 use InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
 
 interface HttpMessageInterface extends
     MessageInterface,
+    HasHttpHeaders,
     Stringable,
     JsonSerializable,
     Immutable
@@ -30,9 +32,17 @@ interface HttpMessageInterface extends
     public static function fromPsr7(MessageInterface $message): HttpMessageInterface;
 
     /**
-     * Get the HTTP headers of the message
+     * Get message headers
      */
     public function getHttpHeaders(): HttpHeadersInterface;
+
+    /**
+     * Get an array that maps lowercase message header names to comma-separated
+     * values
+     *
+     * @return array<string,string>
+     */
+    public function getHeaderLines(): array;
 
     /**
      * Get the value of a message header as a list of values, splitting any
@@ -58,7 +68,7 @@ interface HttpMessageInterface extends
      * Get the only value of a message header after splitting any
      * comma-separated values
      *
-     * An exception is thrown if the header has more than one value.
+     * @throws InvalidHeaderException if the header has more than one value.
      */
     public function getOnlyHeaderValue(string $name, bool $orSame = false): string;
 
