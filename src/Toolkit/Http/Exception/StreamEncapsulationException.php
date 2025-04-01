@@ -4,4 +4,7 @@ namespace Salient\Http\Exception;
 
 use Salient\Contract\Http\Exception\StreamEncapsulationException as StreamEncapsulationExceptionInterface;
 
+/**
+ * @internal
+ */
 class StreamEncapsulationException extends StreamException implements StreamEncapsulationExceptionInterface {}

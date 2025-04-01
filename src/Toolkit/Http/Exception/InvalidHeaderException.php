@@ -4,4 +4,7 @@ namespace Salient\Http\Exception;
 
 use Salient\Contract\Http\Exception\InvalidHeaderException as InvalidHeaderExceptionInterface;
 
+/**
+ * @internal
+ */
 class InvalidHeaderException extends HttpException implements InvalidHeaderExceptionInterface {}

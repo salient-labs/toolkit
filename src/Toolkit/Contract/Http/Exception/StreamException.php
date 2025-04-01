@@ -2,4 +2,7 @@
 
 namespace Salient\Contract\Http\Exception;
 
+/**
+ * @api
+ */
 interface StreamException extends HttpException {}
