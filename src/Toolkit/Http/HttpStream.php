@@ -6,7 +6,7 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\Message\HttpStreamInterface;
-use Salient\Contract\Http\FormDataFlag;
+use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
@@ -19,7 +19,7 @@ use InvalidArgumentException;
 /**
  * A PSR-7 stream wrapper
  */
-class HttpStream implements HttpStreamInterface
+class HttpStream implements HttpStreamInterface, HasFormDataFlag
 {
     protected const CHUNK_SIZE = 8192;
 
@@ -69,11 +69,11 @@ class HttpStream implements HttpStreamInterface
      * HttpMultipartStream object
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpStream::PRESERVE_*> $flags
      */
     public static function fromData(
         $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         bool $asJson = false,
         ?string $boundary = null

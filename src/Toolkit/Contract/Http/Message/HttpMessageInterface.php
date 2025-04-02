@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HasHttpHeaders;
+use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HttpHeadersInterface;
 use InvalidArgumentException;
 use JsonSerializable;
@@ -18,7 +19,8 @@ interface HttpMessageInterface extends
     HasHttpHeaders,
     Stringable,
     JsonSerializable,
-    Immutable
+    Immutable,
+    HasMediaType
 {
     /**
      * Get an instance of the class from a compatible PSR-7 message

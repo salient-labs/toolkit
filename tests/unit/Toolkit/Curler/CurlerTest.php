@@ -14,8 +14,6 @@ use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\HttpHeader as Header;
-use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Contract\Http\MimeType;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
@@ -66,7 +64,7 @@ EOF,
     {
         $server = $this->getJsonServer(self::OUTPUT);
         $this->assertSame([
-            'content-type' => [MimeType::JSON],
+            'content-type' => [self::TYPE_JSON],
             'content-length' => ['13'],
         ], $this->getCurler('/foo')->head(self::QUERY)->all());
         $this->assertSameHttpMessage(
@@ -88,20 +86,20 @@ EOF,
 
     public function testPut(): void
     {
-        $this->doTestPost(Method::PUT);
+        $this->doTestPost(self::METHOD_PUT);
     }
 
     public function testPatch(): void
     {
-        $this->doTestPost(Method::PATCH);
+        $this->doTestPost(self::METHOD_PATCH);
     }
 
     public function testDelete(): void
     {
-        $this->doTestPost(Method::DELETE);
+        $this->doTestPost(self::METHOD_DELETE);
     }
 
-    private function doTestPost(string $method = Method::POST): void
+    private function doTestPost(string $method = self::METHOD_POST): void
     {
         $server = $this->getJsonServer(self::OUTPUT, self::OUTPUT, self::OUTPUT);
         $m = Str::lower($method);
@@ -178,25 +176,25 @@ EOF,
 
     public function testPostP(): void
     {
-        $this->doTestGetP(Method::POST);
+        $this->doTestGetP(self::METHOD_POST);
     }
 
     public function testPutP(): void
     {
-        $this->doTestGetP(Method::PUT);
+        $this->doTestGetP(self::METHOD_PUT);
     }
 
     public function testPatchP(): void
     {
-        $this->doTestGetP(Method::PATCH);
+        $this->doTestGetP(self::METHOD_PATCH);
     }
 
     public function testDeleteP(): void
     {
-        $this->doTestGetP(Method::DELETE);
+        $this->doTestGetP(self::METHOD_DELETE);
     }
 
-    private function doTestGetP(string $method = Method::GET): void
+    private function doTestGetP(string $method = self::METHOD_GET): void
     {
         $server = $this->getJsonServer(...self::OUT_PAGES);
         $output = [];
@@ -226,7 +224,7 @@ EOF,
                         $previousPage
                             ? null
                             : $request
-                                ->withMethod(Method::GET)
+                                ->withMethod(self::METHOD_GET)
                                 ->withUri($curler->replaceQuery($request->getUri(), ['page' => 2]))
                                 ->withBody(HttpStream::fromString(''))
                                 ->withoutHeader(Header::CONTENT_TYPE)
@@ -235,9 +233,9 @@ EOF,
             );
 
         $curler = $this->getCurler('/foo')->withPager($pager);
-        $args = $method === Method::GET ? [] : [self::INPUT];
-        $body = $method === Method::GET ? '' : '{"baz":"qux"}';
-        $headers = $method === Method::GET ? '' : <<<EOF
+        $args = $method === self::METHOD_GET ? [] : [self::INPUT];
+        $body = $method === self::METHOD_GET ? '' : '{"baz":"qux"}';
+        $headers = $method === self::METHOD_GET ? '' : <<<EOF
 
 Content-Length: 13
 Content-Type: application/json
@@ -269,20 +267,20 @@ EOF,
 
     public function testPutR(): void
     {
-        $this->doTestPostR(Method::PUT);
+        $this->doTestPostR(self::METHOD_PUT);
     }
 
     public function testPatchR(): void
     {
-        $this->doTestPostR(Method::PATCH);
+        $this->doTestPostR(self::METHOD_PATCH);
     }
 
     public function testDeleteR(): void
     {
-        $this->doTestPostR(Method::DELETE);
+        $this->doTestPostR(self::METHOD_DELETE);
     }
 
-    private function doTestPostR(string $method = Method::POST): void
+    private function doTestPostR(string $method = self::METHOD_POST): void
     {
         $server = $this->getJsonServer(self::OUTPUT);
         $m = Str::lower($method) . 'R';
@@ -394,8 +392,8 @@ EOF,
 
     public function testThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
-        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
         $server = $this->startHttpServer($bad, $good, $bad);
         $output = [];
         $curler = $this
@@ -437,8 +435,8 @@ EOF;
 
     public function testWithoutThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
-        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
+        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
         $server = $this->startHttpServer($bad, $good, $bad);
         $output = [];
         $curler = $this
@@ -481,7 +479,7 @@ EOF;
             new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
             new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
             new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
-            new HttpResponse(200, Json::encode(self::OUTPUT), [Header::CONTENT_TYPE => MimeType::JSON]),
+            new HttpResponse(200, Json::encode(self::OUTPUT), [Header::CONTENT_TYPE => self::TYPE_JSON]),
         ];
         $server = $this->startHttpServer(...$responses);
         $output = [];
@@ -608,7 +606,7 @@ EOF,
             $responses[] = new HttpResponse(
                 200,
                 Json::encode($data),
-                [Header::CONTENT_TYPE => MimeType::JSON],
+                [Header::CONTENT_TYPE => self::TYPE_JSON],
             );
         }
         return $this->startHttpServer(...($responses ?? []));

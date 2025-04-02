@@ -11,8 +11,10 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\FormDataFlag;
+use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Contract\Http\HasHttpHeaders;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
@@ -27,7 +29,13 @@ use Stringable;
 /**
  * @api
  */
-interface CurlerInterface extends ClientInterface, HasHttpHeaders, Immutable
+interface CurlerInterface extends
+    ClientInterface,
+    HasHttpHeaders,
+    Immutable,
+    HasFormDataFlag,
+    HasMediaType,
+    HasRequestMethod
 {
     /**
      * Get the endpoint URI applied to the instance
@@ -451,7 +459,7 @@ interface CurlerInterface extends ClientInterface, HasHttpHeaders, Immutable
     /**
      * Get form data flags applied to the instance
      *
-     * @return int-mask-of<FormDataFlag::*>
+     * @return int-mask-of<CurlerInterface::PRESERVE_*>
      */
     public function getFormDataFlags(): int;
 
@@ -461,10 +469,10 @@ interface CurlerInterface extends ClientInterface, HasHttpHeaders, Immutable
      * Form data flags are used to encode data for query strings and message
      * bodies.
      *
-     * {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} and
-     * {@see FormDataFlag::PRESERVE_STRING_KEYS} are applied by default.
+     * {@see CurlerInterface::PRESERVE_NUMERIC_KEYS} and
+     * {@see CurlerInterface::PRESERVE_STRING_KEYS} are applied by default.
      *
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<CurlerInterface::PRESERVE_*> $flags
      * @return static
      */
     public function withFormDataFlags(int $flags);

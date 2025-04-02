@@ -7,7 +7,6 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use Salient\Contract\Http\Message\HttpServerRequestInterface;
-use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Curler\Curler;
@@ -339,7 +338,7 @@ abstract class OAuth2Client
     private function receiveAuthorizationCode(HttpServerRequestInterface $request, bool &$continue, &$return): HttpResponse
     {
         if (
-            Str::upper($request->getMethod()) !== Method::GET
+            Str::upper($request->getMethod()) !== HttpServerRequestInterface::METHOD_GET
             || $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;

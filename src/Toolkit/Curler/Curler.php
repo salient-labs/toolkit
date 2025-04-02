@@ -21,13 +21,10 @@ use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\FormDataFlag;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
-use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Contract\Http\MimeType;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\ImmutableTrait;
@@ -86,11 +83,11 @@ class Curler implements CurlerInterface, Buildable
      */
     protected const MAX_INPUT_LENGTH = 2 * 1024 ** 2;
 
-    protected const METHOD_HAS_BODY = [
-        Method::POST => true,
-        Method::PUT => true,
-        Method::PATCH => true,
-        Method::DELETE => true,
+    protected const REQUEST_METHOD_HAS_BODY = [
+        Curler::METHOD_POST => true,
+        Curler::METHOD_PUT => true,
+        Curler::METHOD_PATCH => true,
+        Curler::METHOD_DELETE => true,
     ];
 
     protected Uri $Uri;
@@ -104,8 +101,8 @@ class Curler implements CurlerInterface, Buildable
     protected bool $ExpectJson = true;
     protected bool $PostJson = true;
     protected ?DateFormatterInterface $DateFormatter = null;
-    /** @var int-mask-of<FormDataFlag::*> */
-    protected int $FormDataFlags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS;
+    /** @var int-mask-of<Curler::PRESERVE_*> */
+    protected int $FormDataFlags = Curler::PRESERVE_NUMERIC_KEYS | Curler::PRESERVE_STRING_KEYS;
     /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> */
     protected int $JsonDecodeFlags = \JSON_OBJECT_AS_ARRAY;
     /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,string|null}> */
@@ -178,7 +175,7 @@ class Curler implements CurlerInterface, Buildable
      * @param bool $expectJson Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON
      * @param bool $postJson Use JSON to encode POST/PUT/PATCH/DELETE data
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
-     * @param int-mask-of<FormDataFlag::*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} `|` {@see FormDataFlag::PRESERVE_STRING_KEYS})
+     * @param int-mask-of<Curler::PRESERVE_*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see Curler::PRESERVE_NUMERIC_KEYS} `|` {@see Curler::PRESERVE_STRING_KEYS})
      * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
      * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
@@ -210,7 +207,7 @@ class Curler implements CurlerInterface, Buildable
         bool $expectJson = true,
         bool $postJson = true,
         ?DateFormatterInterface $dateFormatter = null,
-        int $formDataFlags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $formDataFlags = Curler::PRESERVE_NUMERIC_KEYS | Curler::PRESERVE_STRING_KEYS,
         int $jsonDecodeFlags = \JSON_OBJECT_AS_ARRAY,
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,
@@ -320,7 +317,7 @@ class Curler implements CurlerInterface, Buildable
             $this->debug($ex->getMessage());
             return false;
         }
-        return HttpUtil::mediaTypeIs($contentType, MimeType::JSON);
+        return HttpUtil::mediaTypeIs($contentType, self::TYPE_JSON);
     }
 
     // --
@@ -330,7 +327,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function head(?array $query = null): HttpHeadersInterface
     {
-        return $this->process(Method::HEAD, $query);
+        return $this->process(self::METHOD_HEAD, $query);
     }
 
     /**
@@ -338,7 +335,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function get(?array $query = null)
     {
-        return $this->process(Method::GET, $query);
+        return $this->process(self::METHOD_GET, $query);
     }
 
     /**
@@ -346,7 +343,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function post($data = null, ?array $query = null)
     {
-        return $this->process(Method::POST, $query, $data);
+        return $this->process(self::METHOD_POST, $query, $data);
     }
 
     /**
@@ -354,7 +351,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function put($data = null, ?array $query = null)
     {
-        return $this->process(Method::PUT, $query, $data);
+        return $this->process(self::METHOD_PUT, $query, $data);
     }
 
     /**
@@ -362,7 +359,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function patch($data = null, ?array $query = null)
     {
-        return $this->process(Method::PATCH, $query, $data);
+        return $this->process(self::METHOD_PATCH, $query, $data);
     }
 
     /**
@@ -370,13 +367,13 @@ class Curler implements CurlerInterface, Buildable
      */
     public function delete($data = null, ?array $query = null)
     {
-        return $this->process(Method::DELETE, $query, $data);
+        return $this->process(self::METHOD_DELETE, $query, $data);
     }
 
     /**
      * @param mixed[]|null $query
      * @param mixed[]|object|false|null $data
-     * @return ($method is Method::HEAD ? HttpHeadersInterface : mixed)
+     * @return ($method is self::METHOD_HEAD ? HttpHeadersInterface : mixed)
      */
     private function process(string $method, ?array $query, $data = false)
     {
@@ -390,7 +387,7 @@ class Curler implements CurlerInterface, Buildable
             }
         }
         $response = $this->doSendRequest($request);
-        if ($method === Method::HEAD) {
+        if ($method === self::METHOD_HEAD) {
             return $response->getHttpHeaders();
         }
         $result = $this->getResponseBody($response);
@@ -408,7 +405,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function getP(?array $query = null): iterable
     {
-        return $this->paginate(Method::GET, $query);
+        return $this->paginate(self::METHOD_GET, $query);
     }
 
     /**
@@ -416,7 +413,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function postP($data = null, ?array $query = null): iterable
     {
-        return $this->paginate(Method::POST, $query, $data);
+        return $this->paginate(self::METHOD_POST, $query, $data);
     }
 
     /**
@@ -424,7 +421,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function putP($data = null, ?array $query = null): iterable
     {
-        return $this->paginate(Method::PUT, $query, $data);
+        return $this->paginate(self::METHOD_PUT, $query, $data);
     }
 
     /**
@@ -432,7 +429,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function patchP($data = null, ?array $query = null): iterable
     {
-        return $this->paginate(Method::PATCH, $query, $data);
+        return $this->paginate(self::METHOD_PATCH, $query, $data);
     }
 
     /**
@@ -440,7 +437,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function deleteP($data = null, ?array $query = null): iterable
     {
-        return $this->paginate(Method::DELETE, $query, $data);
+        return $this->paginate(self::METHOD_DELETE, $query, $data);
     }
 
     /**
@@ -484,7 +481,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function postR(string $data, string $mediaType, ?array $query = null)
     {
-        return $this->processRaw(Method::POST, $data, $mediaType, $query);
+        return $this->processRaw(self::METHOD_POST, $data, $mediaType, $query);
     }
 
     /**
@@ -492,7 +489,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function putR(string $data, string $mediaType, ?array $query = null)
     {
-        return $this->processRaw(Method::PUT, $data, $mediaType, $query);
+        return $this->processRaw(self::METHOD_PUT, $data, $mediaType, $query);
     }
 
     /**
@@ -500,7 +497,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function patchR(string $data, string $mediaType, ?array $query = null)
     {
-        return $this->processRaw(Method::PATCH, $data, $mediaType, $query);
+        return $this->processRaw(self::METHOD_PATCH, $data, $mediaType, $query);
     }
 
     /**
@@ -508,7 +505,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function deleteR(string $data, string $mediaType, ?array $query = null)
     {
-        return $this->processRaw(Method::DELETE, $data, $mediaType, $query);
+        return $this->processRaw(self::METHOD_DELETE, $data, $mediaType, $query);
     }
 
     /**
@@ -565,7 +562,7 @@ class Curler implements CurlerInterface, Buildable
             $headers = $headers->set(HttpHeader::CONTENT_TYPE, $this->MediaType);
         }
         if ($this->ExpectJson) {
-            $headers = $headers->set(HttpHeader::ACCEPT, MimeType::JSON);
+            $headers = $headers->set(HttpHeader::ACCEPT, self::TYPE_JSON);
         }
         if ($this->UserAgent !== '' && (
             $this->UserAgent !== null
@@ -810,7 +807,7 @@ class Curler implements CurlerInterface, Buildable
 
         $mediaType = Arr::last($headers->getHeaderValues(HttpHeader::CONTENT_TYPE));
         $userAgent = Arr::last($headers->getHeaderValues(HttpHeader::USER_AGENT));
-        $expectJson = Arr::lower($headers->getHeaderValues(HttpHeader::ACCEPT)) === [MimeType::JSON];
+        $expectJson = Arr::lower($headers->getHeaderValues(HttpHeader::ACCEPT)) === [self::TYPE_JSON];
         if ($userAgent !== null && $userAgent === $this->getDefaultUserAgent()) {
             $userAgent = null;
         }
@@ -1141,7 +1138,7 @@ class Curler implements CurlerInterface, Buildable
         $method = $request->getMethod();
         $body = $request->getBody();
         $opt[\CURLOPT_CUSTOMREQUEST] = $method;
-        if ($method === Method::HEAD) {
+        if ($method === self::METHOD_HEAD) {
             $opt[\CURLOPT_NOBODY] = true;
             $size = 0;
         } else {
@@ -1171,7 +1168,7 @@ class Curler implements CurlerInterface, Buildable
                     $body->rewind();
                 }
             }
-        } elseif (self::METHOD_HAS_BODY[$method] ?? false) {
+        } elseif (self::REQUEST_METHOD_HAS_BODY[$method] ?? false) {
             // [RFC7230], Section 3.3.2: "A user agent SHOULD send a
             // Content-Length in a request message when no Transfer-Encoding is
             // sent and the request method defines a meaning for an enclosed
@@ -1244,16 +1241,16 @@ class Curler implements CurlerInterface, Buildable
                     $this->CacheResponses
                     && ($size === 0 || is_string($body))
                     && ([
-                        Method::GET => true,
-                        Method::HEAD => true,
-                        Method::POST => $this->CachePostResponses,
+                        self::METHOD_GET => true,
+                        self::METHOD_HEAD => true,
+                        self::METHOD_POST => $this->CachePostResponses,
                     ][$method] ?? false)
                 ) {
                     $cacheKey = $this->CacheKeyCallback !== null
                         ? (array) ($this->CacheKeyCallback)($request, $this)
                         : $headers->exceptIn($this->getUnstableHeaders())->getLines('%s:%s');
 
-                    if ($size !== 0 || $method === Method::POST) {
+                    if ($size !== 0 || $method === self::METHOD_POST) {
                         $cacheKey[] = $size === 0 ? '' : $body;
                     }
 
@@ -1393,9 +1390,9 @@ class Curler implements CurlerInterface, Buildable
                 // Match cURL's behaviour
                 if (($code === 301 || $code === 302 || $code === 303) && (
                     $size !== 0
-                    || (self::METHOD_HAS_BODY[$method] ?? false)
+                    || (self::REQUEST_METHOD_HAS_BODY[$method] ?? false)
                 )) {
-                    $method = Method::GET;
+                    $method = self::METHOD_GET;
                     $body = HttpStream::fromString('');
                     $request = $request
                         ->withMethod($method)
@@ -1505,10 +1502,10 @@ class Curler implements CurlerInterface, Buildable
             if ($this->PostJson) {
                 $this->debug(sprintf(
                     'JSON message bodies cannot be empty; falling back to %s',
-                    MimeType::FORM,
+                    self::TYPE_FORM,
                 ));
             }
-            return $request->withHeader(HttpHeader::CONTENT_TYPE, MimeType::FORM);
+            return $request->withHeader(HttpHeader::CONTENT_TYPE, self::TYPE_FORM);
         }
         if (is_string($data)) {
             return $request->withBody(HttpStream::fromString($data));
@@ -1516,19 +1513,19 @@ class Curler implements CurlerInterface, Buildable
         if ($this->PostJson) {
             try {
                 $body = HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter, true);
-                $mediaType = MimeType::JSON;
+                $mediaType = self::TYPE_JSON;
             } catch (StreamEncapsulationException $ex) {
                 $this->debug(sprintf(
                     '%s; falling back to %s',
                     $ex->getMessage(),
-                    MimeType::FORM_MULTIPART,
+                    self::TYPE_FORM_MULTIPART,
                 ));
             }
         }
         $body ??= HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter);
         $mediaType ??= $body instanceof HttpMultipartStreamInterface
-            ? MimeType::FORM_MULTIPART
-            : MimeType::FORM;
+            ? self::TYPE_FORM_MULTIPART
+            : self::TYPE_FORM;
         return $request
             ->withHeader(HttpHeader::CONTENT_TYPE, $mediaType)
             ->withBody($body);

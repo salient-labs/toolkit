@@ -7,8 +7,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\Message\HttpServerRequestInterface;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpRequestMethod;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
@@ -21,7 +21,7 @@ use InvalidArgumentException;
 /**
  * A simple HTTP server
  */
-class HttpServer implements Immutable
+class HttpServer implements Immutable, HasRequestMethod
 {
     use ImmutableTrait;
 
@@ -352,7 +352,7 @@ class HttpServer implements Immutable
                     $version = $matches[1];
 
                     if ($target === '*') {
-                        if ($method !== HttpRequestMethod::OPTIONS) {
+                        if ($method !== self::METHOD_OPTIONS) {
                             throw new HttpServerException(sprintf(
                                 'Invalid request from %s for target %s: %s',
                                 $peer,
@@ -363,7 +363,7 @@ class HttpServer implements Immutable
                         continue;
                     }
 
-                    if ($method === HttpRequestMethod::CONNECT) {
+                    if ($method === self::METHOD_CONNECT) {
                         if (!Uri::isAuthorityForm($target)) {
                             throw new HttpServerException(sprintf(
                                 'Invalid request target for %s from %s: %s',

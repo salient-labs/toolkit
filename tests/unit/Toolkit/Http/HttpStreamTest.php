@@ -3,7 +3,6 @@
 namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Exception\StreamEncapsulationException;
-use Salient\Contract\Http\FormDataFlag;
 use Salient\Core\Date\DateFormatter;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
@@ -77,12 +76,12 @@ final class HttpStreamTest extends TestCase
      * @dataProvider fromDataProvider
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpStream::PRESERVE_*> $flags
      */
     public function testFromData(
         ?string $expected,
         $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
         bool $asJson = false
     ): void {
@@ -95,7 +94,7 @@ final class HttpStreamTest extends TestCase
     }
 
     /**
-     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<FormDataFlag::*>,3?:DateFormatter|null,4?:bool}>
+     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<HttpStream::*>,3?:DateFormatter|null,4?:bool}>
      */
     public static function fromDataProvider(): array
     {
@@ -158,14 +157,14 @@ final class HttpStreamTest extends TestCase
             [
                 '{"user_id":7654,"fields":{"email":"JWilliams432@gmail.com","groups":["staff","editor"],"created":"2021-10-02T17:23:14+10:00"}}',
                 $data,
-                FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+                HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],
             [
                 null,
                 $multipartData,
-                FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+                HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],

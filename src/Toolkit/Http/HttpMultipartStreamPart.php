@@ -4,7 +4,6 @@ namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
-use Salient\Contract\Http\MimeType;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
@@ -93,7 +92,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
             $mediaType = @mime_content_type($filename);
             if ($mediaType === false) {
                 // @codeCoverageIgnoreStart
-                $mediaType = MimeType::BINARY;
+                $mediaType = self::TYPE_BINARY;
                 // @codeCoverageIgnoreEnd
             }
         }

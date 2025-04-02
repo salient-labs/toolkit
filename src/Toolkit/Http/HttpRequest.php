@@ -9,8 +9,6 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpRequestInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Contract\Http\MimeType;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
@@ -172,10 +170,10 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
             $request['bodySize'] === -1
             || $request['bodySize'] > 0
             || ([
-                Method::POST => true,
-                Method::PUT => true,
-                Method::PATCH => true,
-                Method::DELETE => true,
+                self::METHOD_POST => true,
+                self::METHOD_PUT => true,
+                self::METHOD_PATCH => true,
+                self::METHOD_DELETE => true,
             ][$this->Method] ?? false)
         ) {
             $mediaType = $this->Headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
@@ -184,7 +182,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
             $postData = [
                 'postData' => [
                     'mimeType' => $mediaType,
-                    'params' => HttpUtil::mediaTypeIs($mediaType, MimeType::FORM)
+                    'params' => HttpUtil::mediaTypeIs($mediaType, self::TYPE_FORM)
                         ? $this->splitQuery($body)
                         : [],
                     'text' => $body,

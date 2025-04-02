@@ -2,8 +2,8 @@
 
 namespace Salient\Tests;
 
+use Salient\Contract\Http\HasRequestMethod as Method;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpRequestMethod as Method;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpUtil;
 use Salient\Utility\File;
@@ -96,7 +96,7 @@ do {
             ->withHeader(HttpHeader::SERVER, HttpUtil::getProduct());
 
     [$method] = explode(' ', $startLine, 2);
-    if ($method === Method::HEAD) {
+    if ($method === Method::METHOD_HEAD) {
         $response = explode("\r\n\r\n", $response, 2);
         if (isset($response[1])) {
             $response[1] = '';

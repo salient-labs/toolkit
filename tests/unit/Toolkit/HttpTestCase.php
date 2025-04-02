@@ -3,6 +3,8 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\HasFileDescriptor;
 use Salient\Core\Process;
@@ -12,7 +14,10 @@ use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
 
-abstract class HttpTestCase extends TestCase implements HasFileDescriptor
+abstract class HttpTestCase extends TestCase implements
+    HasFileDescriptor,
+    HasMediaType,
+    HasRequestMethod
 {
     protected const HTTP_SERVER_HOST = 'localhost';
     protected const HTTP_SERVER_PORT = '3007';

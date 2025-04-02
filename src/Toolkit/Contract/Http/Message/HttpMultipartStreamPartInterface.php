@@ -4,8 +4,9 @@ namespace Salient\Contract\Http\Message;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\Http\HasMediaType;
 
-interface HttpMultipartStreamPartInterface extends Immutable
+interface HttpMultipartStreamPartInterface extends Immutable, HasMediaType
 {
     /**
      * Get an instance with the given field name

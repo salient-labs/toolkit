@@ -5,7 +5,7 @@ namespace Salient\Http;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Jsonable;
-use Salient\Contract\Http\FormDataFlag;
+use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Core\Date\DateFormatter;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
@@ -16,7 +16,7 @@ use InvalidArgumentException;
 use JsonSerializable;
 use Traversable;
 
-final class FormData
+final class FormData implements HasFormDataFlag
 {
     /** @var mixed[]|object */
     private $Data;
@@ -59,12 +59,12 @@ final class FormData
      *
      * @template T of object|mixed[]|string|null
      *
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<FormData::*> $flags
      * @param (callable(object): (T|false))|null $callback
      * @return list<array{string,(T&object)|string}>
      */
     public function getValues(
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
     ): array {
@@ -81,11 +81,11 @@ final class FormData
      *
      * @template T of object|mixed[]|string|null
      *
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<FormData::*> $flags
      * @param (callable(object): (T|false))|null $callback
      */
     public function getQuery(
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
     ): string {
@@ -112,12 +112,12 @@ final class FormData
      *
      * @template T of object|mixed[]|string|null
      *
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<FormData::*> $flags
      * @param (callable(object): (T|false))|null $callback
      * @return mixed[]
      */
     public function getData(
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
     ): array {
@@ -129,7 +129,7 @@ final class FormData
      * @template T of object|mixed[]|string|null
      *
      * @param mixed[]|object|int|float|string|bool|null $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<FormData::*> $flags
      * @param (callable(object): (T|false))|null $cb
      * @param mixed[]|null $query
      * @phpstan-param ($flatten is true ? list<array{string,(T&object)|string}> : ($name is null ? mixed[] : mixed[]|null)) $query
@@ -180,10 +180,10 @@ final class FormData
 
             $preserveKeys = $name === null || $hasArray || (
                 Arr::isList($data)
-                    ? $flags & FormDataFlag::PRESERVE_LIST_KEYS
+                    ? $flags & self::PRESERVE_LIST_KEYS
                     : (Arr::hasNumericKeys($data)
-                        ? $flags & FormDataFlag::PRESERVE_NUMERIC_KEYS
-                        : $flags & FormDataFlag::PRESERVE_STRING_KEYS)
+                        ? $flags & self::PRESERVE_NUMERIC_KEYS
+                        : $flags & self::PRESERVE_STRING_KEYS)
             );
 
             $format = $preserveKeys

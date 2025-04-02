@@ -5,9 +5,9 @@ namespace Salient\Tests\Http;
 use Salient\Collection\Collection;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
+use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeaderGroup;
-use Salient\Contract\Http\MimeType;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;
@@ -19,7 +19,7 @@ use LogicException;
 /**
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpHeadersTest extends TestCase
+final class HttpHeadersTest extends TestCase implements HasMediaType
 {
     /**
      * @dataProvider constructorProvider
@@ -443,9 +443,9 @@ final class HttpHeadersTest extends TestCase
     public function testImmutability(): void
     {
         $a = new HttpHeaders();
-        $b = $a->set(HttpHeader::CONTENT_TYPE, MimeType::TEXT);
-        $c = $b->set(HttpHeader::CONTENT_TYPE, MimeType::JSON);
-        $d = $c->set(HttpHeader::CONTENT_TYPE, MimeType::JSON);
+        $b = $a->set(HttpHeader::CONTENT_TYPE, self::TYPE_TEXT);
+        $c = $b->set(HttpHeader::CONTENT_TYPE, self::TYPE_JSON);
+        $d = $c->set(HttpHeader::CONTENT_TYPE, self::TYPE_JSON);
         $this->assertNotSame($b, $a);
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
@@ -754,7 +754,7 @@ final class HttpHeadersTest extends TestCase
     {
         $headers = new HttpHeaders();
         $this->expectException(LogicException::class);
-        $headers[HttpHeader::CONTENT_TYPE] = [MimeType::JSON];
+        $headers[HttpHeader::CONTENT_TYPE] = [self::TYPE_JSON];
     }
 
     public function testOffsetUnset(): void

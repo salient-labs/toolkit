@@ -4,8 +4,7 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Http\FormDataFlag;
-use Salient\Contract\Http\MimeType;
+use Salient\Contract\Http\HasMediaType;
 use Salient\Http\HttpRequest;
 use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
@@ -16,7 +15,7 @@ use Stringable;
 /**
  * @covers \Salient\Http\HttpUtil
  */
-final class HttpUtilTest extends TestCase
+final class HttpUtilTest extends TestCase implements HasMediaType
 {
     /**
      * @dataProvider isRequestMethodProvider
@@ -63,14 +62,14 @@ final class HttpUtilTest extends TestCase
     {
         return [
             [true, 'application/jwk-set+json', 'application/jwk-set'],
-            [true, 'application/jwk-set+json', MimeType::JSON],
-            [true, 'application/xml', MimeType::XML],
-            [true, 'APPLICATION/XML', MimeType::XML],
-            [false, 'application/xml-dtd', MimeType::XML],
-            [true, 'application/rss+xml', MimeType::XML],
-            [true, 'text/xml', MimeType::XML],
-            [true, 'Text/HTML;Charset="utf-8"', MimeType::HTML],
-            [false, 'Text/HTML;Charset="utf-8"', MimeType::TEXT],
+            [true, 'application/jwk-set+json', self::TYPE_JSON],
+            [true, 'application/xml', self::TYPE_XML],
+            [true, 'APPLICATION/XML', self::TYPE_XML],
+            [false, 'application/xml-dtd', self::TYPE_XML],
+            [true, 'application/rss+xml', self::TYPE_XML],
+            [true, 'text/xml', self::TYPE_XML],
+            [true, 'Text/HTML;Charset="utf-8"', self::TYPE_HTML],
+            [false, 'Text/HTML;Charset="utf-8"', self::TYPE_TEXT],
         ];
     }
 
@@ -257,13 +256,13 @@ final class HttpUtilTest extends TestCase
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
      */
     public function testMergeQuery(
         string $expected,
         $uri,
         array $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ): void {
         $this->assertSame(
@@ -319,13 +318,13 @@ final class HttpUtilTest extends TestCase
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
      */
     public function testReplaceQuery(
         string $expected,
         $uri,
         array $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ): void {
         $this->assertSame(

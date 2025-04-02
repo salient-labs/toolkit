@@ -4,9 +4,9 @@ namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Message\HttpResponseInterface as ResponseInterface;
 use Salient\Contract\Http\Message\HttpServerRequestInterface as ServerRequest;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\Http\HttpHeader as Header;
-use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Contract\Http\MimeType;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
 use Salient\Http\HttpResponse as Response;
@@ -23,7 +23,7 @@ use Salient\Utility\Str;
  * @covers \Salient\Http\HasHttpHeaders
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpServerTest extends TestCase
+final class HttpServerTest extends TestCase implements HasMediaType, HasRequestMethod
 {
     private HttpServer $Server;
 
@@ -100,13 +100,13 @@ final class HttpServerTest extends TestCase
                 return new Response(
                     200,
                     'Hello, world!',
-                    [Header::CONTENT_TYPE => MimeType::TEXT],
+                    [Header::CONTENT_TYPE => self::TYPE_TEXT],
                 );
             },
         );
         $this->assertSame(0, $client->wait());
         $this->assertInstanceOf(ServerRequest::class, $request);
-        $this->assertSame(Method::GET, $request->getMethod());
+        $this->assertSame(self::METHOD_GET, $request->getMethod());
         $this->assertSame('/', $request->getRequestTarget());
         $this->assertSame([
             'Host' => ['localhost:3008'],
@@ -131,7 +131,7 @@ EOF, $client->getOutputAsText(Process::STDERR));
 
     private function getServerWithClient(
         ?Process &$client,
-        string $method = Method::GET,
+        string $method = self::METHOD_GET,
         string $target = '/',
         string $body = '',
         string ...$headers

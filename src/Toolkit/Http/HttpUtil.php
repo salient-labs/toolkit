@@ -5,9 +5,9 @@ namespace Salient\Http;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Http\FormDataFlag;
-use Salient\Contract\Http\HttpRequestMethod;
-use Salient\Contract\Http\MimeType;
+use Salient\Contract\Http\HasFormDataFlag;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
 use Salient\Utility\Package;
@@ -21,7 +21,10 @@ use Generator;
 use InvalidArgumentException;
 use Stringable;
 
-final class HttpUtil extends AbstractUtility
+final class HttpUtil extends AbstractUtility implements
+    HasFormDataFlag,
+    HasMediaType,
+    HasRequestMethod
 {
     /**
      * @link https://www.iana.org/assignments/media-type-structured-suffix/media-type-structured-suffix.xhtml
@@ -29,29 +32,29 @@ final class HttpUtil extends AbstractUtility
      * @var array<string,string>
      */
     private const SUFFIX_TYPE = [
-        'gzip' => MimeType::GZIP,
-        'json' => MimeType::JSON,
-        'jwt' => MimeType::JWT,
-        'xml' => MimeType::XML,
-        'yaml' => MimeType::YAML,
-        'zip' => MimeType::ZIP,
+        'gzip' => self::TYPE_GZIP,
+        'json' => self::TYPE_JSON,
+        'jwt' => self::TYPE_JWT,
+        'xml' => self::TYPE_XML,
+        'yaml' => self::TYPE_YAML,
+        'zip' => self::TYPE_ZIP,
     ];
 
     /**
      * @var array<string,string>
      */
     private const ALIAS_TYPE = [
-        'text/xml' => MimeType::XML,
+        'text/xml' => self::TYPE_XML,
     ];
 
     /**
      * Check if a string is a valid HTTP request method
      *
-     * @phpstan-assert-if-true HttpRequestMethod::* $method
+     * @phpstan-assert-if-true HttpUtil::METHOD_* $method
      */
     public static function isRequestMethod(string $method): bool
     {
-        return Reflect::hasConstantWithValue(HttpRequestMethod::class, $method);
+        return Reflect::hasConstantWithValue(HasRequestMethod::class, $method);
     }
 
     /**
@@ -203,13 +206,13 @@ final class HttpUtil extends AbstractUtility
      *
      * @param T $value
      * @param mixed[] $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
      * @return (T is RequestInterface|PsrUriInterface ? T : Uri)
      */
     public static function mergeQuery(
         $value,
         array $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
         if ($value instanceof RequestInterface) {
@@ -238,13 +241,13 @@ final class HttpUtil extends AbstractUtility
      *
      * @param T $value
      * @param mixed[] $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
      * @return (T is RequestInterface|PsrUriInterface ? T : Uri)
      */
     public static function replaceQuery(
         $value,
         array $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
         $query = (new FormData($data))->getQuery($flags, $dateFormatter);

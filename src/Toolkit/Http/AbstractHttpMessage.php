@@ -9,7 +9,6 @@ use Salient\Contract\Http\Message\HttpMessageInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
 use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\MimeType;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
@@ -153,7 +152,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
                 HttpHeader::CONTENT_TYPE,
                 sprintf(
                     '%s; boundary=%s',
-                    MimeType::FORM_MULTIPART,
+                    self::TYPE_FORM_MULTIPART,
                     HttpUtil::maybeQuoteString($this->Body->getBoundary()),
                 ),
             );

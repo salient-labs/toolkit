@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Contract\Http\HasRequestMethod as Method;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
@@ -38,9 +38,9 @@ array_unshift(
 if (
     $body !== ''
     || ([
-        Method::POST => true,
-        Method::PUT => true,
-        Method::PATCH => true,
+        Method::METHOD_POST => true,
+        Method::METHOD_PUT => true,
+        Method::METHOD_PATCH => true,
     ][$method] ?? false)
 ) {
     $headers[] = 'Content-Length: ' . strlen($body);
