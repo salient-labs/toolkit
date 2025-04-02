@@ -3,7 +3,7 @@
 namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface;
-use Salient\Contract\Http\HttpHeader;
+use Salient\Contract\Http\HasHeader;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
@@ -18,7 +18,7 @@ use InvalidArgumentException;
  * @covers \Salient\Http\HasHttpHeaders
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpRequestTest extends TestCase
+final class HttpRequestTest extends TestCase implements HasHeader
 {
     private const USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1';
 
@@ -274,8 +274,8 @@ final class HttpRequestTest extends TestCase
         $r2 = $r1->withUri($r1->getUri());
         $r3 = $r2->withUri(new Uri('http://example.com'));
         $r4 = $r3->withUri(new Uri('https://example.com'));
-        $r5 = $r4->withHeader(HttpHeader::HOST, 'example.com');
-        $r6 = $r5->withHeader(HttpHeader::HOST, 'foo.com');
+        $r5 = $r4->withHeader(self::HEADER_HOST, 'example.com');
+        $r6 = $r5->withHeader(self::HEADER_HOST, 'foo.com');
         $r7 = $r6->withRequestTarget('/');
         $r8 = $r7->withRequestTarget('/');
         $this->assertSame($r1, $r2);

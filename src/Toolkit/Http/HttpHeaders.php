@@ -9,7 +9,6 @@ use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpMessageInterface;
 use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Http\Exception\InvalidHeaderException;
@@ -143,15 +142,15 @@ REGEX;
      */
     public function getContentLength(): ?int
     {
-        if (!$this->hasHeader(HttpHeader::CONTENT_LENGTH)) {
+        if (!$this->hasHeader(self::HEADER_CONTENT_LENGTH)) {
             return null;
         }
 
-        $length = $this->getOnlyHeaderValue(HttpHeader::CONTENT_LENGTH);
+        $length = $this->getOnlyHeaderValue(self::HEADER_CONTENT_LENGTH);
         if (!Test::isInteger($length) || (int) $length < 0) {
             throw new InvalidHeaderException(sprintf(
                 'Invalid value for HTTP header %s: %s',
-                HttpHeader::CONTENT_LENGTH,
+                self::HEADER_CONTENT_LENGTH,
                 $length,
             ));
         }
@@ -168,13 +167,13 @@ REGEX;
      */
     public function getMultipartBoundary(): ?string
     {
-        if (!$this->hasHeader(HttpHeader::CONTENT_TYPE)) {
+        if (!$this->hasHeader(self::HEADER_CONTENT_TYPE)) {
             return null;
         }
 
         try {
             return HttpUtil::getParameters(
-                $this->getOnlyHeaderValue(HttpHeader::CONTENT_TYPE),
+                $this->getOnlyHeaderValue(self::HEADER_CONTENT_TYPE),
                 false,
                 false,
             )['boundary'] ?? null;
@@ -190,11 +189,11 @@ REGEX;
      */
     public function getPreferences(): array
     {
-        if (!$this->hasHeader(HttpHeader::PREFER)) {
+        if (!$this->hasHeader(self::HEADER_PREFER)) {
             return [];
         }
 
-        foreach ($this->getHeaderValues(HttpHeader::PREFER) as $pref) {
+        foreach ($this->getHeaderValues(self::HEADER_PREFER) as $pref) {
             /** @var array<string,string> */
             $params = HttpUtil::getParameters($pref, true);
             if (!$params) {
@@ -239,7 +238,7 @@ REGEX;
      */
     public function getRetryAfter(): ?int
     {
-        $after = $this->getHeaderLine(HttpHeader::RETRY_AFTER);
+        $after = $this->getHeaderLine(self::HEADER_RETRY_AFTER);
         if (Test::isInteger($after) && (int) $after >= 0) {
             return (int) $after;
         }
@@ -475,7 +474,7 @@ REGEX;
      */
     public function authorize(
         AccessTokenInterface $token,
-        string $headerName = HttpHeader::AUTHORIZATION
+        string $headerName = HttpHeaders::HEADER_AUTHORIZATION
     ) {
         return $this->set(
             $headerName,

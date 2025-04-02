@@ -7,7 +7,6 @@ use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpMessageInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
@@ -149,7 +148,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     {
         if ($this->Body instanceof HttpMultipartStreamInterface) {
             $this->Headers = $this->Headers->set(
-                HttpHeader::CONTENT_TYPE,
+                self::HEADER_CONTENT_TYPE,
                 sprintf(
                     '%s; boundary=%s',
                     self::TYPE_FORM_MULTIPART,

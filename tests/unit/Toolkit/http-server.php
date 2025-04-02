@@ -2,8 +2,8 @@
 
 namespace Salient\Tests;
 
+use Salient\Contract\Http\HasHeader as Header;
 use Salient\Contract\Http\HasRequestMethod as Method;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpUtil;
 use Salient\Utility\File;
@@ -92,8 +92,8 @@ do {
 
     $response = $responses[$i]
         ?? (string) (new HttpResponse())
-            ->withHeader(HttpHeader::DATE, HttpUtil::getDate())
-            ->withHeader(HttpHeader::SERVER, HttpUtil::getProduct());
+            ->withHeader(Header::HEADER_DATE, HttpUtil::getDate())
+            ->withHeader(Header::HEADER_SERVER, HttpUtil::getProduct());
 
     [$method] = explode(' ', $startLine, 2);
     if ($method === Method::METHOD_HEAD) {

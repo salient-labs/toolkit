@@ -2,7 +2,9 @@
 
 namespace Salient\Contract\Http\Message;
 
-interface HttpMultipartStreamInterface extends HttpStreamInterface
+use Salient\Contract\Http\HasHeader;
+
+interface HttpMultipartStreamInterface extends HttpStreamInterface, HasHeader
 {
     /**
      * Get the stream's encapsulation boundary

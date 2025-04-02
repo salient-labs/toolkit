@@ -7,8 +7,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\Message\HttpServerRequestInterface;
+use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasRequestMethod;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
@@ -21,7 +21,7 @@ use InvalidArgumentException;
 /**
  * A simple HTTP server
  */
-class HttpServer implements Immutable, HasRequestMethod
+class HttpServer implements Immutable, HasHeader, HasRequestMethod
 {
     use ImmutableTrait;
 
@@ -399,7 +399,7 @@ class HttpServer implements Immutable, HasRequestMethod
             $uri = implode('', [
                 $this->getScheme(),
                 '://',
-                Str::coalesce($headers->getOnlyHeaderValue(HttpHeader::HOST), $this->ProxyHost ?? $this->Host),
+                Str::coalesce($headers->getOnlyHeaderValue(self::HEADER_HOST), $this->ProxyHost ?? $this->Host),
             ]);
             if (!Regex::match('/:[0-9]++$/', $uri)) {
                 $uri .= ':' . ($this->ProxyPort ?? $this->Port);
@@ -424,7 +424,7 @@ class HttpServer implements Immutable, HasRequestMethod
             } catch (InvalidHeaderException $ex) {
                 throw new HttpServerException(sprintf(
                     'Invalid %s in request from %s',
-                    HttpHeader::CONTENT_LENGTH,
+                    self::HEADER_CONTENT_LENGTH,
                     $peer,
                 ), $ex);
             }

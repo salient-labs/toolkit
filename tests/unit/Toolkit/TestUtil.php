@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\HttpHeader;
+use Salient\Contract\Http\HasHeader;
 use Salient\Http\HttpHeaders;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
@@ -10,7 +10,7 @@ use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
 
-final class TestUtil extends AbstractUtility
+final class TestUtil extends AbstractUtility implements HasHeader
 {
     /**
      * Read an HTTP message from a stream and write it to STDOUT
@@ -78,10 +78,10 @@ final class TestUtil extends AbstractUtility
             }
             $headers = $headers->addLine($line);
             if ($headers->hasLastLine()) {
-                if ($headers->hasHeader(HttpHeader::TRANSFER_ENCODING)) {
+                if ($headers->hasHeader(self::HEADER_TRANSFER_ENCODING)) {
                     $encoding = Arr::last(Str::split(
                         ',',
-                        $headers->getHeaderLine(HttpHeader::TRANSFER_ENCODING)
+                        $headers->getHeaderLine(self::HEADER_TRANSFER_ENCODING)
                     ));
                     $chunked = $encoding === 'chunked';
                     continue;

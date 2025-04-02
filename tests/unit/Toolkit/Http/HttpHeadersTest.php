@@ -5,9 +5,8 @@ namespace Salient\Tests\Http;
 use Salient\Collection\Collection;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
+use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasMediaType;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
 use Salient\Tests\TestCase;
@@ -19,7 +18,7 @@ use LogicException;
 /**
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpHeadersTest extends TestCase implements HasMediaType
+final class HttpHeadersTest extends TestCase implements HasHeader, HasMediaType
 {
     /**
      * @dataProvider constructorProvider
@@ -409,10 +408,10 @@ final class HttpHeadersTest extends TestCase implements HasMediaType
         $this->assertSame([], (new HttpHeaders())->getPreferences());
 
         $headers = (new HttpHeaders())
-            ->append(HttpHeader::PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
-            ->append(HttpHeader::PREFER, 'wait=10; baz=qux')
-            ->append(HttpHeader::PREFER, 'task_priority=2; baz="foo bar"')
-            ->append(HttpHeader::PREFER, 'odata.maxpagesize=100');
+            ->append(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
+            ->append(self::HEADER_PREFER, 'wait=10; baz=qux')
+            ->append(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
+            ->append(self::HEADER_PREFER, 'odata.maxpagesize=100');
 
         $this->assertSame([
             'respond-async' => ['value' => '', 'parameters' => []],
@@ -443,24 +442,24 @@ final class HttpHeadersTest extends TestCase implements HasMediaType
     public function testImmutability(): void
     {
         $a = new HttpHeaders();
-        $b = $a->set(HttpHeader::CONTENT_TYPE, self::TYPE_TEXT);
-        $c = $b->set(HttpHeader::CONTENT_TYPE, self::TYPE_JSON);
-        $d = $c->set(HttpHeader::CONTENT_TYPE, self::TYPE_JSON);
+        $b = $a->set(self::HEADER_CONTENT_TYPE, self::TYPE_TEXT);
+        $c = $b->set(self::HEADER_CONTENT_TYPE, self::TYPE_JSON);
+        $d = $c->set(self::HEADER_CONTENT_TYPE, self::TYPE_JSON);
         $this->assertNotSame($b, $a);
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
 
         $a = new HttpHeaders();
-        $b = $a->append(HttpHeader::PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
-        $c = $b->append(HttpHeader::PREFER, 'odata.maxpagesize=100');
-        $d = $c->set(HttpHeader::PREFER, [
+        $b = $a->append(self::HEADER_PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
+        $c = $b->append(self::HEADER_PREFER, 'odata.maxpagesize=100');
+        $d = $c->set(self::HEADER_PREFER, [
             'respond-async',
             'wait=5',
             'handling=lenient',
             'task_priority=2',
             'odata.maxpagesize=100',
         ]);
-        $e = $d->set(HttpHeader::PREFER, [
+        $e = $d->set(self::HEADER_PREFER, [
             'respond-async',
             'wait=5',
             'handling=lenient',
@@ -469,22 +468,22 @@ final class HttpHeadersTest extends TestCase implements HasMediaType
         ]);
         $f = $e->merge(clone $d, false);
         $g = $e->merge(clone $e, false);
-        $h = $g->merge([HttpHeader::PREFER => [
+        $h = $g->merge([self::HEADER_PREFER => [
             'respond-async',
             'wait=5',
             'handling=lenient',
             'task_priority=2',
             'odata.maxpagesize=50',
         ]], false);
-        $i = $h->merge([HttpHeader::PREFER => [
+        $i = $h->merge([self::HEADER_PREFER => [
             'respond-async',
             'wait=5',
             'handling=lenient',
             'task_priority=2',
             'odata.maxpagesize=100',
         ]], false);
-        $j = $i->unset(HttpHeader::PREFER);
-        $k = $j->unset(HttpHeader::PREFER);
+        $j = $i->unset(self::HEADER_PREFER);
+        $k = $j->unset(self::HEADER_PREFER);
         $this->assertNotSame($b, $a);
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
@@ -616,11 +615,11 @@ final class HttpHeadersTest extends TestCase implements HasMediaType
 
     public function testFilter(): void
     {
-        $index = Arr::toIndex(Arr::lower(HttpHeaderGroup::SENSITIVE));
+        $index = Arr::toIndex(Arr::lower(self::HEADERS_SENSITIVE));
         $token = new AccessToken('foo.bar.baz', 'Bearer', time() + 3600);
         $headers = (new HttpHeaders())
             ->authorize($token)
-            ->set(HttpHeader::ACCEPT, '*/*')
+            ->set(self::HEADER_ACCEPT, '*/*')
             ->set('foo', ['bar', 'baz']);
         $this->assertSame(
             ['foo' => ['bar', 'baz']],
@@ -754,13 +753,13 @@ final class HttpHeadersTest extends TestCase implements HasMediaType
     {
         $headers = new HttpHeaders();
         $this->expectException(LogicException::class);
-        $headers[HttpHeader::CONTENT_TYPE] = [self::TYPE_JSON];
+        $headers[self::HEADER_CONTENT_TYPE] = [self::TYPE_JSON];
     }
 
     public function testOffsetUnset(): void
     {
         $headers = new HttpHeaders();
         $this->expectException(LogicException::class);
-        unset($headers[HttpHeader::CONTENT_TYPE]);
+        unset($headers[self::HEADER_CONTENT_TYPE]);
     }
 }

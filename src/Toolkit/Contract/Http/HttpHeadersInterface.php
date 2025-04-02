@@ -14,7 +14,8 @@ interface HttpHeadersInterface extends
     CollectionInterface,
     HasHeaders,
     Immutable,
-    Stringable
+    Stringable,
+    HasHeader
 {
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items
@@ -79,7 +80,7 @@ interface HttpHeadersInterface extends
      */
     public function authorize(
         AccessTokenInterface $token,
-        string $headerName = HttpHeader::AUTHORIZATION
+        string $headerName = HttpHeadersInterface::HEADER_AUTHORIZATION
     );
 
     /**

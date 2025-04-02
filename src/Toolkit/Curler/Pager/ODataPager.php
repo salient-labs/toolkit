@@ -7,7 +7,6 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Curler\CurlerPage;
 use Salient\Http\HttpHeaders;
 use Salient\Http\Uri;
@@ -53,7 +52,7 @@ final class ODataPager implements CurlerPagerInterface
         $prefs['odata.maxpagesize']['value'] = (string) $this->MaxPageSize;
 
         return $request->withHeader(
-            HttpHeader::PREFER,
+            self::HEADER_PREFER,
             HttpHeaders::mergePreferences($prefs),
         );
     }
@@ -73,7 +72,7 @@ final class ODataPager implements CurlerPagerInterface
             throw new InvalidArgumentTypeException(1, 'data', 'mixed[]', $data);
         }
         /** @var array{'@odata.nextLink'?:string,'@nextLink'?:string,value:list<mixed>,...} $data */
-        if ($response->getHeaderLine(HttpHeader::ODATA_VERSION) === '4.0') {
+        if ($response->getHeaderLine(self::HEADER_ODATA_VERSION) === '4.0') {
             $nextLink = $data['@odata.nextLink'] ?? null;
         } else {
             $nextLink = $data['@nextLink'] ?? $data['@odata.nextLink'] ?? null;

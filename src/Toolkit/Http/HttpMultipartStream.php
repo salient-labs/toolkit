@@ -5,7 +5,6 @@ namespace Salient\Http;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Utility\Regex;
@@ -71,11 +70,11 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
                 );
             }
             $headers = new HttpHeaders([
-                HttpHeader::CONTENT_DISPOSITION => implode('; ', $disposition),
+                self::HEADER_CONTENT_DISPOSITION => implode('; ', $disposition),
             ]);
             $mediaType = $part->getMediaType();
             if ($mediaType !== null) {
-                $headers = $headers->set(HttpHeader::CONTENT_TYPE, $mediaType);
+                $headers = $headers->set(self::HEADER_CONTENT_TYPE, $mediaType);
             }
             $headers = sprintf(
                 "--%s\r\n%s\r\n\r\n",

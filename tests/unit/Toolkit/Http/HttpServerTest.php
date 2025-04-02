@@ -4,9 +4,9 @@ namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Message\HttpResponseInterface as ResponseInterface;
 use Salient\Contract\Http\Message\HttpServerRequestInterface as ServerRequest;
+use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
-use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
 use Salient\Http\HttpResponse as Response;
@@ -23,7 +23,7 @@ use Salient\Utility\Str;
  * @covers \Salient\Http\HasHttpHeaders
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpServerTest extends TestCase implements HasMediaType, HasRequestMethod
+final class HttpServerTest extends TestCase implements HasHeader, HasMediaType, HasRequestMethod
 {
     private HttpServer $Server;
 
@@ -100,7 +100,7 @@ final class HttpServerTest extends TestCase implements HasMediaType, HasRequestM
                 return new Response(
                     200,
                     'Hello, world!',
-                    [Header::CONTENT_TYPE => self::TYPE_TEXT],
+                    [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT],
                 );
             },
         );

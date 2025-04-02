@@ -13,7 +13,6 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
@@ -227,7 +226,7 @@ EOF,
                                 ->withMethod(self::METHOD_GET)
                                 ->withUri($curler->replaceQuery($request->getUri(), ['page' => 2]))
                                 ->withBody(HttpStream::fromString(''))
-                                ->withoutHeader(Header::CONTENT_TYPE)
+                                ->withoutHeader(self::HEADER_CONTENT_TYPE)
                     );
                 }
             );
@@ -392,8 +391,8 @@ EOF,
 
     public function testThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
-        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
+        $bad = new HttpResponse(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new HttpResponse(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
         $server = $this->startHttpServer($bad, $good, $bad);
         $output = [];
         $curler = $this
@@ -435,8 +434,8 @@ EOF;
 
     public function testWithoutThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
-        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => self::TYPE_TEXT]);
+        $bad = new HttpResponse(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new HttpResponse(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
         $server = $this->startHttpServer($bad, $good, $bad);
         $output = [];
         $curler = $this
@@ -476,10 +475,10 @@ EOF;
     public function testFollowRedirects(): void
     {
         $responses = [
-            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
-            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
-            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
-            new HttpResponse(200, Json::encode(self::OUTPUT), [Header::CONTENT_TYPE => self::TYPE_JSON]),
+            new HttpResponse(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new HttpResponse(302, '', [self::HEADER_LOCATION => '/foo/bar']),
+            new HttpResponse(302, '', [self::HEADER_LOCATION => '/foo/bar?baz=1']),
+            new HttpResponse(200, Json::encode(self::OUTPUT), [self::HEADER_CONTENT_TYPE => self::TYPE_JSON]),
         ];
         $server = $this->startHttpServer(...$responses);
         $output = [];
@@ -536,9 +535,9 @@ EOF,
     public function testTooManyRedirects(): void
     {
         $responses = [
-            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
-            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
-            new HttpResponse(302, '', [Header::LOCATION => '/']),
+            new HttpResponse(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new HttpResponse(302, '', [self::HEADER_LOCATION => '/foo/bar']),
+            new HttpResponse(302, '', [self::HEADER_LOCATION => '/']),
         ];
         $server = $this->startHttpServer(...$responses, ...$responses);
         $output = [];
@@ -606,7 +605,7 @@ EOF,
             $responses[] = new HttpResponse(
                 200,
                 Json::encode($data),
-                [Header::CONTENT_TYPE => self::TYPE_JSON],
+                [self::HEADER_CONTENT_TYPE => self::TYPE_JSON],
             );
         }
         return $this->startHttpServer(...($responses ?? []));

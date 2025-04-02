@@ -21,8 +21,6 @@ use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\UriInterface;
@@ -153,7 +151,7 @@ class Curler implements CurlerInterface, Buildable
     final public function __construct(
         $uri = null,
         $headers = null,
-        array $sensitiveHeaders = HttpHeaderGroup::SENSITIVE
+        array $sensitiveHeaders = Curler::HEADERS_SENSITIVE
     ) {
         $this->Uri = $this->filterUri($uri);
         $this->Headers = $this->filterHeaders($headers);
@@ -169,7 +167,7 @@ class Curler implements CurlerInterface, Buildable
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers Request headers
      * @param AccessTokenInterface|null $accessToken Access token applied to request headers
      * @param string $accessTokenHeaderName Name of access token header (default: `"Authorization"`)
-     * @param string[] $sensitiveHeaders Headers treated as sensitive (default: {@see HttpHeaderGroup::SENSITIVE})
+     * @param string[] $sensitiveHeaders Headers treated as sensitive (default: {@see Curler::HEADERS_SENSITIVE})
      * @param string|null $mediaType Media type applied to request headers
      * @param string|null $userAgent User agent applied to request headers
      * @param bool $expectJson Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON
@@ -185,7 +183,7 @@ class Curler implements CurlerInterface, Buildable
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
      * @param bool $cachePostResponses Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled)
-     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers not in {@see HttpHeaderGroup::UNSTABLE} are used by default)
+     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers not in {@see Curler::HEADERS_UNSTABLE} are used by default)
      * @param int<-1,max> $cacheLifetime Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
      * @param bool $refreshCache Replace cached responses even if they haven't expired
      * @param int<0,max>|null $timeout Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
@@ -200,8 +198,8 @@ class Curler implements CurlerInterface, Buildable
         $uri = null,
         $headers = null,
         ?AccessTokenInterface $accessToken = null,
-        string $accessTokenHeaderName = HttpHeader::AUTHORIZATION,
-        array $sensitiveHeaders = HttpHeaderGroup::SENSITIVE,
+        string $accessTokenHeaderName = Curler::HEADER_AUTHORIZATION,
+        array $sensitiveHeaders = Curler::HEADERS_SENSITIVE,
         ?string $mediaType = null,
         ?string $userAgent = null,
         bool $expectJson = true,
@@ -308,11 +306,11 @@ class Curler implements CurlerInterface, Buildable
     private function responseIsJson(HttpResponseInterface $response): bool
     {
         $headers = $response->getHttpHeaders();
-        if (!$headers->hasHeader(HttpHeader::CONTENT_TYPE)) {
+        if (!$headers->hasHeader(self::HEADER_CONTENT_TYPE)) {
             return $this->ExpectJson;
         }
         try {
-            $contentType = $headers->getOnlyHeaderValue(HttpHeader::CONTENT_TYPE);
+            $contentType = $headers->getOnlyHeaderValue(self::HEADER_CONTENT_TYPE);
         } catch (InvalidHeaderExceptionInterface $ex) {
             $this->debug($ex->getMessage());
             return false;
@@ -515,7 +513,7 @@ class Curler implements CurlerInterface, Buildable
     private function processRaw(string $method, string $data, string $mediaType, ?array $query)
     {
         $request = $this->createRequest($method, $query, $data);
-        $request = $request->withHeader(HttpHeader::CONTENT_TYPE, $mediaType);
+        $request = $request->withHeader(self::HEADER_CONTENT_TYPE, $mediaType);
         /** @disregard P1006 */
         $response = $this->doSendRequest($request);
         return $this->getResponseBody($response);
@@ -559,17 +557,17 @@ class Curler implements CurlerInterface, Buildable
             $headers = $headers->authorize($this->AccessToken, $this->AccessTokenHeaderName);
         }
         if ($this->MediaType !== null) {
-            $headers = $headers->set(HttpHeader::CONTENT_TYPE, $this->MediaType);
+            $headers = $headers->set(self::HEADER_CONTENT_TYPE, $this->MediaType);
         }
         if ($this->ExpectJson) {
-            $headers = $headers->set(HttpHeader::ACCEPT, self::TYPE_JSON);
+            $headers = $headers->set(self::HEADER_ACCEPT, self::TYPE_JSON);
         }
         if ($this->UserAgent !== '' && (
             $this->UserAgent !== null
-            || !$headers->hasHeader(HttpHeader::USER_AGENT)
+            || !$headers->hasHeader(self::HEADER_USER_AGENT)
         )) {
             $headers = $headers->set(
-                HttpHeader::USER_AGENT,
+                self::HEADER_USER_AGENT,
                 $this->UserAgent ?? $this->getDefaultUserAgent(),
             );
         }
@@ -805,9 +803,9 @@ class Curler implements CurlerInterface, Buildable
             }
         }
 
-        $mediaType = Arr::last($headers->getHeaderValues(HttpHeader::CONTENT_TYPE));
-        $userAgent = Arr::last($headers->getHeaderValues(HttpHeader::USER_AGENT));
-        $expectJson = Arr::lower($headers->getHeaderValues(HttpHeader::ACCEPT)) === [self::TYPE_JSON];
+        $mediaType = Arr::last($headers->getHeaderValues(self::HEADER_CONTENT_TYPE));
+        $userAgent = Arr::last($headers->getHeaderValues(self::HEADER_USER_AGENT));
+        $expectJson = Arr::lower($headers->getHeaderValues(self::HEADER_ACCEPT)) === [self::TYPE_JSON];
         if ($userAgent !== null && $userAgent === $this->getDefaultUserAgent()) {
             $userAgent = null;
         }
@@ -823,7 +821,7 @@ class Curler implements CurlerInterface, Buildable
      */
     public function withAccessToken(
         ?AccessTokenInterface $token,
-        string $headerName = HttpHeader::AUTHORIZATION
+        string $headerName = Curler::HEADER_AUTHORIZATION
     ) {
         return $token === null
             ? $this
@@ -1151,14 +1149,14 @@ class Curler implements CurlerInterface, Buildable
                 $body = (string) $body;
                 $opt[\CURLOPT_POSTFIELDS] = $body;
                 $request = $request
-                    ->withoutHeader(HttpHeader::CONTENT_LENGTH)
-                    ->withoutHeader(HttpHeader::TRANSFER_ENCODING);
+                    ->withoutHeader(self::HEADER_CONTENT_LENGTH)
+                    ->withoutHeader(self::HEADER_TRANSFER_ENCODING);
             } else {
                 $opt[\CURLOPT_UPLOAD] = true;
                 if ($size !== null) {
                     $opt[\CURLOPT_INFILESIZE] = $size;
                     $request = $request
-                        ->withoutHeader(HttpHeader::CONTENT_LENGTH);
+                        ->withoutHeader(self::HEADER_CONTENT_LENGTH);
                 }
                 $opt[\CURLOPT_READFUNCTION] =
                     static function ($handle, $infile, int $length) use ($body): string {
@@ -1175,14 +1173,14 @@ class Curler implements CurlerInterface, Buildable
             // payload body. For example, a Content-Length header field is
             // normally sent in a POST request even when the value is 0
             // (indicating an empty payload body)."
-            $request = $request->withHeader(HttpHeader::CONTENT_LENGTH, '0');
+            $request = $request->withHeader(self::HEADER_CONTENT_LENGTH, '0');
         }
 
         if ($this->Timeout !== null) {
             $opt[\CURLOPT_CONNECTTIMEOUT] = $this->Timeout;
         }
 
-        if (!$request->hasHeader(HttpHeader::ACCEPT_ENCODING)) {
+        if (!$request->hasHeader(self::HEADER_ACCEPT_ENCODING)) {
             // Enable all supported encodings (e.g. gzip, deflate) and set
             // `Accept-Encoding` accordingly
             $opt[\CURLOPT_ENCODING] = '';
@@ -1376,7 +1374,7 @@ class Curler implements CurlerInterface, Buildable
                 $redirects !== false
                 && $code >= 300
                 && $code < 400
-                && count($location = $headersIn->getHeader(HttpHeader::LOCATION)) === 1
+                && count($location = $headersIn->getHeader(self::HEADER_LOCATION)) === 1
                 && ($location = $location[0]) !== ''
             ) {
                 if (!$redirects) {
@@ -1397,8 +1395,8 @@ class Curler implements CurlerInterface, Buildable
                     $request = $request
                         ->withMethod($method)
                         ->withBody($body)
-                        ->withoutHeader(HttpHeader::CONTENT_LENGTH)
-                        ->withoutHeader(HttpHeader::TRANSFER_ENCODING);
+                        ->withoutHeader(self::HEADER_CONTENT_LENGTH)
+                        ->withoutHeader(self::HEADER_TRANSFER_ENCODING);
                     $size = 0;
                     $opt[\CURLOPT_CUSTOMREQUEST] = $method;
                     $opt[\CURLOPT_URL] = (string) $uri;
@@ -1456,19 +1454,19 @@ class Curler implements CurlerInterface, Buildable
         PsrUriInterface $uri
     ): RequestInterface {
         // Remove `Host` if its value is redundant
-        if (($host = $request->getHeaderLine(HttpHeader::HOST)) !== '') {
+        if (($host = $request->getHeaderLine(self::HEADER_HOST)) !== '') {
             try {
                 $host = new Uri("//$host");
             } catch (InvalidArgumentException $ex) {
                 throw new InvalidHeaderException(sprintf(
                     'Invalid value for HTTP request header %s: %s',
-                    HttpHeader::HOST,
+                    self::HEADER_HOST,
                     $host,
                 ), $ex);
             }
             $host = $host->withScheme($uri->getScheme())->getAuthority();
             if ($host === $uri->withUserInfo('')->getAuthority()) {
-                $request = $request->withoutHeader(HttpHeader::HOST);
+                $request = $request->withoutHeader(self::HEADER_HOST);
             }
         }
         return $request;
@@ -1505,7 +1503,7 @@ class Curler implements CurlerInterface, Buildable
                     self::TYPE_FORM,
                 ));
             }
-            return $request->withHeader(HttpHeader::CONTENT_TYPE, self::TYPE_FORM);
+            return $request->withHeader(self::HEADER_CONTENT_TYPE, self::TYPE_FORM);
         }
         if (is_string($data)) {
             return $request->withBody(HttpStream::fromString($data));
@@ -1527,7 +1525,7 @@ class Curler implements CurlerInterface, Buildable
             ? self::TYPE_FORM_MULTIPART
             : self::TYPE_FORM;
         return $request
-            ->withHeader(HttpHeader::CONTENT_TYPE, $mediaType)
+            ->withHeader(self::HEADER_CONTENT_TYPE, $mediaType)
             ->withBody($body);
     }
 
@@ -1616,7 +1614,7 @@ class Curler implements CurlerInterface, Buildable
      */
     private function getUnstableHeaders(): array
     {
-        return self::$UnstableHeaders ??= array_fill_keys(HttpHeaderGroup::UNSTABLE, true);
+        return self::$UnstableHeaders ??= array_fill_keys(self::HEADERS_UNSTABLE, true);
     }
 
     /**

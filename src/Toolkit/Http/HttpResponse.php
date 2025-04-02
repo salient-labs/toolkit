@@ -7,7 +7,6 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
@@ -160,8 +159,8 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
     {
         $response = parent::jsonSerialize();
 
-        $mediaType = $this->Headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
-        $location = $this->Headers->getHeaderValues(HttpHeader::LOCATION);
+        $mediaType = $this->Headers->getHeaderValues(self::HEADER_CONTENT_TYPE);
+        $location = $this->Headers->getHeaderValues(self::HEADER_LOCATION);
 
         return [
             'status' => $this->StatusCode,

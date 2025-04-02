@@ -3,9 +3,9 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
-use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\HasFileDescriptor;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
@@ -16,6 +16,7 @@ use RuntimeException;
 
 abstract class HttpTestCase extends TestCase implements
     HasFileDescriptor,
+    HasHeader,
     HasMediaType,
     HasRequestMethod
 {
@@ -25,9 +26,9 @@ abstract class HttpTestCase extends TestCase implements
     protected const HTTP_SERVER_URI = 'http://' . self::HTTP_SERVER_AUTHORITY;
 
     protected const HTTP_HEADER_IGNORE_LIST = [
-        Header::ACCEPT_ENCODING,
-        Header::CONNECTION,
-        Header::USER_AGENT,
+        HttpTestCase::HEADER_ACCEPT_ENCODING,
+        HttpTestCase::HEADER_CONNECTION,
+        HttpTestCase::HEADER_USER_AGENT,
     ];
 
     private string $ResponseDir;
@@ -175,10 +176,10 @@ abstract class HttpTestCase extends TestCase implements
     {
         if (
             $response instanceof HttpResponseInterface
-            && !$response->hasHeader(Header::CONTENT_LENGTH)
+            && !$response->hasHeader(self::HEADER_CONTENT_LENGTH)
             && ($size = $response->getBody()->getSize()) !== null
         ) {
-            $response = $response->withHeader(Header::CONTENT_LENGTH, (string) $size);
+            $response = $response->withHeader(self::HEADER_CONTENT_LENGTH, (string) $size);
         }
 
         return (string) $response;

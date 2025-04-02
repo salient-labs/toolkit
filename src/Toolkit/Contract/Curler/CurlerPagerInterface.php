@@ -4,11 +4,12 @@ namespace Salient\Contract\Curler;
 
 use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\HasHeader;
 
 /**
  * @api
  */
-interface CurlerPagerInterface
+interface CurlerPagerInterface extends HasHeader
 {
     /**
      * Get a request to retrieve the first page of data from the endpoint

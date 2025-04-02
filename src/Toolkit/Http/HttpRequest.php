@@ -8,7 +8,6 @@ use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpRequestInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
@@ -47,14 +46,14 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
 
         parent::__construct($body, $headers, $version);
 
-        if ($this->Headers->getHeaderLine(HttpHeader::HOST) !== '') {
+        if ($this->Headers->getHeaderLine(self::HEADER_HOST) !== '') {
             return;
         }
         $host = $this->getUriHost();
         if ($host === '') {
             return;
         }
-        $this->Headers = $this->Headers->set(HttpHeader::HOST, $host);
+        $this->Headers = $this->Headers->set(self::HEADER_HOST, $host);
     }
 
     /**
@@ -147,7 +146,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
 
         if (
             $preserveHost
-            && $instance->Headers->getHeaderLine(HttpHeader::HOST) !== ''
+            && $instance->Headers->getHeaderLine(self::HEADER_HOST) !== ''
         ) {
             return $instance;
         }
@@ -156,7 +155,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
         if ($host === '') {
             return $instance;
         }
-        return $instance->withHeader(HttpHeader::HOST, $host);
+        return $instance->withHeader(self::HEADER_HOST, $host);
     }
 
     /**
@@ -176,7 +175,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
                 self::METHOD_DELETE => true,
             ][$this->Method] ?? false)
         ) {
-            $mediaType = $this->Headers->getHeaderValues(HttpHeader::CONTENT_TYPE);
+            $mediaType = $this->Headers->getHeaderValues(self::HEADER_CONTENT_TYPE);
             $mediaType = count($mediaType) === 1 ? $mediaType[0] : '';
             $body = (string) $this->Body;
             $postData = [

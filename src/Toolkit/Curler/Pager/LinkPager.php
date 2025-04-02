@@ -7,7 +7,6 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\HttpHeader;
 use Salient\Curler\CurlerPage;
 use Salient\Curler\CurlerPageRequest;
 use Salient\Http\HttpUtil;
@@ -80,7 +79,7 @@ final class LinkPager implements CurlerPagerInterface
     ): CurlerPageInterface {
         $data = ($this->EntitySelector)($data);
 
-        foreach ($response->getHeaderValues(HttpHeader::LINK) as $link) {
+        foreach ($response->getHeaderValues(self::HEADER_LINK) as $link) {
             /** @var array{string,rel?:string} */
             $link = HttpUtil::getParameters($link);
             if (($link['rel'] ?? null) === 'next') {

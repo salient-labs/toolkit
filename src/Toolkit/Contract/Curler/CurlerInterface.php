@@ -12,11 +12,10 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\AccessTokenInterface;
 use Salient\Contract\Http\HasFormDataFlag;
+use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpHeaderGroup;
 use Salient\Contract\Http\HttpHeadersInterface;
 use Salient\Contract\Http\HttpRequestHandlerInterface;
 use Salient\Contract\Http\UriInterface;
@@ -34,6 +33,7 @@ interface CurlerInterface extends
     HasHttpHeaders,
     Immutable,
     HasFormDataFlag,
+    HasHeader,
     HasMediaType,
     HasRequestMethod
 {
@@ -352,7 +352,7 @@ interface CurlerInterface extends
      */
     public function withAccessToken(
         ?AccessTokenInterface $token,
-        string $headerName = HttpHeader::AUTHORIZATION
+        string $headerName = CurlerInterface::HEADER_AUTHORIZATION
     );
 
     /**
@@ -363,8 +363,8 @@ interface CurlerInterface extends
     /**
      * Get an instance that treats a header as sensitive
      *
-     * Headers in {@see HttpHeaderGroup::SENSITIVE} are considered sensitive by
-     * default.
+     * Headers in {@see CurlerInterface::HEADERS_SENSITIVE} are considered
+     * sensitive by default.
      *
      * @return static
      */
