@@ -3,7 +3,7 @@
 namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\HttpResponseInterface;
 use Throwable;
 
 /**

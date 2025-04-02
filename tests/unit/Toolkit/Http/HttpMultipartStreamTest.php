@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Http\HttpMultipartStreamPartInterface;
+use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStream;
 use Salient\Http\HttpMultipartStreamPart;

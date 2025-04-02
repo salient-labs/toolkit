@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler\Event;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\HttpResponseInterface;
 
 /**
  * Dispatched after a cURL request is executed

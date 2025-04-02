@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\HttpResponseInterface;
 use Closure;
 
 /**

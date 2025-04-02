@@ -3,9 +3,9 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
+use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
+use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpMultipartStreamInterface;
-use Salient\Contract\Http\HttpMultipartStreamPartInterface;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Utility\Regex;

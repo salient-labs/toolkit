@@ -6,7 +6,7 @@ use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Curler\CurlerPage;
 use Salient\Utility\Test;
 use Closure;

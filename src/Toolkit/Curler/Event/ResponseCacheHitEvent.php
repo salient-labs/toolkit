@@ -5,7 +5,7 @@ namespace Salient\Curler\Event;
 use Psr\Http\Message\RequestInterface;
 use Salient\Contract\Curler\Event\ResponseCacheHitEvent as ResponseCacheHitEventInterface;
 use Salient\Contract\Curler\CurlerInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\HttpResponseInterface;
 
 /**
  * @internal

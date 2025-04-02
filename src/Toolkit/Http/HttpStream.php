@@ -4,9 +4,9 @@ namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
+use Salient\Contract\Http\Message\HttpStreamInterface;
 use Salient\Contract\Http\FormDataFlag;
-use Salient\Contract\Http\HttpMultipartStreamPartInterface;
-use Salient\Contract\Http\HttpStreamInterface;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;

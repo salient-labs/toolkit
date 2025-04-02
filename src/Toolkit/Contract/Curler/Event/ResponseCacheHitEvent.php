@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler\Event;
 
 use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\HttpResponseInterface;
 
 /**
  * Dispatched when a request is resolved from the response cache

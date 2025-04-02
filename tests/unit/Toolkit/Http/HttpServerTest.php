@@ -2,10 +2,10 @@
 
 namespace Salient\Tests\Http;
 
+use Salient\Contract\Http\Message\HttpResponseInterface as ResponseInterface;
+use Salient\Contract\Http\Message\HttpServerRequestInterface as ServerRequest;
 use Salient\Contract\Http\HttpHeader as Header;
 use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Contract\Http\HttpResponseInterface as ResponseInterface;
-use Salient\Contract\Http\HttpServerRequestInterface as ServerRequest;
 use Salient\Contract\Http\MimeType;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;

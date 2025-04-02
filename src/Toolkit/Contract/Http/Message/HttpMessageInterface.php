@@ -1,12 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Contract\Http;
+namespace Salient\Contract\Http\Message;
 
 use Psr\Http\Message\MessageInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
+use Salient\Contract\Http\HasHttpHeaders;
+use Salient\Contract\Http\HttpHeadersInterface;
 use InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
