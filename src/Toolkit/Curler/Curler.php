@@ -1572,7 +1572,7 @@ class Curler implements CurlerInterface, Buildable
             return new Uri();
         }
         $uri = Uri::from($uri);
-        $invalid = array_intersect(['query', 'fragment'], array_keys($uri->toParts()));
+        $invalid = array_intersect(['query', 'fragment'], array_keys($uri->getComponents()));
         if ($invalid) {
             throw new InvalidArgumentException(Inflect::format(
                 $invalid,

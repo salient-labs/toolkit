@@ -364,7 +364,7 @@ class HttpServer implements Immutable, HasHeader, HasRequestMethod
                     }
 
                     if ($method === self::METHOD_CONNECT) {
-                        if (!Uri::isAuthorityForm($target)) {
+                        if (!HttpUtil::requestTargetIsAuthorityForm($target)) {
                             throw new HttpServerException(sprintf(
                                 'Invalid request target for %s from %s: %s',
                                 $method,

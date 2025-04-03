@@ -101,7 +101,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
             $target = '/';
         }
 
-        $query = $this->Uri->toParts()['query'] ?? null;
+        $query = $this->Uri->getComponents()['query'] ?? null;
         if ($query !== null) {
             return "{$target}?{$query}";
         }
@@ -254,7 +254,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
         }
 
         // "authority-form"
-        if (Uri::isAuthorityForm($requestTarget)) {
+        if (HttpUtil::requestTargetIsAuthorityForm($requestTarget)) {
             return $requestTarget;
         }
 
@@ -289,7 +289,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
         // and undefined URI components, but `/path?` and `/path` are not
         // necessarily equivalent, so URIs are always converted to instances of
         // `Salient\Http\Uri`, which surfaces empty and undefined queries via
-        // `Uri::toParts()` as `""` and `null` respectively
+        // `Uri::getComponents()` as `""` and `null` respectively
         return Uri::from($uri);
     }
 

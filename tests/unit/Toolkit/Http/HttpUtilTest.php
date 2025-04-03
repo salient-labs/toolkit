@@ -47,6 +47,17 @@ final class HttpUtilTest extends TestCase implements HasMediaType
         ];
     }
 
+    public function testRequestTargetIsAuthorityForm(): void
+    {
+        $this->assertTrue(HttpUtil::requestTargetIsAuthorityForm('example.com:80'));
+        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('example.com'));
+        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('example.com:80/path'));
+        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('example.com:80?query'));
+        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('http://example.com:80'));
+        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('http://example.com:80/path'));
+        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('http://example.com:80?query'));
+    }
+
     /**
      * @dataProvider mediaTypeIsProvider
      */

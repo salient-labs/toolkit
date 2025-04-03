@@ -47,6 +47,8 @@ final class HttpUtil extends AbstractUtility implements
         'text/xml' => self::TYPE_XML,
     ];
 
+    private const AUTHORITY_FORM = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
+
     /**
      * Check if a string is a valid HTTP request method
      *
@@ -55,6 +57,20 @@ final class HttpUtil extends AbstractUtility implements
     public static function isRequestMethod(string $method): bool
     {
         return Reflect::hasConstantWithValue(HasRequestMethod::class, $method);
+    }
+
+    /**
+     * Check if an HTTP request target consists only of a host and port number,
+     * separated by a colon
+     *
+     * \[RFC7230] Section 5.3.3: "When making a CONNECT request to establish a
+     * tunnel through one or more proxies, a client MUST send only the target
+     * URI's authority component (excluding any userinfo and its "@" delimiter)
+     * as the request-target."
+     */
+    public static function requestTargetIsAuthorityForm(string $target): bool
+    {
+        return (bool) Regex::match(self::AUTHORITY_FORM, $target);
     }
 
     /**

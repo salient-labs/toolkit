@@ -13,7 +13,7 @@ use InvalidArgumentException;
 use Stringable;
 
 /**
- * A PSR-7 URI with strict [RFC3986] compliance
+ * @api
  */
 class Uri implements UriInterface
 {
@@ -22,14 +22,17 @@ class Uri implements UriInterface
     /**
      * Replace empty HTTP and HTTPS paths with "/"
      */
-    public const EXPAND_EMPTY_PATH = 1;
+    public const NORMALISE_EMPTY_PATH = 1;
 
     /**
-     * Collapse two or more subsequent slashes in the path (e.g. "//") to a
+     * Replace two or more subsequent slashes in a path (e.g. "//") with a
      * single slash ("/")
      */
-    public const COLLAPSE_MULTIPLE_SLASHES = 2;
+    public const NORMALISE_MULTIPLE_SLASHES = 2;
 
+    /**
+     * @var array<string,int>
+     */
     protected const SCHEME_PORT = [
         'http' => 80,
         'https' => 443,
@@ -45,9 +48,6 @@ class Uri implements UriInterface
         \PHP_URL_QUERY => 'query',
         \PHP_URL_FRAGMENT => 'fragment',
     ];
-
-    private const URI_SCHEME = '/^[a-z][-a-z0-9+.]*$/iD';
-    private const URI_HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
 
     private const URI = <<<'REGEX'
 ` ^
@@ -86,16 +86,17 @@ class Uri implements UriInterface
 $ `ixD
 REGEX;
 
-    private const AUTHORITY_FORM = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
+    private const SCHEME = '/^[a-z][-a-z0-9+.]*$/iD';
+    private const HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
 
-    protected ?string $Scheme = null;
-    protected ?string $User = null;
-    protected ?string $Password = null;
-    protected ?string $Host = null;
-    protected ?int $Port = null;
-    protected string $Path = '';
-    protected ?string $Query = null;
-    protected ?string $Fragment = null;
+    private ?string $Scheme = null;
+    private ?string $User = null;
+    private ?string $Password = null;
+    private ?string $Host = null;
+    private ?int $Port = null;
+    private string $Path = '';
+    private ?string $Query = null;
+    private ?string $Fragment = null;
 
     /**
      * @param bool $strict If `false`, unencoded characters are percent-encoded
@@ -130,32 +131,14 @@ REGEX;
     }
 
     /**
-     * Resolve a value to a Uri object
-     *
      * @param PsrUriInterface|Stringable|string $uri
      * @return static
      */
     public static function from($uri): self
     {
-        if ($uri instanceof static) {
-            return $uri;
-        }
-
-        return new static((string) $uri);
-    }
-
-    /**
-     * Get a new instance from an array of URI components
-     *
-     * Accepts arrays returned by {@see parse_url()},
-     * {@see UriInterface::parse()} and {@see UriInterface::toParts()}.
-     *
-     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
-     * @return static
-     */
-    public static function fromParts(array $parts): self
-    {
-        return (new static())->applyParts($parts);
+        return $uri instanceof static
+            ? $uri
+            : new static((string) $uri);
     }
 
     /**
@@ -164,77 +147,32 @@ REGEX;
      * @param bool $strict If `false`, unencoded characters are percent-encoded
      * before parsing.
      */
-    public static function parse(string $uri, ?int $component = null, bool $strict = false)
+    public static function parse(string $uri, int $component = -1, bool $strict = false)
     {
-        $noComponent = $component === null || $component === -1;
-
-        $name = $noComponent
-            ? null
-            // @phpstan-ignore nullCoalesce.offset
-            : self::COMPONENT_NAME[$component] ?? null;
-
-        if (!$noComponent && $name === null) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid component: %d',
-                $component,
-            ));
-        }
-
         try {
-            $parts = (new static($uri, $strict))->toParts();
+            $parts = (new static($uri, $strict))->getComponents();
         } catch (InvalidArgumentException $ex) {
-            @trigger_error($ex->getMessage(), \E_USER_NOTICE);
             return false;
         }
 
-        return $noComponent
-            ? $parts
-            : $parts[$name] ?? null;
-    }
+        if ($component === -1) {
+            return $parts;
+        }
 
-    /**
-     * Convert an array of URI components to a URI
-     *
-     * Accepts arrays returned by {@see parse_url()},
-     * {@see UriInterface::parse()} and {@see UriInterface::toParts()}.
-     *
-     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
-     */
-    public static function unparse(array $parts): string
-    {
-        return (string) static::fromParts($parts);
-    }
-
-    /**
-     * Resolve a URI reference relative to a given base URI
-     *
-     * @param PsrUriInterface|Stringable|string $reference
-     * @param PsrUriInterface|Stringable|string $baseUri
-     */
-    public static function resolveReference($reference, $baseUri): string
-    {
-        return (string) static::from($baseUri)->follow($reference);
-    }
-
-    /**
-     * Check if a value is a valid authority-form request target
-     *
-     * [RFC7230], Section 5.3.3: "When making a CONNECT request to establish a
-     * tunnel through one or more proxies, a client MUST send only the target
-     * URI's authority component (excluding any userinfo and its "@" delimiter)
-     * as the request-target."
-     */
-    public static function isAuthorityForm(string $requestTarget): bool
-    {
-        return (bool) Regex::match(self::AUTHORITY_FORM, $requestTarget);
+        $name = self::COMPONENT_NAME[$component] ?? null;
+        if ($name === null) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid component: %d', $component),
+            );
+        }
+        return $parts[$name] ?? null;
     }
 
     /**
      * @inheritDoc
      */
-    public function toParts(): array
+    public function getComponents(): array
     {
-        /** @var array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} */
         return Arr::whereNotNull([
             'scheme' => $this->Scheme,
             'host' => $this->Host,
@@ -250,7 +188,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function isReference(): bool
+    public function isRelativeReference(): bool
     {
         return $this->Scheme === null;
     }
@@ -408,8 +346,9 @@ REGEX;
      */
     public function withQuery(string $query): PsrUriInterface
     {
+        $query = Str::coalesce($query, null);
         return $this
-            ->with('Query', $this->filterQueryOrFragment(Str::coalesce($query, null)));
+            ->with('Query', $this->filterQueryOrFragment($query));
     }
 
     /**
@@ -417,28 +356,32 @@ REGEX;
      */
     public function withFragment(string $fragment): PsrUriInterface
     {
+        $fragment = Str::coalesce($fragment, null);
         return $this
-            ->with('Fragment', $this->filterQueryOrFragment(Str::coalesce($fragment, null)));
+            ->with('Fragment', $this->filterQueryOrFragment($fragment));
     }
 
     /**
      * @inheritDoc
      *
-     * @param int-mask-of<Uri::EXPAND_EMPTY_PATH|Uri::COLLAPSE_MULTIPLE_SLASHES> $flags
+     * @param int-mask-of<Uri::NORMALISE_*> $flags
      */
-    public function normalise(int $flags = Uri::EXPAND_EMPTY_PATH): UriInterface
+    public function normalise(int $flags = Uri::NORMALISE_EMPTY_PATH): UriInterface
     {
         $uri = $this->removeDotSegments();
 
         if (
-            ($flags & self::EXPAND_EMPTY_PATH)
+            $flags & self::NORMALISE_EMPTY_PATH
             && $uri->Path === ''
             && ($uri->Scheme === 'http' || $uri->Scheme === 'https')
         ) {
             $uri = $uri->withPath('/');
         }
 
-        if ($flags & self::COLLAPSE_MULTIPLE_SLASHES) {
+        if (
+            $flags & self::NORMALISE_MULTIPLE_SLASHES
+            && strpos($uri->Path, '//') !== false
+        ) {
             $uri = $uri->withPath(Regex::replace('/\/\/++/', '/', $uri->Path));
         }
 
@@ -450,14 +393,15 @@ REGEX;
      */
     public function follow($reference): UriInterface
     {
-        if ($this->isReference()) {
+        if ($this->isRelativeReference()) {
             throw new InvalidArgumentException(
                 'Reference cannot be resolved relative to another reference'
             );
         }
 
+        // Compliant with [RFC3986] Section 5.2.2 ("Transform References")
         $reference = static::from($reference);
-        if (!$reference->isReference()) {
+        if (!$reference->isRelativeReference()) {
             return $reference->removeDotSegments();
         }
 
@@ -474,8 +418,7 @@ REGEX;
 
         if ($reference->Path === '') {
             if ($reference->Query !== null) {
-                return $target
-                    ->withQuery($reference->Query);
+                return $target->withQuery($reference->Query);
             }
             return $target;
         }
@@ -491,23 +434,6 @@ REGEX;
         return $target
             ->mergeRelativePath($reference->Path)
             ->removeDotSegments();
-    }
-
-    /**
-     * Get an instance with "/./" and "/../" segments removed from the path
-     *
-     * Compliant with \[RFC3986] Section 5.2.4 ("Remove Dot Segments").
-     *
-     * @return static
-     */
-    public function removeDotSegments(): self
-    {
-        // Relative references can only be resolved relative to an absolute URI
-        if ($this->isReference()) {
-            return $this;
-        }
-
-        return $this->withPath(File::resolvePath($this->Path, true));
     }
 
     /**
@@ -527,7 +453,7 @@ REGEX;
             || $this->Host !== null
             || $this->Scheme === 'file'
         ) {
-            $uri .= "//{$authority}";
+            $uri .= "//$authority";
         }
 
         $uri .= $this->Path;
@@ -552,14 +478,11 @@ REGEX;
     }
 
     /**
-     * Get an instance with a relative path merged into the path of the URI
-     *
-     * Implements \[RFC3986] Section 5.2.3 ("Merge Paths").
-     *
      * @return static
      */
     private function mergeRelativePath(string $path): self
     {
+        // As per [RFC3986] Section 5.2.3 ("Merge Paths")
         if ($this->getAuthority() !== '' && $this->Path === '') {
             return $this->withPath("/$path");
         }
@@ -569,29 +492,18 @@ REGEX;
         }
 
         $merge = implode('/', Arr::pop(explode('/', $this->Path)));
-        return $this->withPath("{$merge}/{$path}");
+        return $this->withPath("$merge/$path");
     }
 
     /**
-     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
-     * @return $this
+     * @return static
      */
-    private function applyParts(array $parts): self
+    private function removeDotSegments(): self
     {
-        $this->Scheme = $this->filterScheme($parts['scheme'] ?? null);
-        $this->User = $this->filterUserInfoPart($parts['user'] ?? null);
-        $this->Password = $this->filterUserInfoPart($parts['pass'] ?? null);
-        $this->Host = $this->filterHost($parts['host'] ?? null);
-        $this->Port = $this->filterPort($parts['port'] ?? null);
-        $this->Path = $this->filterPath($parts['path'] ?? null);
-        $this->Query = $this->filterQueryOrFragment($parts['query'] ?? null);
-        $this->Fragment = $this->filterQueryOrFragment($parts['fragment'] ?? null);
-
-        if ($this->Password !== null) {
-            $this->User ??= '';
-        }
-
-        return $this;
+        // As per [RFC3986] Section 5.2.4 ("Remove Dot Segments")
+        return $this->isRelativeReference()
+            ? $this
+            : $this->withPath(File::resolvePath($this->Path, true));
     }
 
     private function filterScheme(?string $scheme, bool $validate = true): ?string
@@ -600,7 +512,7 @@ REGEX;
             return null;
         }
 
-        if ($validate && !Regex::match(self::URI_SCHEME, $scheme)) {
+        if ($validate && !Regex::match(self::SCHEME, $scheme)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid scheme: %s', $scheme)
             );
@@ -626,18 +538,15 @@ REGEX;
 
         if ($validate) {
             $host = $this->encode($host);
-            if (!Regex::match(self::URI_HOST, $host)) {
+            if (!Regex::match(self::HOST, $host)) {
                 throw new InvalidArgumentException(
                     sprintf('Invalid host: %s', $host)
                 );
             }
         }
 
-        return $this->normaliseComponent(
-            Str::lower($this->decodeUnreserved($host)),
-            '[#/?@]',
-            false
-        );
+        $host = Str::lower($this->decodeUnreserved($host));
+        return $this->normaliseComponent($host, '[#/?@]', false);
     }
 
     /**
@@ -678,10 +587,8 @@ REGEX;
     }
 
     /**
-     * Normalise a URI component
-     *
-     * @param bool $decodeUnreserved `false` if unreserved characters have
-     * already been decoded.
+     * @param bool $decodeUnreserved `false` if unreserved characters are
+     * already decoded.
      */
     private function normaliseComponent(
         string $part,
@@ -699,22 +606,19 @@ REGEX;
         return Regex::replaceCallbackArray([
             // Use uppercase hexadecimal digits
             '/%([0-9a-f]{2})/i' =>
-                fn(array $matches) => '%' . Str::upper($matches[1]),
+                fn($matches) => '%' . Str::upper($matches[1]),
             // Encode everything except reserved and unreserved characters
             "/(?:%(?![0-9a-f]{2})|{$encodeRegex}[^]!#\$%&'()*+,\/:;=?@[])+/i" =>
-                fn(array $matches) => rawurlencode($matches[0]),
+                fn($matches) => rawurlencode($matches[0]),
         ], $part);
     }
 
-    /**
-     * Decode unreserved characters in a URI component
-     */
     private function decodeUnreserved(string $part): string
     {
         return Regex::replaceCallback(
             '/%(2[de]|5f|7e|3[0-9]|[46][1-9a-f]|[57][0-9a])/i',
-            fn(array $matches) => chr((int) hexdec($matches[1])),
-            $part
+            fn($matches) => chr((int) hexdec($matches[1])),
+            $part,
         );
     }
 
@@ -726,8 +630,8 @@ REGEX;
     {
         return Regex::replaceCallback(
             '/(?:%(?![0-9a-f]{2})|[^]!#$%&\'()*+,\/:;=?@[])+/i',
-            fn(array $matches) => rawurlencode($matches[0]),
-            $partOrUri
+            fn($matches) => rawurlencode($matches[0]),
+            $partOrUri,
         );
     }
 
@@ -752,11 +656,7 @@ REGEX;
                     'Path cannot begin with colon segment in URI without scheme'
                 );
             }
-
-            return $this;
-        }
-
-        if ($this->Path !== '' && $this->Path[0] !== '/') {
+        } elseif ($this->Path !== '' && $this->Path[0] !== '/') {
             throw new InvalidArgumentException(
                 'Path must be empty or begin with "/" in URI with authority'
             );
