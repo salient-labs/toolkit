@@ -60,7 +60,7 @@ final class FormDataTest extends TestCase
         array $expected,
         string $expectedQuery,
         array $data,
-        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
         ?callable $callback = null,
         bool $parse = true
@@ -161,7 +161,7 @@ final class FormDataTest extends TestCase
                 // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][0]=email&fields[notify_by][0][1]=sms&fields[notify_by][1][0]=mobile&fields[notify_by][1][1]=home&fields[groups][0]=staff&fields[groups][1]=editor&fields[active]=1&fields[created]=2021-10-02T17:23:14+10:00
                 'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B0%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B1%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B0%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B1%5D=home&fields%5Bgroups%5D%5B0%5D=staff&fields%5Bgroups%5D%5B1%5D=editor&fields%5Bactive%5D=1&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
                 $data,
-                FormData::PRESERVE_ALL_KEYS,
+                FormData::DATA_PRESERVE_ALL_KEYS,
             ],
             [
                 [
@@ -179,7 +179,7 @@ final class FormDataTest extends TestCase
                 // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[active]=1&fields[created]=Sat, 02 Oct 2021 17:23:14 +1000
                 'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bactive%5D=1&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021%2017%3A23%3A14%20%2B1000',
                 $data,
-                FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+                FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
                 new DateFormatter(DateTimeInterface::RSS),
             ],
             [
@@ -198,7 +198,7 @@ final class FormDataTest extends TestCase
                 // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[active]=1&fields[created]=2021-10-02T07:23:14+00:00
                 'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bactive%5D=1&fields%5Bcreated%5D=2021-10-02T07%3A23%3A14%2B00%3A00',
                 $data,
-                FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+                FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
                 new DateFormatter(DateTimeInterface::ATOM, 'UTC'),
             ],
             [
@@ -217,7 +217,7 @@ final class FormDataTest extends TestCase
                 // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[active]=1&fields[created]=2021-10-02T17:23:14+10:00
                 'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bactive%5D=1&fields%5Bcreated%5D=2021-10-02T17%3A23%3A14%2B10%3A00',
                 $callbackData,
-                FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+                FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
                 null,
                 $callback1,
                 false,
@@ -238,7 +238,7 @@ final class FormDataTest extends TestCase
                 // user_id=7654&fields[email]=JWilliams432@gmail.com&fields[notify_by][0][]=email&fields[notify_by][0][]=sms&fields[notify_by][1][]=mobile&fields[notify_by][1][]=home&fields[groups][]=staff&fields[groups][]=editor&fields[active]=1&fields[created]=Sat, 02 Oct 2021
                 'user_id=7654&fields%5Bemail%5D=JWilliams432%40gmail.com&fields%5Bnotify_by%5D%5B0%5D%5B%5D=email&fields%5Bnotify_by%5D%5B0%5D%5B%5D=sms&fields%5Bnotify_by%5D%5B1%5D%5B%5D=mobile&fields%5Bnotify_by%5D%5B1%5D%5B%5D=home&fields%5Bgroups%5D%5B%5D=staff&fields%5Bgroups%5D%5B%5D=editor&fields%5Bactive%5D=1&fields%5Bcreated%5D=Sat%2C%2002%20Oct%202021',
                 $callbackData,
-                FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+                FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
                 null,
                 $callback2,
                 false,
@@ -294,7 +294,7 @@ final class FormDataTest extends TestCase
                 // list[]=a&list[]=b&list[]=c&indexed[]=a&indexed[]=b&indexed[]=c&associative[a]=5&associative[b]=9&associative[c]=2
                 'list%5B%5D=a&list%5B%5D=b&list%5B%5D=c&indexed%5B%5D=a&indexed%5B%5D=b&indexed%5B%5D=c&associative%5Ba%5D=5&associative%5Bb%5D=9&associative%5Bc%5D=2',
                 $lists,
-                FormData::PRESERVE_STRING_KEYS,
+                FormData::DATA_PRESERVE_STRING_KEYS,
                 null,
                 null,
                 false,
@@ -314,7 +314,7 @@ final class FormDataTest extends TestCase
                 // list[0]=a&list[1]=b&list[2]=c&indexed[5]=a&indexed[9]=b&indexed[2]=c&associative[]=5&associative[]=9&associative[]=2
                 'list%5B0%5D=a&list%5B1%5D=b&list%5B2%5D=c&indexed%5B5%5D=a&indexed%5B9%5D=b&indexed%5B2%5D=c&associative%5B%5D=5&associative%5B%5D=9&associative%5B%5D=2',
                 $lists,
-                FormData::PRESERVE_LIST_KEYS | FormData::PRESERVE_NUMERIC_KEYS,
+                FormData::DATA_PRESERVE_LIST_KEYS | FormData::DATA_PRESERVE_NUMERIC_KEYS,
                 null,
                 null,
                 false,
@@ -341,7 +341,7 @@ final class FormDataTest extends TestCase
                 // Arrayable[]=foo&Arrayable[]=bar&Arrayable[]=baz&JsonSerializable[0]=FOO&JsonSerializable[1][]=foo&JsonSerializable[1][]=bar&JsonSerializable[1][]=baz&Jsonable[0]=FOO&Jsonable[1][]=foo&Jsonable[1][]=bar&Jsonable[1][]=baz&Stringable[]=foo&Stringable[]=bar&Generic[Foo]=bar&Iterator[foo]=bar&Iterator[baz]=1
                 'Arrayable%5B%5D=foo&Arrayable%5B%5D=bar&Arrayable%5B%5D=baz&JsonSerializable%5B0%5D=FOO&JsonSerializable%5B1%5D%5B%5D=foo&JsonSerializable%5B1%5D%5B%5D=bar&JsonSerializable%5B1%5D%5B%5D=baz&Jsonable%5B0%5D=FOO&Jsonable%5B1%5D%5B%5D=foo&Jsonable%5B1%5D%5B%5D=bar&Jsonable%5B1%5D%5B%5D=baz&Stringable%5B%5D=foo&Stringable%5B%5D=bar&Generic%5BFoo%5D=bar&Iterator%5Bfoo%5D=bar&Iterator%5Bbaz%5D=1',
                 self::getDataObjects(),
-                FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+                FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
                 null,
                 null,
                 false,

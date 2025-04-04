@@ -7,8 +7,8 @@ namespace Salient\Contract\Http;
  */
 interface HasFormDataFlag
 {
-    public const PRESERVE_LIST_KEYS = 1;
-    public const PRESERVE_NUMERIC_KEYS = 2;
-    public const PRESERVE_STRING_KEYS = 4;
-    public const PRESERVE_ALL_KEYS = 7;
+    public const DATA_PRESERVE_LIST_KEYS = 1;
+    public const DATA_PRESERVE_NUMERIC_KEYS = 2;
+    public const DATA_PRESERVE_STRING_KEYS = 4;
+    public const DATA_PRESERVE_ALL_KEYS = 7;
 }

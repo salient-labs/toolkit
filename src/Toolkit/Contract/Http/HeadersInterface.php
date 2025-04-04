@@ -15,7 +15,7 @@ interface HeadersInterface extends
     HasHeaders,
     Immutable,
     Stringable,
-    HasHeader
+    HasHttpHeader
 {
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string> $items

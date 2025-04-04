@@ -5,7 +5,7 @@ namespace Salient\Contract\Http;
 /**
  * @api
  */
-interface HasHeader
+interface HasHttpHeader
 {
     public const HEADER_ACCEPT = 'Accept';
     public const HEADER_ACCEPT_ENCODING = 'Accept-Encoding';
@@ -25,13 +25,4 @@ interface HasHeader
     public const HEADER_SERVER = 'Server';
     public const HEADER_TRANSFER_ENCODING = 'Transfer-Encoding';
     public const HEADER_USER_AGENT = 'User-Agent';
-
-    public const HEADERS_SENSITIVE = [
-        HasHeader::HEADER_AUTHORIZATION,
-        HasHeader::HEADER_PROXY_AUTHORIZATION,
-    ];
-
-    public const HEADERS_UNSTABLE = [
-        HasHeader::HEADER_USER_AGENT,
-    ];
 }

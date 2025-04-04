@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Http\HttpHeaders;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
@@ -10,7 +10,7 @@ use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
 
-final class TestUtil extends AbstractUtility implements HasHeader
+final class TestUtil extends AbstractUtility implements HasHttpHeader
 {
     /**
      * Read an HTTP message from a stream and write it to STDOUT

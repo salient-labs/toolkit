@@ -12,7 +12,8 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Contract\Http\CredentialInterface;
 use Salient\Contract\Http\HasFormDataFlag;
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasInnerHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
@@ -32,7 +33,8 @@ interface CurlerInterface extends
     HasInnerHeaders,
     Immutable,
     HasFormDataFlag,
-    HasHeader,
+    HasHttpHeader,
+    HasHttpHeaders,
     HasMediaType,
     HasRequestMethod
 {
@@ -458,7 +460,7 @@ interface CurlerInterface extends
     /**
      * Get form data flags applied to the instance
      *
-     * @return int-mask-of<CurlerInterface::PRESERVE_*>
+     * @return int-mask-of<CurlerInterface::DATA_*>
      */
     public function getFormDataFlags(): int;
 
@@ -468,10 +470,10 @@ interface CurlerInterface extends
      * Form data flags are used to encode data for query strings and message
      * bodies.
      *
-     * {@see CurlerInterface::PRESERVE_NUMERIC_KEYS} and
-     * {@see CurlerInterface::PRESERVE_STRING_KEYS} are applied by default.
+     * {@see CurlerInterface::DATA_PRESERVE_NUMERIC_KEYS} and
+     * {@see CurlerInterface::DATA_PRESERVE_STRING_KEYS} are applied by default.
      *
-     * @param int-mask-of<CurlerInterface::PRESERVE_*> $flags
+     * @param int-mask-of<CurlerInterface::DATA_*> $flags
      * @return static
      */
     public function withFormDataFlags(int $flags);

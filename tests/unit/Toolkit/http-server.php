@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\HasHeader as Header;
+use Salient\Contract\Http\HasHttpHeader as Header;
 use Salient\Contract\Http\HasRequestMethod as Method;
 use Salient\Http\HttpResponse;
 use Salient\Http\HttpUtil;

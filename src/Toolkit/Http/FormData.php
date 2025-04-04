@@ -64,7 +64,7 @@ final class FormData implements HasFormDataFlag
      * @return list<array{string,(T&object)|string}>
      */
     public function getValues(
-        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
     ): array {
@@ -85,7 +85,7 @@ final class FormData implements HasFormDataFlag
      * @param (callable(object): (T|false))|null $callback
      */
     public function getQuery(
-        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
     ): string {
@@ -117,7 +117,7 @@ final class FormData implements HasFormDataFlag
      * @return mixed[]
      */
     public function getData(
-        int $flags = FormData::PRESERVE_NUMERIC_KEYS | FormData::PRESERVE_STRING_KEYS,
+        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?callable $callback = null
     ): array {
@@ -180,10 +180,10 @@ final class FormData implements HasFormDataFlag
 
             $preserveKeys = $name === null || $hasArray || (
                 Arr::isList($data)
-                    ? $flags & self::PRESERVE_LIST_KEYS
+                    ? $flags & self::DATA_PRESERVE_LIST_KEYS
                     : (Arr::hasNumericKeys($data)
-                        ? $flags & self::PRESERVE_NUMERIC_KEYS
-                        : $flags & self::PRESERVE_STRING_KEYS)
+                        ? $flags & self::DATA_PRESERVE_NUMERIC_KEYS
+                        : $flags & self::DATA_PRESERVE_STRING_KEYS)
             );
 
             $format = $preserveKeys

@@ -3,7 +3,7 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Http\Message\ResponseInterface;
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\HasFileDescriptor;
@@ -16,7 +16,7 @@ use RuntimeException;
 
 abstract class HttpTestCase extends TestCase implements
     HasFileDescriptor,
-    HasHeader,
+    HasHttpHeader,
     HasMediaType,
     HasRequestMethod
 {

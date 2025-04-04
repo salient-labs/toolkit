@@ -98,8 +98,8 @@ class Curler implements CurlerInterface, Buildable
     protected bool $ExpectJson = true;
     protected bool $PostJson = true;
     protected ?DateFormatterInterface $DateFormatter = null;
-    /** @var int-mask-of<Curler::PRESERVE_*> */
-    protected int $FormDataFlags = Curler::PRESERVE_NUMERIC_KEYS | Curler::PRESERVE_STRING_KEYS;
+    /** @var int-mask-of<Curler::DATA_*> */
+    protected int $FormDataFlags = Curler::DATA_PRESERVE_NUMERIC_KEYS | Curler::DATA_PRESERVE_STRING_KEYS;
     /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> */
     protected int $JsonDecodeFlags = \JSON_OBJECT_AS_ARRAY;
     /** @var array<array{CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,string|null}> */
@@ -172,7 +172,7 @@ class Curler implements CurlerInterface, Buildable
      * @param bool $expectJson Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON
      * @param bool $postJson Use JSON to encode POST/PUT/PATCH/DELETE data
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
-     * @param int-mask-of<Curler::PRESERVE_*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see Curler::PRESERVE_NUMERIC_KEYS} `|` {@see Curler::PRESERVE_STRING_KEYS})
+     * @param int-mask-of<Curler::DATA_*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see Curler::DATA_PRESERVE_NUMERIC_KEYS} `|` {@see Curler::DATA_PRESERVE_STRING_KEYS})
      * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
      * @param array<array{CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
@@ -204,7 +204,7 @@ class Curler implements CurlerInterface, Buildable
         bool $expectJson = true,
         bool $postJson = true,
         ?DateFormatterInterface $dateFormatter = null,
-        int $formDataFlags = Curler::PRESERVE_NUMERIC_KEYS | Curler::PRESERVE_STRING_KEYS,
+        int $formDataFlags = Curler::DATA_PRESERVE_NUMERIC_KEYS | Curler::DATA_PRESERVE_STRING_KEYS,
         int $jsonDecodeFlags = \JSON_OBJECT_AS_ARRAY,
         array $middleware = [],
         ?CurlerPagerInterface $pager = null,

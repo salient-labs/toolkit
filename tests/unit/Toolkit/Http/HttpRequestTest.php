@@ -3,7 +3,7 @@
 namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
@@ -18,7 +18,7 @@ use InvalidArgumentException;
  * @covers \Salient\Http\HasHttpHeaders
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpRequestTest extends TestCase implements HasHeader
+final class HttpRequestTest extends TestCase implements HasHttpHeader
 {
     private const USER_AGENT = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:15.0) Gecko/20100101 Firefox/15.0.1';
 

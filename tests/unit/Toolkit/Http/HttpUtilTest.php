@@ -267,13 +267,13 @@ final class HttpUtilTest extends TestCase implements HasMediaType
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
-     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
+     * @param int-mask-of<HttpUtil::DATA_*> $flags
      */
     public function testMergeQuery(
         string $expected,
         $uri,
         array $data,
-        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ): void {
         $this->assertSame(
@@ -329,13 +329,13 @@ final class HttpUtilTest extends TestCase implements HasMediaType
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
-     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
+     * @param int-mask-of<HttpUtil::DATA_*> $flags
      */
     public function testReplaceQuery(
         string $expected,
         $uri,
         array $data,
-        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ): void {
         $this->assertSame(

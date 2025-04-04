@@ -4,7 +4,7 @@ namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Contract\Http\Message\ServerRequestInterface;
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Facade\Console;
@@ -23,7 +23,7 @@ use Salient\Utility\Str;
  * @covers \Salient\Http\HasHttpHeaders
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpServerTest extends TestCase implements HasHeader, HasMediaType, HasRequestMethod
+final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaType, HasRequestMethod
 {
     private HttpServer $Server;
 

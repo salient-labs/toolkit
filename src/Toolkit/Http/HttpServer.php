@@ -7,7 +7,7 @@ use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Contract\Http\Message\ServerRequestInterface;
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
@@ -21,7 +21,7 @@ use InvalidArgumentException;
 /**
  * A simple HTTP server
  */
-class HttpServer implements Immutable, HasHeader, HasRequestMethod
+class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
 {
     use ImmutableTrait;
 

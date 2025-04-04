@@ -29,7 +29,7 @@ use Stringable;
  * @method $this expectJson(bool $value = true) Explicitly accept JSON-encoded responses and assume responses with no content type contain JSON (default: true)
  * @method $this postJson(bool $value = true) Use JSON to encode POST/PUT/PATCH/DELETE data (default: true)
  * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to format and parse the endpoint's date and time values
- * @method $this formDataFlags(int-mask-of<Curler::PRESERVE_*> $value) Flags used to encode data for query strings and message bodies (default: {@see Curler::PRESERVE_NUMERIC_KEYS} `|` {@see Curler::PRESERVE_STRING_KEYS})
+ * @method $this formDataFlags(int-mask-of<Curler::DATA_*> $value) Flags used to encode data for query strings and message bodies (default: {@see Curler::DATA_PRESERVE_NUMERIC_KEYS} `|` {@see Curler::DATA_PRESERVE_STRING_KEYS})
  * @method $this jsonDecodeFlags(int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $value) Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
  * @method $this middleware(array<array{CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler

@@ -76,12 +76,12 @@ final class HttpStreamTest extends TestCase
      * @dataProvider fromDataProvider
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<HttpStream::PRESERVE_*> $flags
+     * @param int-mask-of<HttpStream::DATA_*> $flags
      */
     public function testFromData(
         ?string $expected,
         $data,
-        int $flags = HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
+        int $flags = HttpStream::DATA_PRESERVE_NUMERIC_KEYS | HttpStream::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
         bool $asJson = false
     ): void {
@@ -157,14 +157,14 @@ final class HttpStreamTest extends TestCase
             [
                 '{"user_id":7654,"fields":{"email":"JWilliams432@gmail.com","groups":["staff","editor"],"created":"2021-10-02T17:23:14+10:00"}}',
                 $data,
-                HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
+                HttpStream::DATA_PRESERVE_NUMERIC_KEYS | HttpStream::DATA_PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],
             [
                 null,
                 $multipartData,
-                HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
+                HttpStream::DATA_PRESERVE_NUMERIC_KEYS | HttpStream::DATA_PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],

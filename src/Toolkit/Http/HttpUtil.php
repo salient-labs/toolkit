@@ -222,13 +222,13 @@ final class HttpUtil extends AbstractUtility implements
      *
      * @param T $value
      * @param mixed[] $data
-     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
+     * @param int-mask-of<HttpUtil::DATA_*> $flags
      * @return (T is PsrRequestInterface|PsrUriInterface ? T : Uri)
      */
     public static function mergeQuery(
         $value,
         array $data,
-        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
         if ($value instanceof PsrRequestInterface) {
@@ -257,13 +257,13 @@ final class HttpUtil extends AbstractUtility implements
      *
      * @param T $value
      * @param mixed[] $data
-     * @param int-mask-of<HttpUtil::PRESERVE_*> $flags
+     * @param int-mask-of<HttpUtil::DATA_*> $flags
      * @return (T is PsrRequestInterface|PsrUriInterface ? T : Uri)
      */
     public static function replaceQuery(
         $value,
         array $data,
-        int $flags = HttpUtil::PRESERVE_NUMERIC_KEYS | HttpUtil::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
         $query = (new FormData($data))->getQuery($flags, $dateFormatter);

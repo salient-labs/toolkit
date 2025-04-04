@@ -69,11 +69,11 @@ class HttpStream implements StreamInterface, HasFormDataFlag
      * HttpMultipartStream object
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<HttpStream::PRESERVE_*> $flags
+     * @param int-mask-of<HttpStream::DATA_*> $flags
      */
     public static function fromData(
         $data,
-        int $flags = HttpStream::PRESERVE_NUMERIC_KEYS | HttpStream::PRESERVE_STRING_KEYS,
+        int $flags = HttpStream::DATA_PRESERVE_NUMERIC_KEYS | HttpStream::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         bool $asJson = false,
         ?string $boundary = null

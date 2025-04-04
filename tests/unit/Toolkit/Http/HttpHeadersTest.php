@@ -5,7 +5,8 @@ namespace Salient\Tests\Http;
 use Salient\Collection\Collection;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
-use Salient\Contract\Http\HasHeader;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\HttpHeaders;
@@ -18,7 +19,10 @@ use LogicException;
 /**
  * @covers \Salient\Http\HttpHeaders
  */
-final class HttpHeadersTest extends TestCase implements HasHeader, HasMediaType
+final class HttpHeadersTest extends TestCase implements
+    HasHttpHeader,
+    HasHttpHeaders,
+    HasMediaType
 {
     /**
      * @dataProvider constructorProvider
