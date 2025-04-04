@@ -7,7 +7,7 @@ use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Http\Message\HttpServerRequestInterface;
+use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Stringable;
@@ -15,7 +15,7 @@ use Stringable;
 /**
  * A PSR-7 request (incoming, server-side)
  */
-class HttpServerRequest extends HttpRequest implements HttpServerRequestInterface
+class HttpServerRequest extends HttpRequest implements ServerRequestInterface
 {
     use ImmutableTrait;
 

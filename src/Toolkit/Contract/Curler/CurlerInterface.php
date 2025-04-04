@@ -9,15 +9,14 @@ use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\CredentialInterface;
 use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Contract\Http\HasHeader;
-use Salient\Contract\Http\HasHttpHeaders;
+use Salient\Contract\Http\HasInnerHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
-use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\HttpRequestHandlerInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Http\UriInterface;
 use Closure;
 use InvalidArgumentException;
@@ -30,7 +29,7 @@ use Stringable;
  */
 interface CurlerInterface extends
     PsrClientInterface,
-    HasHttpHeaders,
+    HasInnerHeaders,
     Immutable,
     HasFormDataFlag,
     HasHeader,
@@ -67,7 +66,7 @@ interface CurlerInterface extends
      * Get the last response received from the endpoint or returned by
      * middleware
      */
-    public function getLastResponse(): ?HttpResponseInterface;
+    public function getLastResponse(): ?ResponseInterface;
 
     /**
      * Check if the last response contains JSON-encoded data
@@ -84,7 +83,7 @@ interface CurlerInterface extends
      *
      * @param mixed[]|null $query
      */
-    public function head(?array $query = null): HttpHeadersInterface;
+    public function head(?array $query = null): HeadersInterface;
 
     /**
      * Send a GET request to the endpoint and return the body of the response
@@ -248,12 +247,12 @@ interface CurlerInterface extends
     /**
      * Get request headers
      */
-    public function getHttpHeaders(): HttpHeadersInterface;
+    public function getInnerHeaders(): HeadersInterface;
 
     /**
      * Get request headers that are not considered sensitive
      */
-    public function getPublicHttpHeaders(): HttpHeadersInterface;
+    public function getPublicHeaders(): HeadersInterface;
 
     /**
      * Get an array that maps request header names to values
@@ -341,17 +340,17 @@ interface CurlerInterface extends
     public function withoutHeader(string $name);
 
     /**
-     * Check if the instance has an access token
+     * Check if the instance has a credential
      */
-    public function hasAccessToken(): bool;
+    public function hasCredential(): bool;
 
     /**
-     * Get an instance that applies an access token to request headers
+     * Get an instance that applies a credential to request headers
      *
      * @return static
      */
-    public function withAccessToken(
-        ?AccessTokenInterface $token,
+    public function withCredential(
+        ?CredentialInterface $credential,
         string $headerName = CurlerInterface::HEADER_AUTHORIZATION
     );
 
@@ -492,7 +491,7 @@ interface CurlerInterface extends
      * Get an instance with the given middleware applied to the request handler
      * stack
      *
-     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface $middleware
+     * @param CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface $middleware
      * @return static
      */
     public function withMiddleware($middleware, ?string $name = null);
@@ -500,7 +499,7 @@ interface CurlerInterface extends
     /**
      * Get an instance where the given middleware is not applied to requests
      *
-     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure|string $middleware
+     * @param CurlerMiddlewareInterface|Closure|string $middleware
      * @return static
      */
     public function withoutMiddleware($middleware);

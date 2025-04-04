@@ -6,12 +6,12 @@ use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HasMediaType;
 
-interface HttpMultipartStreamPartInterface extends Immutable, HasMediaType
+interface StreamPartInterface extends Immutable, HasMediaType
 {
     /**
      * Get an instance with the given field name
      */
-    public function withName(string $name): HttpMultipartStreamPartInterface;
+    public function withName(string $name): StreamPartInterface;
 
     /**
      * Get the field name of the part

@@ -11,10 +11,9 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\HttpRequestHandlerInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\CredentialInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Builder;
 use Closure;
 use Stringable;
@@ -22,8 +21,8 @@ use Stringable;
 /**
  * @method $this uri(PsrUriInterface|Stringable|string|null $value) Endpoint URI (cannot have query or fragment components)
  * @method $this headers(Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $value) Request headers
- * @method $this accessToken(AccessTokenInterface|null $value) Access token applied to request headers
- * @method $this accessTokenHeaderName(string $value) Name of access token header (default: `"Authorization"`)
+ * @method $this credential(CredentialInterface|null $value) Credential applied to request headers
+ * @method $this credentialHeaderName(string $value) Name of credential header (default: `"Authorization"`)
  * @method $this sensitiveHeaders(string[] $value) Headers treated as sensitive (default: {@see Curler::HEADERS_SENSITIVE})
  * @method $this mediaType(string|null $value) Media type applied to request headers
  * @method $this userAgent(string|null $value) User agent applied to request headers
@@ -32,7 +31,7 @@ use Stringable;
  * @method $this dateFormatter(DateFormatterInterface|null $value) Date formatter used to format and parse the endpoint's date and time values
  * @method $this formDataFlags(int-mask-of<Curler::PRESERVE_*> $value) Flags used to encode data for query strings and message bodies (default: {@see Curler::PRESERVE_NUMERIC_KEYS} `|` {@see Curler::PRESERVE_STRING_KEYS})
  * @method $this jsonDecodeFlags(int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $value) Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
- * @method $this middleware(array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
+ * @method $this middleware(array<array{CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $value) Middleware applied to the request handler stack
  * @method $this pager(CurlerPagerInterface|null $value) Pagination handler
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
  * @method $this cache(CacheInterface|null $value) Cache to use for cookie and response storage instead of the global cache
@@ -49,7 +48,7 @@ use Stringable;
  * @method $this retryAfterTooManyRequests(bool $value = true) Retry throttled requests when the endpoint returns a "Retry-After" header (default: false)
  * @method $this retryAfterMaxSeconds(int<0,max> $value) Limit the delay between request attempts (`0` = unlimited; default: `300`)
  * @method $this throwHttpErrors(bool $value = true) Throw exceptions for HTTP errors (default: true)
- * @method HttpHeadersInterface head(mixed[]|null $query = null) Send a HEAD request to the endpoint
+ * @method HeadersInterface head(mixed[]|null $query = null) Send a HEAD request to the endpoint
  * @method mixed get(mixed[]|null $query = null) Send a GET request to the endpoint and return the body of the response
  * @method mixed post(mixed[]|object|null $data = null, mixed[]|null $query = null) Send a POST request to the endpoint and return the body of the response
  * @method mixed put(mixed[]|object|null $data = null, mixed[]|null $query = null) Send a PUT request to the endpoint and return the body of the response

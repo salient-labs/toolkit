@@ -3,7 +3,7 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
+use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
@@ -16,7 +16,7 @@ use LogicException;
 /**
  * Part of a PSR-7 multipart data stream
  */
-class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
+class HttpMultipartStreamPart implements StreamPartInterface
 {
     use ImmutableTrait;
 
@@ -146,7 +146,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     /**
      * @inheritDoc
      */
-    public function withName(string $name): HttpMultipartStreamPartInterface
+    public function withName(string $name): StreamPartInterface
     {
         return $this->with('Name', $name);
     }

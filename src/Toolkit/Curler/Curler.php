@@ -18,11 +18,10 @@ use Salient\Contract\Curler\CurlerPageRequestInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\Exception\InvalidHeaderException as InvalidHeaderExceptionInterface;
 use Salient\Contract\Http\Exception\StreamEncapsulationException;
-use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
-use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\HttpRequestHandlerInterface;
+use Salient\Contract\Http\Message\MultipartStreamInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\CredentialInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Http\UriInterface;
 use Salient\Core\Concern\BuildableTrait;
 use Salient\Core\Concern\ImmutableTrait;
@@ -89,9 +88,9 @@ class Curler implements CurlerInterface, Buildable
     ];
 
     protected Uri $Uri;
-    protected HttpHeadersInterface $Headers;
-    protected ?AccessTokenInterface $AccessToken = null;
-    protected string $AccessTokenHeaderName;
+    protected HeadersInterface $Headers;
+    protected ?CredentialInterface $Credential = null;
+    protected string $CredentialHeaderName;
     /** @var array<string,true> */
     protected array $SensitiveHeaders;
     protected ?string $MediaType = null;
@@ -103,7 +102,7 @@ class Curler implements CurlerInterface, Buildable
     protected int $FormDataFlags = Curler::PRESERVE_NUMERIC_KEYS | Curler::PRESERVE_STRING_KEYS;
     /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> */
     protected int $JsonDecodeFlags = \JSON_OBJECT_AS_ARRAY;
-    /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,string|null}> */
+    /** @var array<array{CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,string|null}> */
     protected array $Middleware = [];
     protected ?CurlerPagerInterface $Pager = null;
     protected bool $AlwaysPaginate = false;
@@ -129,7 +128,7 @@ class Curler implements CurlerInterface, Buildable
     // --
 
     protected ?PsrRequestInterface $LastRequest = null;
-    protected ?HttpResponseInterface $LastResponse = null;
+    protected ?ResponseInterface $LastResponse = null;
     private ?Curler $WithoutThrowHttpErrors = null;
     private ?Closure $Closure = null;
 
@@ -165,8 +164,8 @@ class Curler implements CurlerInterface, Buildable
      *
      * @param PsrUriInterface|Stringable|string|null $uri Endpoint URI (cannot have query or fragment components)
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers Request headers
-     * @param AccessTokenInterface|null $accessToken Access token applied to request headers
-     * @param string $accessTokenHeaderName Name of access token header (default: `"Authorization"`)
+     * @param CredentialInterface|null $credential Credential applied to request headers
+     * @param string $credentialHeaderName Name of credential header (default: `"Authorization"`)
      * @param string[] $sensitiveHeaders Headers treated as sensitive (default: {@see Curler::HEADERS_SENSITIVE})
      * @param string|null $mediaType Media type applied to request headers
      * @param string|null $userAgent User agent applied to request headers
@@ -175,7 +174,7 @@ class Curler implements CurlerInterface, Buildable
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
      * @param int-mask-of<Curler::PRESERVE_*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see Curler::PRESERVE_NUMERIC_KEYS} `|` {@see Curler::PRESERVE_STRING_KEYS})
      * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
-     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
+     * @param array<array{CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
      * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
      * @param CacheInterface|null $cache Cache to use for cookie and response storage instead of the global cache
@@ -197,8 +196,8 @@ class Curler implements CurlerInterface, Buildable
     public static function create(
         $uri = null,
         $headers = null,
-        ?AccessTokenInterface $accessToken = null,
-        string $accessTokenHeaderName = Curler::HEADER_AUTHORIZATION,
+        ?CredentialInterface $credential = null,
+        string $credentialHeaderName = Curler::HEADER_AUTHORIZATION,
         array $sensitiveHeaders = Curler::HEADERS_SENSITIVE,
         ?string $mediaType = null,
         ?string $userAgent = null,
@@ -226,9 +225,9 @@ class Curler implements CurlerInterface, Buildable
         bool $throwHttpErrors = true
     ): self {
         $curler = new static($uri, $headers, $sensitiveHeaders);
-        $curler->AccessToken = $accessToken;
-        if ($accessToken !== null) {
-            $curler->AccessTokenHeaderName = $accessTokenHeaderName;
+        $curler->Credential = $credential;
+        if ($credential !== null) {
+            $curler->CredentialHeaderName = $credentialHeaderName;
         }
         $curler->MediaType = $mediaType;
         $curler->UserAgent = $userAgent;
@@ -287,7 +286,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getLastResponse(): ?HttpResponseInterface
+    public function getLastResponse(): ?ResponseInterface
     {
         return $this->LastResponse;
     }
@@ -303,9 +302,9 @@ class Curler implements CurlerInterface, Buildable
         return $this->responseIsJson($this->LastResponse);
     }
 
-    private function responseIsJson(HttpResponseInterface $response): bool
+    private function responseIsJson(ResponseInterface $response): bool
     {
-        $headers = $response->getHttpHeaders();
+        $headers = $response->getInnerHeaders();
         if (!$headers->hasHeader(self::HEADER_CONTENT_TYPE)) {
             return $this->ExpectJson;
         }
@@ -323,7 +322,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function head(?array $query = null): HttpHeadersInterface
+    public function head(?array $query = null): HeadersInterface
     {
         return $this->process(self::METHOD_HEAD, $query);
     }
@@ -371,7 +370,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @param mixed[]|null $query
      * @param mixed[]|object|false|null $data
-     * @return ($method is self::METHOD_HEAD ? HttpHeadersInterface : mixed)
+     * @return ($method is self::METHOD_HEAD ? HeadersInterface : mixed)
      */
     private function process(string $method, ?array $query, $data = false)
     {
@@ -386,7 +385,7 @@ class Curler implements CurlerInterface, Buildable
         }
         $response = $this->doSendRequest($request);
         if ($method === self::METHOD_HEAD) {
-            return $response->getHttpHeaders();
+            return $response->getInnerHeaders();
         }
         $result = $this->getResponseBody($response);
         if ($pager) {
@@ -550,11 +549,11 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getHttpHeaders(): HttpHeadersInterface
+    public function getInnerHeaders(): HeadersInterface
     {
         $headers = $this->Headers;
-        if ($this->AccessToken !== null) {
-            $headers = $headers->authorize($this->AccessToken, $this->AccessTokenHeaderName);
+        if ($this->Credential !== null) {
+            $headers = $headers->authorize($this->Credential, $this->CredentialHeaderName);
         }
         if ($this->MediaType !== null) {
             $headers = $headers->set(self::HEADER_CONTENT_TYPE, $this->MediaType);
@@ -577,21 +576,21 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getPublicHttpHeaders(): HttpHeadersInterface
+    public function getPublicHeaders(): HeadersInterface
     {
         $sensitive = $this->SensitiveHeaders;
-        if ($this->AccessToken !== null) {
-            $sensitive[Str::lower($this->AccessTokenHeaderName)] = true;
+        if ($this->Credential !== null) {
+            $sensitive[Str::lower($this->CredentialHeaderName)] = true;
         }
-        return $this->getHttpHeaders()->exceptIn($sensitive);
+        return $this->getInnerHeaders()->exceptIn($sensitive);
     }
 
     /**
      * @inheritDoc
      */
-    public function hasAccessToken(): bool
+    public function hasCredential(): bool
     {
-        return $this->AccessToken !== null;
+        return $this->Credential !== null;
     }
 
     /**
@@ -790,16 +789,16 @@ class Curler implements CurlerInterface, Buildable
         $curler = $this->withUri($request->getUri());
 
         $headers = HttpHeaders::from($request);
-        $_headers = $this->getHttpHeaders();
+        $_headers = $this->getInnerHeaders();
         if (Arr::same($headers->all(), $_headers->all())) {
             return $curler;
         }
 
-        if ($this->AccessToken !== null) {
-            $header = $headers->getHeader($this->AccessTokenHeaderName);
-            $_header = $_headers->getHeader($this->AccessTokenHeaderName);
+        if ($this->Credential !== null) {
+            $header = $headers->getHeader($this->CredentialHeaderName);
+            $_header = $_headers->getHeader($this->CredentialHeaderName);
             if ($header !== $_header) {
-                $curler = $curler->withAccessToken(null);
+                $curler = $curler->withCredential(null);
             }
         }
 
@@ -819,17 +818,17 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withAccessToken(
-        ?AccessTokenInterface $token,
+    public function withCredential(
+        ?CredentialInterface $credential,
         string $headerName = Curler::HEADER_AUTHORIZATION
     ) {
-        return $token === null
+        return $credential === null
             ? $this
-                ->with('AccessToken', null)
-                ->without('AccessTokenHeaderName')
+                ->with('Credential', null)
+                ->without('CredentialHeaderName')
             : $this
-                ->with('AccessToken', $token)
-                ->with('AccessTokenHeaderName', $headerName);
+                ->with('Credential', $credential)
+                ->with('CredentialHeaderName', $headerName);
     }
 
     /**
@@ -1063,7 +1062,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function sendRequest(PsrRequestInterface $request): HttpResponseInterface
+    public function sendRequest(PsrRequestInterface $request): ResponseInterface
     {
         // PSR-18: "A Client MUST NOT treat a well-formed HTTP request or HTTP
         // response as an error condition. For example, response status codes in
@@ -1092,7 +1091,7 @@ class Curler implements CurlerInterface, Buildable
      * @phpstan-assert !null $this->LastRequest
      * @phpstan-assert !null $this->LastResponse
      */
-    private function doSendRequest(PsrRequestInterface $request): HttpResponseInterface
+    private function doSendRequest(PsrRequestInterface $request): ResponseInterface
     {
         $this->LastRequest = null;
         $this->LastResponse = null;
@@ -1102,26 +1101,23 @@ class Curler implements CurlerInterface, Buildable
     }
 
     /**
-     * @return Closure(PsrRequestInterface): HttpResponseInterface
+     * @return Closure(PsrRequestInterface): ResponseInterface
      */
     private function getClosure(): Closure
     {
-        $closure = fn(PsrRequestInterface $request): HttpResponseInterface =>
+        $closure = fn(PsrRequestInterface $request): ResponseInterface =>
             $this->getResponse($request);
         foreach (array_reverse($this->Middleware) as [$middleware]) {
             $closure = $middleware instanceof CurlerMiddlewareInterface
-                ? fn(PsrRequestInterface $request): HttpResponseInterface =>
+                ? fn(PsrRequestInterface $request): ResponseInterface =>
                     $this->handleHttpResponse($middleware($request, $closure, $this), $request)
-                : ($middleware instanceof HttpRequestHandlerInterface
-                    ? fn(PsrRequestInterface $request): HttpResponseInterface =>
-                        $this->handleResponse($middleware($request, $closure), $request)
-                    : fn(PsrRequestInterface $request): HttpResponseInterface =>
-                        $this->handleResponse($middleware($request, $closure, $this), $request));
+                : fn(PsrRequestInterface $request): ResponseInterface =>
+                    $this->handleResponse($middleware($request, $closure, $this), $request);
         }
         return $closure;
     }
 
-    private function getResponse(PsrRequestInterface $request): HttpResponseInterface
+    private function getResponse(PsrRequestInterface $request): ResponseInterface
     {
         $uri = $request->getUri()->withFragment('');
         $request = $request->withUri($uri);
@@ -1484,7 +1480,7 @@ class Curler implements CurlerInterface, Buildable
         if ($query) {
             $uri = $this->replaceQuery($uri, $query);
         }
-        $headers = $this->getHttpHeaders();
+        $headers = $this->getInnerHeaders();
         $request = new HttpRequest($method, $uri, null, $headers);
         return $data !== false
             ? $this->applyData($request, $data)
@@ -1521,7 +1517,7 @@ class Curler implements CurlerInterface, Buildable
             }
         }
         $body ??= HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter);
-        $mediaType ??= $body instanceof HttpMultipartStreamInterface
+        $mediaType ??= $body instanceof MultipartStreamInterface
             ? self::TYPE_FORM_MULTIPART
             : self::TYPE_FORM;
         return $request
@@ -1532,7 +1528,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @return mixed
      */
-    private function getResponseBody(HttpResponseInterface $response)
+    private function getResponseBody(ResponseInterface $response)
     {
         $body = (string) $response->getBody();
         return $this->responseIsJson($response)
@@ -1545,9 +1541,9 @@ class Curler implements CurlerInterface, Buildable
     private function handleResponse(
         PsrResponseInterface $response,
         PsrRequestInterface $request
-    ): HttpResponseInterface {
+    ): ResponseInterface {
         return $this->handleHttpResponse(
-            $response instanceof HttpResponseInterface
+            $response instanceof ResponseInterface
                 ? $response
                 : HttpResponse::fromPsr7($response),
             $request,
@@ -1555,9 +1551,9 @@ class Curler implements CurlerInterface, Buildable
     }
 
     private function handleHttpResponse(
-        HttpResponseInterface $response,
+        ResponseInterface $response,
         PsrRequestInterface $request
-    ): HttpResponseInterface {
+    ): ResponseInterface {
         $this->LastRequest = $request;
         $this->LastResponse = $response;
         return $response;
@@ -1586,9 +1582,9 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
-    private function filterHeaders($headers): HttpHeadersInterface
+    private function filterHeaders($headers): HeadersInterface
     {
-        if ($headers instanceof HttpHeadersInterface) {
+        if ($headers instanceof HeadersInterface) {
             return $headers;
         }
         return new HttpHeaders($headers ?? []);

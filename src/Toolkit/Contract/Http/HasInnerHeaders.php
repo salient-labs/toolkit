@@ -7,12 +7,12 @@ use Salient\Contract\Core\Immutable;
 /**
  * @internal
  */
-interface HasHttpHeaders extends HasHeaders, Immutable
+interface HasInnerHeaders extends HasHeaders, Immutable
 {
     /**
-     * Get the object's underlying HTTP headers
+     * Get inner headers
      */
-    public function getHttpHeaders(): HttpHeadersInterface;
+    public function getInnerHeaders(): HeadersInterface;
 
     /**
      * Get an instance with a value applied to a header, replacing any existing

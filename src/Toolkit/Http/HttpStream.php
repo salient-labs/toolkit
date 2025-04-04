@@ -4,8 +4,8 @@ namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
-use Salient\Contract\Http\Message\HttpStreamInterface;
+use Salient\Contract\Http\Message\StreamInterface;
+use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
@@ -19,7 +19,7 @@ use InvalidArgumentException;
 /**
  * A PSR-7 stream wrapper
  */
-class HttpStream implements HttpStreamInterface, HasFormDataFlag
+class HttpStream implements StreamInterface, HasFormDataFlag
 {
     protected const CHUNK_SIZE = 8192;
 
@@ -77,11 +77,11 @@ class HttpStream implements HttpStreamInterface, HasFormDataFlag
         ?DateFormatterInterface $dateFormatter = null,
         bool $asJson = false,
         ?string $boundary = null
-    ): HttpStreamInterface {
+    ): StreamInterface {
         $formData = new FormData($data);
         if ($asJson) {
             $callback = static function (object $value) {
-                if ($value instanceof HttpMultipartStreamPartInterface) {
+                if ($value instanceof StreamPartInterface) {
                     throw new StreamEncapsulationException('Multipart data streams cannot be JSON-encoded');
                 }
                 return false;
@@ -92,7 +92,7 @@ class HttpStream implements HttpStreamInterface, HasFormDataFlag
 
         $multipart = false;
         $callback = static function (object $value) use (&$multipart) {
-            if ($value instanceof HttpMultipartStreamPartInterface) {
+            if ($value instanceof StreamPartInterface) {
                 $multipart = true;
                 return $value;
             }
@@ -108,9 +108,9 @@ class HttpStream implements HttpStreamInterface, HasFormDataFlag
             return self::fromString(implode('&', $query ?? []));
         }
 
-        /** @var string|HttpMultipartStreamPartInterface $content */
+        /** @var string|StreamPartInterface $content */
         foreach ($data as [$name, $content]) {
-            if ($content instanceof HttpMultipartStreamPartInterface) {
+            if ($content instanceof StreamPartInterface) {
                 $parts[] = $content->withName($name);
             } else {
                 $parts[] = new HttpMultipartStreamPart($content, $name);

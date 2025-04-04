@@ -6,7 +6,7 @@ use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
@@ -16,7 +16,7 @@ use InvalidArgumentException;
 /**
  * A PSR-7 response
  */
-class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
+class HttpResponse extends AbstractHttpMessage implements ResponseInterface
 {
     use ImmutableTrait;
 

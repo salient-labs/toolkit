@@ -6,7 +6,7 @@ use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
@@ -21,7 +21,7 @@ use Closure;
  * @method $this operations(array<OP::*> $value) Supported sync operations
  * @method $this path(string[]|string|null $value) Path or paths to the endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
- * @method $this headers(?HttpHeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
+ * @method $this headers(?HeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?CurlerPagerInterface $value) Pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) Callback applied to the definition before each sync operation (see {@see HttpSyncDefinition::$Callback})

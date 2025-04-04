@@ -2,8 +2,8 @@
 
 namespace Salient\Http;
 
-use Salient\Contract\Http\HasHttpHeaders as HasHttpHeadersInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HasInnerHeaders as HasHttpHeadersInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 
 /**
@@ -15,12 +15,12 @@ trait HasHttpHeaders
 {
     use ImmutableTrait;
 
-    protected HttpHeadersInterface $Headers;
+    protected HeadersInterface $Headers;
 
     /**
      * @inheritDoc
      */
-    public function getHttpHeaders(): HttpHeadersInterface
+    public function getInnerHeaders(): HeadersInterface
     {
         return $this->Headers;
     }

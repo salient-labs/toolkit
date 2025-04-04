@@ -10,7 +10,7 @@ use Stringable;
 /**
  * @extends CollectionInterface<string,string[]>
  */
-interface HttpHeadersInterface extends
+interface HeadersInterface extends
     CollectionInterface,
     HasHeaders,
     Immutable,
@@ -27,10 +27,9 @@ interface HttpHeadersInterface extends
      *
      * This method should be called once per HTTP header line. Each line must
      * have a trailing CRLF. If an empty line (`"\r\n"`) is given,
-     * {@see HttpHeadersInterface::hasLastLine()} returns `true` and subsequent
-     * headers applied via {@see HttpHeadersInterface::addLine()} are flagged as
-     * trailers. Methods other than {@see HttpHeadersInterface::trailers()} and
-     * {@see HttpHeadersInterface::withoutTrailers()} make no distinction
+     * {@see hasLastLine()} returns `true` and subsequent headers applied via
+     * {@see addLine()} are flagged as trailers. Methods other than
+     * {@see trailers()} and {@see withoutTrailers()} make no distinction
      * between trailers and other headers.
      *
      * @param bool $strict If `true`, throw an exception if `$line` is not
@@ -79,8 +78,8 @@ interface HttpHeadersInterface extends
      * @return static
      */
     public function authorize(
-        AccessTokenInterface $token,
-        string $headerName = HttpHeadersInterface::HEADER_AUTHORIZATION
+        CredentialInterface $credential,
+        string $headerName = HeadersInterface::HEADER_AUTHORIZATION
     );
 
     /**

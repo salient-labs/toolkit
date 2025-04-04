@@ -12,7 +12,7 @@ use Salient\Contract\Curler\Exception\HttpErrorException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\HasRequestMethod;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
@@ -60,7 +60,7 @@ use UnexpectedValueException;
  *
  * @property-read string[]|string|null $Path Path or paths to the endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
- * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
+ * @property-read HeadersInterface|null $Headers HTTP headers applied to the sync operation request
  * @property-read CurlerPagerInterface|null $Pager Pagination handler for the endpoint servicing the entity
  * @property-read bool $AlwaysPaginate Use the pager to process requests even if no pagination is required
  * @property-read int<-1,max>|null $Expiry Seconds before cached responses expire
@@ -147,7 +147,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * {@see HttpSyncDefinition::withHeaders()} or
      * {@see HttpSyncDefinition::$Callback}.
      */
-    protected ?HttpHeadersInterface $Headers;
+    protected ?HeadersInterface $Headers;
 
     /**
      * Pagination handler for the endpoint servicing the entity
@@ -256,7 +256,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         array $operations = [],
         $path = null,
         ?array $query = null,
-        ?HttpHeadersInterface $headers = null,
+        ?HeadersInterface $headers = null,
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
         ?callable $callback = null,
@@ -332,7 +332,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *
      * @return static
      */
-    public function withHeaders(?HttpHeadersInterface $headers)
+    public function withHeaders(?HeadersInterface $headers)
     {
         return $this->with('Headers', $headers);
     }

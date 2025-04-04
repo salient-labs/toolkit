@@ -12,7 +12,7 @@ use Salient\Contract\Curler\Exception\TooManyRedirectsException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
@@ -212,7 +212,7 @@ EOF,
                 function (
                     $data,
                     PsrRequestInterface $request,
-                    HttpResponseInterface $response,
+                    ResponseInterface $response,
                     CurlerInterface $curler,
                     ?CurlerPageInterface $previousPage = null,
                     ?array $query = null

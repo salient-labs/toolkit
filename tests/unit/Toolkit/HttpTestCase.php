@@ -2,7 +2,7 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
@@ -98,7 +98,7 @@ abstract class HttpTestCase extends TestCase implements
     }
 
     /**
-     * @param HttpResponseInterface|string ...$responses
+     * @param ResponseInterface|string ...$responses
      */
     protected function startHttpServer(...$responses): Process
     {
@@ -170,12 +170,12 @@ abstract class HttpTestCase extends TestCase implements
     }
 
     /**
-     * @param HttpResponseInterface|string $response
+     * @param ResponseInterface|string $response
      */
     private function filterResponse($response): string
     {
         if (
-            $response instanceof HttpResponseInterface
+            $response instanceof ResponseInterface
             && !$response->hasHeader(self::HEADER_CONTENT_LENGTH)
             && ($size = $response->getBody()->getSize()) !== null
         ) {

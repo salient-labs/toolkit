@@ -5,8 +5,8 @@ namespace Salient\Http;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
-use Salient\Contract\Http\Message\HttpResponseInterface;
-use Salient\Contract\Http\Message\HttpServerRequestInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Concern\ImmutableTrait;
@@ -265,7 +265,7 @@ class HttpServer implements Immutable, HasHeader, HasRequestMethod
      *
      * @template T
      *
-     * @param callable(HttpServerRequestInterface $request, bool &$continue, T|null &$return): PsrResponseInterface $callback Receives
+     * @param callable(ServerRequestInterface $request, bool &$continue, T|null &$return): PsrResponseInterface $callback Receives
      * an {@see HttpServerRequestInterface} and returns a
      * {@see PsrResponseInterface}. May also set `$continue = true` to make
      * {@see HttpServer::listen()} wait for another request, or pass a value
@@ -466,7 +466,7 @@ class HttpServer implements Immutable, HasHeader, HasRequestMethod
                 $response = $callback($request, $continue, $return);
             } finally {
                 $response = $response instanceof PsrResponseInterface
-                    ? ($response instanceof HttpResponseInterface
+                    ? ($response instanceof ResponseInterface
                         ? $response
                         : HttpResponse::fromPsr7($response))
                     : new HttpResponse(500, 'Internal server error');

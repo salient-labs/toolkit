@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
-use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 
 /**
  * @api
@@ -18,5 +18,5 @@ interface ResponseException extends CurlerException
     /**
      * Get the response associated with the exception
      */
-    public function getResponse(): HttpResponseInterface;
+    public function getResponse(): ResponseInterface;
 }

@@ -5,8 +5,8 @@ namespace Salient\Contract\Http\Message;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Http\HasRequestMethod;
 
-interface HttpRequestInterface extends
-    HttpMessageInterface,
+interface RequestInterface extends
+    MessageInterface,
     PsrRequestInterface,
     HasRequestMethod
 {

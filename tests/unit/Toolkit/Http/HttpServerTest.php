@@ -2,8 +2,8 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Http\Message\HttpResponseInterface as ResponseInterface;
-use Salient\Contract\Http\Message\HttpServerRequestInterface as ServerRequest;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Contract\Http\HasHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
@@ -93,9 +93,9 @@ final class HttpServerTest extends TestCase implements HasHeader, HasMediaType, 
         $server = $this->getServerWithClient($client);
         $this->assertTrue($server->isRunning());
 
-        /** @var ServerRequest */
+        /** @var ServerRequestInterface */
         $request = $server->listen(
-            function (ServerRequest $request, bool &$continue, &$return): ResponseInterface {
+            function (ServerRequestInterface $request, bool &$continue, &$return): ResponseInterface {
                 $return = $request;
                 return new Response(
                     200,
@@ -105,7 +105,7 @@ final class HttpServerTest extends TestCase implements HasHeader, HasMediaType, 
             },
         );
         $this->assertSame(0, $client->wait());
-        $this->assertInstanceOf(ServerRequest::class, $request);
+        $this->assertInstanceOf(ServerRequestInterface::class, $request);
         $this->assertSame(self::METHOD_GET, $request->getMethod());
         $this->assertSame('/', $request->getRequestTarget());
         $this->assertSame([

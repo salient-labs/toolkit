@@ -119,7 +119,7 @@ final class HttpRequestTest extends TestCase implements HasHeader
             'Host' => ['example.com'],
             'User-Agent' => [self::USER_AGENT],
         ], $r->getHeaders());
-        $this->assertSame($headers, $r->getHttpHeaders()->getHeaders());
+        $this->assertSame($headers, $r->getInnerHeaders()->getHeaders());
         $this->assertSame([
             'method' => 'GET',
             'url' => 'https://example.com/',

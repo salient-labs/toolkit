@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
+use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStream;
 use Salient\Http\HttpMultipartStreamPart;
@@ -178,7 +178,7 @@ final class HttpMultipartStreamTest extends TestCase
         $this->assertSame($headers, $request->getHttpPayload(true));
     }
 
-    private function getStream(HttpMultipartStreamPartInterface ...$streams): HttpMultipartStream
+    private function getStream(StreamPartInterface ...$streams): HttpMultipartStream
     {
         $handle = Str::toStream('value1');
         $this->LastHandle = $handle;

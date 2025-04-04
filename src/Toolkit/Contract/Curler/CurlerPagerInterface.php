@@ -3,7 +3,7 @@
 namespace Salient\Contract\Curler;
 
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
-use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Contract\Http\HasHeader;
 
 /**
@@ -42,7 +42,7 @@ interface CurlerPagerInterface extends HasHeader
     public function getPage(
         $data,
         PsrRequestInterface $request,
-        HttpResponseInterface $response,
+        ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
         ?array $query = null

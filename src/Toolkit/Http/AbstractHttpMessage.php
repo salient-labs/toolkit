@@ -5,9 +5,9 @@ namespace Salient\Http;
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Http\Message\HttpMessageInterface;
-use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\Message\MessageInterface;
+use Salient\Contract\Http\Message\MultipartStreamInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
@@ -16,13 +16,13 @@ use InvalidArgumentException;
 /**
  * Base class for PSR-7 HTTP message classes
  */
-abstract class AbstractHttpMessage implements HttpMessageInterface
+abstract class AbstractHttpMessage implements MessageInterface
 {
     use HasHttpHeaders;
     use ImmutableTrait;
 
     protected string $ProtocolVersion;
-    protected HttpHeadersInterface $Headers;
+    protected HeadersInterface $Headers;
     protected PsrStreamInterface $Body;
 
     /**
@@ -110,9 +110,9 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     /**
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
-    private function filterHeaders($headers): HttpHeadersInterface
+    private function filterHeaders($headers): HeadersInterface
     {
-        if ($headers instanceof HttpHeadersInterface) {
+        if ($headers instanceof HeadersInterface) {
             return $headers;
         }
         return new HttpHeaders($headers ?? []);
@@ -146,7 +146,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
      */
     private function maybeSetContentType(): self
     {
-        if ($this->Body instanceof HttpMultipartStreamInterface) {
+        if ($this->Body instanceof MultipartStreamInterface) {
             $this->Headers = $this->Headers->set(
                 self::HEADER_CONTENT_TYPE,
                 sprintf(

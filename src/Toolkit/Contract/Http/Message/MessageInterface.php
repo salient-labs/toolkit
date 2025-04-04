@@ -8,16 +8,16 @@ use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HasHeader;
-use Salient\Contract\Http\HasHttpHeaders;
+use Salient\Contract\Http\HasInnerHeaders;
 use Salient\Contract\Http\HasMediaType;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HeadersInterface;
 use InvalidArgumentException;
 use JsonSerializable;
 use Stringable;
 
-interface HttpMessageInterface extends
+interface MessageInterface extends
     PsrMessageInterface,
-    HasHttpHeaders,
+    HasInnerHeaders,
     Stringable,
     JsonSerializable,
     Immutable,
@@ -30,17 +30,17 @@ interface HttpMessageInterface extends
      * @template T of PsrMessageInterface
      *
      * @param T $message
-     * @return T&HttpMessageInterface
+     * @return T&MessageInterface
      * @throws InvalidArgumentException if the class cannot be instantiated from
      * `$message`, e.g. if the class implements {@see PsrRequestInterface} and
      * `$message` is a {@see PsrResponseInterface}.
      */
-    public static function fromPsr7(PsrMessageInterface $message): HttpMessageInterface;
+    public static function fromPsr7(PsrMessageInterface $message): MessageInterface;
 
     /**
      * Get message headers
      */
-    public function getHttpHeaders(): HttpHeadersInterface;
+    public function getInnerHeaders(): HeadersInterface;
 
     /**
      * Get an array that maps lowercase message header names to comma-separated

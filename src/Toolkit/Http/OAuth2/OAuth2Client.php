@@ -6,7 +6,7 @@ use Firebase\JWT\JWK;
 use Firebase\JWT\JWT;
 use Firebase\JWT\SignatureInvalidException;
 use League\OAuth2\Client\Provider\AbstractProvider;
-use Salient\Contract\Http\Message\HttpServerRequestInterface;
+use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Curler\Curler;
@@ -314,7 +314,7 @@ abstract class OAuth2Client
             Console::log('Follow the link to authorize access:', "\n$url");
             Console::info('Waiting for authorization');
             $code = $this->Listener->listen(
-                fn(HttpServerRequestInterface $request, bool &$continue, &$return): HttpResponse =>
+                fn(ServerRequestInterface $request, bool &$continue, &$return): HttpResponse =>
                     $this->receiveAuthorizationCode($request, $continue, $return)
             );
         } finally {
@@ -335,10 +335,10 @@ abstract class OAuth2Client
     /**
      * @param mixed $return
      */
-    private function receiveAuthorizationCode(HttpServerRequestInterface $request, bool &$continue, &$return): HttpResponse
+    private function receiveAuthorizationCode(ServerRequestInterface $request, bool &$continue, &$return): HttpResponse
     {
         if (
-            Str::upper($request->getMethod()) !== HttpServerRequestInterface::METHOD_GET
+            Str::upper($request->getMethod()) !== ServerRequestInterface::METHOD_GET
             || $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;

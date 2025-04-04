@@ -3,8 +3,8 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
-use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
+use Salient\Contract\Http\Message\MultipartStreamInterface;
+use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Http\Exception\StreamException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Utility\Regex;
@@ -14,7 +14,7 @@ use Throwable;
 /**
  * A PSR-7 multipart data stream wrapper
  */
-class HttpMultipartStream implements HttpMultipartStreamInterface
+class HttpMultipartStream implements MultipartStreamInterface
 {
     protected const CHUNK_SIZE = 8192;
 
@@ -26,7 +26,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     protected int $Pos = 0;
 
     /**
-     * @param HttpMultipartStreamPartInterface[] $parts
+     * @param StreamPartInterface[] $parts
      */
     public function __construct(array $parts = [], ?string $boundary = null)
     {
@@ -35,7 +35,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
     }
 
     /**
-     * @param HttpMultipartStreamPartInterface[] $parts
+     * @param StreamPartInterface[] $parts
      */
     private function applyParts(array $parts): void
     {

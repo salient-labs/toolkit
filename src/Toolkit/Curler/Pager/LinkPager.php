@@ -6,7 +6,7 @@ use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\Message\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Curler\CurlerPage;
 use Salient\Curler\CurlerPageRequest;
 use Salient\Http\HttpUtil;
@@ -72,7 +72,7 @@ final class LinkPager implements CurlerPagerInterface
     public function getPage(
         $data,
         PsrRequestInterface $request,
-        HttpResponseInterface $response,
+        ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
         ?array $query = null

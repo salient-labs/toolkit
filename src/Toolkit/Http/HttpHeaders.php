@@ -7,9 +7,9 @@ use Salient\Collection\ReadOnlyArrayAccessTrait;
 use Salient\Collection\ReadOnlyCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
-use Salient\Contract\Http\Message\HttpMessageInterface;
-use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\Message\MessageInterface;
+use Salient\Contract\Http\CredentialInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Utility\Arr;
@@ -28,7 +28,7 @@ use LogicException;
  *
  * @implements IteratorAggregate<string,string[]>
  */
-class HttpHeaders implements HttpHeadersInterface, IteratorAggregate
+class HttpHeaders implements HeadersInterface, IteratorAggregate
 {
     /** @use ReadOnlyCollectionTrait<string,string[]> */
     use ReadOnlyCollectionTrait;
@@ -107,8 +107,8 @@ REGEX;
         if ($value instanceof static) {
             return $value;
         }
-        if ($value instanceof HttpMessageInterface) {
-            return self::from($value->getHttpHeaders());
+        if ($value instanceof MessageInterface) {
+            return self::from($value->getInnerHeaders());
         }
         if ($value instanceof PsrMessageInterface) {
             return new static($value->getHeaders());
@@ -473,13 +473,14 @@ REGEX;
      * @inheritDoc
      */
     public function authorize(
-        AccessTokenInterface $token,
+        CredentialInterface $credential,
         string $headerName = HttpHeaders::HEADER_AUTHORIZATION
     ) {
-        return $this->set(
-            $headerName,
-            sprintf('%s %s', $token->getTokenType(), $token->getToken())
-        );
+        return $this->set($headerName, sprintf(
+            '%s %s',
+            $credential->getAuthenticationScheme(),
+            $credential->getCredential(),
+        ));
     }
 
     /**
