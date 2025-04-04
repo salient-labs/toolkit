@@ -4,18 +4,16 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
-use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
-use Stringable;
 
 /**
  * A PSR-7 request (incoming, server-side)
+ *
+ * @extends AbstractHttpRequest<PsrServerRequestInterface>
  */
-class HttpServerRequest extends HttpRequest implements ServerRequestInterface
+class HttpServerRequest extends AbstractHttpRequest implements ServerRequestInterface
 {
     use ImmutableTrait;
 
@@ -33,12 +31,9 @@ class HttpServerRequest extends HttpRequest implements ServerRequestInterface
     protected array $Attributes = [];
 
     /**
-     * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $serverParams
-     * @param PsrStreamInterface|resource|string|null $body
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
-    public function __construct(
+    final public function __construct(
         string $method,
         $uri,
         array $serverParams = [],
@@ -57,18 +52,14 @@ class HttpServerRequest extends HttpRequest implements ServerRequestInterface
      */
     public static function fromPsr7(PsrMessageInterface $message): HttpServerRequest
     {
-        if ($message instanceof HttpServerRequest) {
+        if ($message instanceof static) {
             return $message;
-        }
-
-        if (!$message instanceof PsrServerRequestInterface) {
-            throw new InvalidArgumentTypeException(1, 'message', PsrServerRequestInterface::class, $message);
         }
 
         /** @var array<string,mixed> */
         $attributes = $message->getAttributes();
 
-        return (new self(
+        return (new static(
             $message->getMethod(),
             $message->getUri(),
             $message->getServerParams(),

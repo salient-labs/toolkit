@@ -2,26 +2,23 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
-use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\RequestInterface;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
 use Stringable;
 
 /**
- * A PSR-7 request (outgoing, client-side)
+ * @template TPsr7 of PsrRequestInterface
+ *
+ * @extends AbstractHttpMessage<TPsr7>
+ * @implements RequestInterface<TPsr7>
  */
-class HttpRequest extends AbstractHttpMessage implements RequestInterface
+abstract class AbstractHttpRequest extends AbstractHttpMessage implements RequestInterface
 {
     use ImmutableTrait;
-
-    private const TOKEN = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
 
     protected string $Method;
     protected ?string $RequestTarget;
@@ -29,8 +26,6 @@ class HttpRequest extends AbstractHttpMessage implements RequestInterface
 
     /**
      * @param PsrUriInterface|Stringable|string $uri
-     * @param PsrStreamInterface|resource|string|null $body
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
         string $method,
@@ -59,29 +54,6 @@ class HttpRequest extends AbstractHttpMessage implements RequestInterface
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(PsrMessageInterface $message): HttpRequest
-    {
-        if ($message instanceof HttpRequest) {
-            return $message;
-        }
-
-        if (!$message instanceof PsrRequestInterface) {
-            throw new InvalidArgumentTypeException(1, 'message', PsrRequestInterface::class, $message);
-        }
-
-        return new self(
-            $message->getMethod(),
-            $message->getUri(),
-            $message->getBody(),
-            $message->getHeaders(),
-            $message->getRequestTarget(),
-            $message->getProtocolVersion(),
-        );
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getMethod(): string
     {
         return $this->Method;
@@ -103,7 +75,7 @@ class HttpRequest extends AbstractHttpMessage implements RequestInterface
 
         $query = $this->Uri->getComponents()['query'] ?? null;
         if ($query !== null) {
-            return "{$target}?{$query}";
+            return "$target?$query";
         }
 
         return $target;
@@ -231,7 +203,7 @@ class HttpRequest extends AbstractHttpMessage implements RequestInterface
 
     private function filterMethod(string $method): string
     {
-        if (!Regex::match(self::TOKEN, $method)) {
+        if (!Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $method)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid HTTP method: %s', $method)
             );
@@ -258,6 +230,7 @@ class HttpRequest extends AbstractHttpMessage implements RequestInterface
             return $requestTarget;
         }
 
+        /** @var array<string,string|int>|false */
         $parts = Uri::parse($requestTarget);
         if ($parts === false) {
             throw new InvalidArgumentException(

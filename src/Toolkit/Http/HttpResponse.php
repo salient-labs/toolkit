@@ -4,17 +4,16 @@ namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
-use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
 use Salient\Utility\Str;
 use InvalidArgumentException;
 
 /**
  * A PSR-7 response
+ *
+ * @extends AbstractHttpMessage<PsrResponseInterface>
  */
 class HttpResponse extends AbstractHttpMessage implements ResponseInterface
 {
@@ -87,11 +86,7 @@ class HttpResponse extends AbstractHttpMessage implements ResponseInterface
     protected int $StatusCode;
     protected ?string $ReasonPhrase;
 
-    /**
-     * @param PsrStreamInterface|resource|string|null $body
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
-     */
-    public function __construct(
+    final public function __construct(
         int $code = 200,
         $body = null,
         $headers = null,
@@ -109,21 +104,15 @@ class HttpResponse extends AbstractHttpMessage implements ResponseInterface
      */
     public static function fromPsr7(PsrMessageInterface $message): HttpResponse
     {
-        if ($message instanceof HttpResponse) {
-            return $message;
-        }
-
-        if (!$message instanceof PsrResponseInterface) {
-            throw new InvalidArgumentTypeException(1, 'message', PsrResponseInterface::class, $message);
-        }
-
-        return new self(
-            $message->getStatusCode(),
-            $message->getBody(),
-            $message->getHeaders(),
-            $message->getReasonPhrase(),
-            $message->getProtocolVersion(),
-        );
+        return $message instanceof static
+            ? $message
+            : new static(
+                $message->getStatusCode(),
+                $message->getBody(),
+                $message->getHeaders(),
+                $message->getReasonPhrase(),
+                $message->getProtocolVersion(),
+            );
     }
 
     /**

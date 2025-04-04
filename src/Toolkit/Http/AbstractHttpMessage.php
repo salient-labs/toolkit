@@ -15,6 +15,10 @@ use InvalidArgumentException;
 
 /**
  * Base class for PSR-7 HTTP message classes
+ *
+ * @template TPsr7 of PsrMessageInterface
+ *
+ * @implements MessageInterface<TPsr7>
  */
 abstract class AbstractHttpMessage implements MessageInterface
 {
@@ -60,23 +64,6 @@ abstract class AbstractHttpMessage implements MessageInterface
     public function getBody(): PsrStreamInterface
     {
         return $this->Body;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function getHttpPayload(bool $withoutBody = false): string
-    {
-        $message = implode("\r\n", [
-            $this->getStartLine(),
-            (string) $this->Headers,
-            '',
-            '',
-        ]);
-
-        return $withoutBody
-            ? $message
-            : $message . $this->Body;
     }
 
     /**
@@ -164,7 +151,12 @@ abstract class AbstractHttpMessage implements MessageInterface
      */
     public function __toString(): string
     {
-        return $this->getHttpPayload();
+        return implode("\r\n", [
+            $this->getStartLine(),
+            (string) $this->Headers,
+            '',
+            '',
+        ]) . $this->Body;
     }
 
     /**
@@ -176,7 +168,7 @@ abstract class AbstractHttpMessage implements MessageInterface
             'httpVersion' => sprintf('HTTP/%s', $this->ProtocolVersion),
             'cookies' => [],
             'headers' => $this->Headers->jsonSerialize(),
-            'headersSize' => strlen($this->getHttpPayload(true)),
+            'headersSize' => strlen((string) $this->withBody(null)),
             'bodySize' => $this->Body->getSize() ?? -1,
         ];
     }
