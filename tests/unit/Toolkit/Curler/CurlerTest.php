@@ -3,7 +3,7 @@
 namespace Salient\Tests\Curler;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Exception\CurlErrorException;
@@ -211,7 +211,7 @@ EOF,
             ->willReturnCallback(
                 function (
                     $data,
-                    RequestInterface $request,
+                    PsrRequestInterface $request,
                     HttpResponseInterface $response,
                     CurlerInterface $curler,
                     ?CurlerPageInterface $previousPage = null,

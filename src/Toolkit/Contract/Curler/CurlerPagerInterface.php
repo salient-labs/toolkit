@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Contract\Http\HasHeader;
 
@@ -20,10 +20,10 @@ interface CurlerPagerInterface extends HasHeader
      * to {@see CurlerPagerInterface::getPage()} in array form.
      *
      * @param mixed[]|null $query The query applied to `$request`.
-     * @return CurlerPageRequestInterface|RequestInterface
+     * @return CurlerPageRequestInterface|PsrRequestInterface
      */
     public function getFirstRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
     );
@@ -41,7 +41,7 @@ interface CurlerPagerInterface extends HasHeader
      */
     public function getPage(
         $data,
-        RequestInterface $request,
+        PsrRequestInterface $request,
         HttpResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,

@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Http\Message;
 
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HasMediaType;
 
@@ -36,5 +36,5 @@ interface HttpMultipartStreamPartInterface extends Immutable, HasMediaType
     /**
      * Get the content of the part
      */
-    public function getContent(): StreamInterface;
+    public function getContent(): PsrStreamInterface;
 }

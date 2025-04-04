@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Pager;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -51,7 +51,7 @@ final class LinkPager implements CurlerPagerInterface
      * @inheritDoc
      */
     public function getFirstRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
     ) {
@@ -71,7 +71,7 @@ final class LinkPager implements CurlerPagerInterface
      */
     public function getPage(
         $data,
-        RequestInterface $request,
+        PsrRequestInterface $request,
         HttpResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,

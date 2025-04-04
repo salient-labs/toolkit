@@ -2,7 +2,7 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
 use Salient\Http\Exception\StreamException;
@@ -20,7 +20,7 @@ class HttpMultipartStream implements HttpMultipartStreamInterface
 
     protected string $Boundary;
     protected bool $IsSeekable = true;
-    /** @var StreamInterface[] */
+    /** @var PsrStreamInterface[] */
     protected array $Streams = [];
     protected int $Stream = 0;
     protected int $Pos = 0;

@@ -3,7 +3,7 @@
 namespace Salient\Tests\Container;
 
 use Psr\Container\ContainerInterface as PsrContainerInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Salient\Container\Application;
 use Salient\Container\Container;
 use Salient\Contract\Console\ConsoleInterface;
@@ -173,7 +173,7 @@ final class ContainerTest extends TestCase
         $console = $container->get(ConsoleInterface::class);
         $l = $container->get(L::class);
         $this->assertInstanceOf(ConsoleInterface::class, $console);
-        $this->assertInstanceOf(LoggerInterface::class, $l->Logger);
+        $this->assertInstanceOf(PsrLoggerInterface::class, $l->Logger);
     }
 
     public function testGetWithUnusedArguments(): void
@@ -796,9 +796,9 @@ class E extends D {}
 
 class L
 {
-    public LoggerInterface $Logger;
+    public PsrLoggerInterface $Logger;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(PsrLoggerInterface $logger)
     {
         $this->Logger = $logger;
     }

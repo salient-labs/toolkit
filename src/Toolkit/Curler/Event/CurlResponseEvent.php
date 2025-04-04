@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Event;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\Event\CurlResponseEvent as CurlResponseEventInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
@@ -13,13 +13,13 @@ use CurlHandle;
  */
 class CurlResponseEvent extends CurlEvent implements CurlResponseEventInterface
 {
-    protected RequestInterface $Request;
+    protected PsrRequestInterface $Request;
     protected HttpResponseInterface $Response;
 
     /**
      * @param CurlHandle|resource $curlHandle
      */
-    public function __construct(CurlerInterface $curler, $curlHandle, RequestInterface $request, HttpResponseInterface $response)
+    public function __construct(CurlerInterface $curler, $curlHandle, PsrRequestInterface $request, HttpResponseInterface $response)
     {
         $this->Request = $request;
         $this->Response = $response;
@@ -30,7 +30,7 @@ class CurlResponseEvent extends CurlEvent implements CurlResponseEventInterface
     /**
      * @inheritDoc
      */
-    public function getRequest(): RequestInterface
+    public function getRequest(): PsrRequestInterface
     {
         return $this->Request;
     }

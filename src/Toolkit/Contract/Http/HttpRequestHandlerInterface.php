@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Http;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Closure;
 
 interface HttpRequestHandlerInterface
@@ -12,7 +12,7 @@ interface HttpRequestHandlerInterface
      * Act on a request and generate a response, optionally forwarding the
      * request to the next handler and acting on its response
      *
-     * @param Closure(RequestInterface): ResponseInterface $next
+     * @param Closure(PsrRequestInterface): PsrResponseInterface $next
      */
-    public function __invoke(RequestInterface $request, Closure $next): ResponseInterface;
+    public function __invoke(PsrRequestInterface $request, Closure $next): PsrResponseInterface;
 }

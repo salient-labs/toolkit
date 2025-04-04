@@ -2,9 +2,9 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpServerRequestInterface;
@@ -35,7 +35,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $serverParams
-     * @param StreamInterface|resource|string|null $body
+     * @param PsrStreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
@@ -55,14 +55,14 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(MessageInterface $message): HttpServerRequest
+    public static function fromPsr7(PsrMessageInterface $message): HttpServerRequest
     {
         if ($message instanceof HttpServerRequest) {
             return $message;
         }
 
-        if (!$message instanceof ServerRequestInterface) {
-            throw new InvalidArgumentTypeException(1, 'message', ServerRequestInterface::class, $message);
+        if (!$message instanceof PsrServerRequestInterface) {
+            throw new InvalidArgumentTypeException(1, 'message', PsrServerRequestInterface::class, $message);
         }
 
         /** @var array<string,mixed> */
@@ -146,7 +146,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @param mixed[] $cookies
      */
-    public function withCookieParams(array $cookies): ServerRequestInterface
+    public function withCookieParams(array $cookies): PsrServerRequestInterface
     {
         return $this->with('CookieParams', $cookies);
     }
@@ -154,7 +154,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @param mixed[] $query
      */
-    public function withQueryParams(array $query): ServerRequestInterface
+    public function withQueryParams(array $query): PsrServerRequestInterface
     {
         return $this->with('QueryParams', $query);
     }
@@ -162,7 +162,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @param mixed[] $uploadedFiles
      */
-    public function withUploadedFiles(array $uploadedFiles): ServerRequestInterface
+    public function withUploadedFiles(array $uploadedFiles): PsrServerRequestInterface
     {
         return $this->with('UploadedFiles', $uploadedFiles);
     }
@@ -170,7 +170,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @param mixed[]|object|null $data
      */
-    public function withParsedBody($data): ServerRequestInterface
+    public function withParsedBody($data): PsrServerRequestInterface
     {
         return $this->with('ParsedBody', $this->filterParsedBody($data));
     }
@@ -178,7 +178,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @inheritDoc
      */
-    public function withAttribute(string $name, $value): ServerRequestInterface
+    public function withAttribute(string $name, $value): PsrServerRequestInterface
     {
         $attributes = $this->Attributes;
         $attributes[$name] = $value;
@@ -188,7 +188,7 @@ class HttpServerRequest extends HttpRequest implements HttpServerRequestInterfac
     /**
      * @inheritDoc
      */
-    public function withoutAttribute(string $name): ServerRequestInterface
+    public function withoutAttribute(string $name): PsrServerRequestInterface
     {
         $attributes = $this->Attributes;
         unset($attributes[$name]);

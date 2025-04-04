@@ -2,7 +2,7 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\MessageInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Salient\Collection\ReadOnlyArrayAccessTrait;
 use Salient\Collection\ReadOnlyCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
@@ -99,7 +99,7 @@ REGEX;
      *
      * If `$value` is a string, it is parsed as an HTTP message.
      *
-     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|MessageInterface|string $value
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $value
      * @return static
      */
     public static function from($value): self
@@ -110,7 +110,7 @@ REGEX;
         if ($value instanceof HttpMessageInterface) {
             return self::from($value->getHttpHeaders());
         }
-        if ($value instanceof MessageInterface) {
+        if ($value instanceof PsrMessageInterface) {
             return new static($value->getHeaders());
         }
         if (is_string($value)) {

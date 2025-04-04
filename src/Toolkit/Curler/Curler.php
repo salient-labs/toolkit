@@ -2,10 +2,10 @@
 
 namespace Salient\Curler;
 
-use Psr\Http\Client\ClientExceptionInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Client\ClientExceptionInterface as PsrClientExceptionInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\Arrayable;
@@ -103,7 +103,7 @@ class Curler implements CurlerInterface, Buildable
     protected int $FormDataFlags = Curler::PRESERVE_NUMERIC_KEYS | Curler::PRESERVE_STRING_KEYS;
     /** @var int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> */
     protected int $JsonDecodeFlags = \JSON_OBJECT_AS_ARRAY;
-    /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,string|null}> */
+    /** @var array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,string|null}> */
     protected array $Middleware = [];
     protected ?CurlerPagerInterface $Pager = null;
     protected bool $AlwaysPaginate = false;
@@ -111,7 +111,7 @@ class Curler implements CurlerInterface, Buildable
     protected ?string $CookiesCacheKey = null;
     protected bool $CacheResponses = false;
     protected bool $CachePostResponses = false;
-    /** @var (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null */
+    /** @var (callable(PsrRequestInterface $request, CurlerInterface $curler): (string[]|string))|null */
     protected $CacheKeyCallback = null;
     /** @var int<-1,max> */
     protected int $CacheLifetime = 3600;
@@ -128,7 +128,7 @@ class Curler implements CurlerInterface, Buildable
 
     // --
 
-    protected ?RequestInterface $LastRequest = null;
+    protected ?PsrRequestInterface $LastRequest = null;
     protected ?HttpResponseInterface $LastResponse = null;
     private ?Curler $WithoutThrowHttpErrors = null;
     private ?Closure $Closure = null;
@@ -175,7 +175,7 @@ class Curler implements CurlerInterface, Buildable
      * @param DateFormatterInterface|null $dateFormatter Date formatter used to format and parse the endpoint's date and time values
      * @param int-mask-of<Curler::PRESERVE_*> $formDataFlags Flags used to encode data for query strings and message bodies (default: {@see Curler::PRESERVE_NUMERIC_KEYS} `|` {@see Curler::PRESERVE_STRING_KEYS})
      * @param int-mask-of<\JSON_BIGINT_AS_STRING|\JSON_INVALID_UTF8_IGNORE|\JSON_INVALID_UTF8_SUBSTITUTE|\JSON_OBJECT_AS_ARRAY|\JSON_THROW_ON_ERROR> $jsonDecodeFlags Flags used to decode JSON returned by the endpoint (default: {@see \JSON_OBJECT_AS_ARRAY})
-     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
+     * @param array<array{CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface,1?:string|null}> $middleware Middleware applied to the request handler stack
      * @param CurlerPagerInterface|null $pager Pagination handler
      * @param bool $alwaysPaginate Use the pager to process requests even if no pagination is required
      * @param CacheInterface|null $cache Cache to use for cookie and response storage instead of the global cache
@@ -183,7 +183,7 @@ class Curler implements CurlerInterface, Buildable
      * @param string|null $cookiesCacheKey Key to cache cookies under (cookie handling is implicitly enabled if given)
      * @param bool $cacheResponses Cache responses to GET and HEAD requests (HTTP caching headers are ignored; USE RESPONSIBLY)
      * @param bool $cachePostResponses Cache responses to repeatable POST requests (ignored if GET and HEAD request caching is disabled)
-     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers not in {@see Curler::HEADERS_UNSTABLE} are used by default)
+     * @param (callable(PsrRequestInterface $request, CurlerInterface $curler): (string[]|string))|null $cacheKeyCallback Override values hashed and combined with request method and URI to create response cache keys (headers not in {@see Curler::HEADERS_UNSTABLE} are used by default)
      * @param int<-1,max> $cacheLifetime Seconds before cached responses expire when caching is enabled (`0` = cache indefinitely; `-1` = do not cache; default: `3600`)
      * @param bool $refreshCache Replace cached responses even if they haven't expired
      * @param int<0,max>|null $timeout Connection timeout in seconds (`null` = use underlying default of `300` seconds; default: `null`)
@@ -279,7 +279,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function getLastRequest(): ?RequestInterface
+    public function getLastRequest(): ?PsrRequestInterface
     {
         return $this->LastRequest;
     }
@@ -785,7 +785,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function withRequest(RequestInterface $request)
+    public function withRequest(PsrRequestInterface $request)
     {
         $curler = $this->withUri($request->getUri());
 
@@ -1063,7 +1063,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @inheritDoc
      */
-    public function sendRequest(RequestInterface $request): HttpResponseInterface
+    public function sendRequest(PsrRequestInterface $request): HttpResponseInterface
     {
         // PSR-18: "A Client MUST NOT treat a well-formed HTTP request or HTTP
         // response as an error condition. For example, response status codes in
@@ -1077,7 +1077,7 @@ class Curler implements CurlerInterface, Buildable
                 $this->LastRequest = $curler->LastRequest;
                 $this->LastResponse = $curler->LastResponse;
             }
-        } catch (ClientExceptionInterface $ex) {
+        } catch (PsrClientExceptionInterface $ex) {
             throw $ex;
         } catch (CurlErrorExceptionInterface $ex) {
             throw $ex->isNetworkError()
@@ -1092,7 +1092,7 @@ class Curler implements CurlerInterface, Buildable
      * @phpstan-assert !null $this->LastRequest
      * @phpstan-assert !null $this->LastResponse
      */
-    private function doSendRequest(RequestInterface $request): HttpResponseInterface
+    private function doSendRequest(PsrRequestInterface $request): HttpResponseInterface
     {
         $this->LastRequest = null;
         $this->LastResponse = null;
@@ -1102,26 +1102,26 @@ class Curler implements CurlerInterface, Buildable
     }
 
     /**
-     * @return Closure(RequestInterface): HttpResponseInterface
+     * @return Closure(PsrRequestInterface): HttpResponseInterface
      */
     private function getClosure(): Closure
     {
-        $closure = fn(RequestInterface $request): HttpResponseInterface =>
+        $closure = fn(PsrRequestInterface $request): HttpResponseInterface =>
             $this->getResponse($request);
         foreach (array_reverse($this->Middleware) as [$middleware]) {
             $closure = $middleware instanceof CurlerMiddlewareInterface
-                ? fn(RequestInterface $request): HttpResponseInterface =>
+                ? fn(PsrRequestInterface $request): HttpResponseInterface =>
                     $this->handleHttpResponse($middleware($request, $closure, $this), $request)
                 : ($middleware instanceof HttpRequestHandlerInterface
-                    ? fn(RequestInterface $request): HttpResponseInterface =>
+                    ? fn(PsrRequestInterface $request): HttpResponseInterface =>
                         $this->handleResponse($middleware($request, $closure), $request)
-                    : fn(RequestInterface $request): HttpResponseInterface =>
+                    : fn(PsrRequestInterface $request): HttpResponseInterface =>
                         $this->handleResponse($middleware($request, $closure, $this), $request));
         }
         return $closure;
     }
 
-    private function getResponse(RequestInterface $request): HttpResponseInterface
+    private function getResponse(PsrRequestInterface $request): HttpResponseInterface
     {
         $uri = $request->getUri()->withFragment('');
         $request = $request->withUri($uri);
@@ -1286,7 +1286,7 @@ class Curler implements CurlerInterface, Buildable
                 Event::dispatch(new ResponseCacheHitEvent($this, $request, $response));
             } else {
                 if ($transfer) {
-                    if ($size !== 0 && $body instanceof StreamInterface) {
+                    if ($size !== 0 && $body instanceof PsrStreamInterface) {
                         if (!$body->isSeekable()) {
                             throw new RequestException(
                                 'Request cannot be sent again (body not seekable)',
@@ -1450,9 +1450,9 @@ class Curler implements CurlerInterface, Buildable
     }
 
     private function normaliseRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         PsrUriInterface $uri
-    ): RequestInterface {
+    ): PsrRequestInterface {
         // Remove `Host` if its value is redundant
         if (($host = $request->getHeaderLine(self::HEADER_HOST)) !== '') {
             try {
@@ -1543,8 +1543,8 @@ class Curler implements CurlerInterface, Buildable
     }
 
     private function handleResponse(
-        ResponseInterface $response,
-        RequestInterface $request
+        PsrResponseInterface $response,
+        PsrRequestInterface $request
     ): HttpResponseInterface {
         return $this->handleHttpResponse(
             $response instanceof HttpResponseInterface
@@ -1556,7 +1556,7 @@ class Curler implements CurlerInterface, Buildable
 
     private function handleHttpResponse(
         HttpResponseInterface $response,
-        RequestInterface $request
+        PsrRequestInterface $request
     ): HttpResponseInterface {
         $this->LastRequest = $request;
         $this->LastResponse = $response;

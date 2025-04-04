@@ -2,6 +2,6 @@
 
 namespace Salient\Contract\Http\Message;
 
-use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 
-interface HttpServerRequestInterface extends HttpRequestInterface, ServerRequestInterface {}
+interface HttpServerRequestInterface extends HttpRequestInterface, PsrServerRequestInterface {}

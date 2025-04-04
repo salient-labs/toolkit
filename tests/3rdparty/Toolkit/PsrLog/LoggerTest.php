@@ -2,9 +2,9 @@
 
 namespace Salient\Tests\PsrLog;
 
-use Psr\Log\Test\LoggerInterfaceTest;
-use Psr\Log\InvalidArgumentException;
-use Psr\Log\LoggerInterface;
+use Psr\Log\Test\LoggerInterfaceTest as PsrLoggerInterfaceTest;
+use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Salient\Console\Format\Formatter;
 use Salient\Console\Console;
 use Salient\Contract\HasMessageLevel;
@@ -16,14 +16,14 @@ use Salient\Utility\Str;
  * @covers \Salient\Console\ConsoleLogger
  * @covers \Salient\Console\Console
  */
-final class LoggerTest extends LoggerInterfaceTest
+final class LoggerTest extends PsrLoggerInterfaceTest
 {
     private MockTarget $Target;
 
     /**
      * @inheritDoc
      */
-    public function getLogger(): LoggerInterface
+    public function getLogger(): PsrLoggerInterface
     {
         return (new Console())
             ->registerTarget($this->Target = new MockTarget(
@@ -60,7 +60,7 @@ final class LoggerTest extends LoggerInterfaceTest
      */
     public function testThrowsOnInvalidLevel(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(PsrInvalidArgumentException::class);
         parent::testThrowsOnInvalidLevel();
     }
 }

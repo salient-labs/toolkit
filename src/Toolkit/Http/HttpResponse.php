@@ -2,9 +2,9 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 use Salient\Core\Concern\ImmutableTrait;
@@ -88,7 +88,7 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
     protected ?string $ReasonPhrase;
 
     /**
-     * @param StreamInterface|resource|string|null $body
+     * @param PsrStreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
@@ -107,14 +107,14 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(MessageInterface $message): HttpResponse
+    public static function fromPsr7(PsrMessageInterface $message): HttpResponse
     {
         if ($message instanceof HttpResponse) {
             return $message;
         }
 
-        if (!$message instanceof ResponseInterface) {
-            throw new InvalidArgumentTypeException(1, 'message', ResponseInterface::class, $message);
+        if (!$message instanceof PsrResponseInterface) {
+            throw new InvalidArgumentTypeException(1, 'message', PsrResponseInterface::class, $message);
         }
 
         return new self(
@@ -145,7 +145,7 @@ class HttpResponse extends AbstractHttpMessage implements HttpResponseInterface
     /**
      * @inheritDoc
      */
-    public function withStatus(int $code, string $reasonPhrase = ''): ResponseInterface
+    public function withStatus(int $code, string $reasonPhrase = ''): PsrResponseInterface
     {
         return $this
             ->with('StatusCode', $this->filterStatusCode($code))

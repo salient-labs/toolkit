@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Http\Message;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HasHeader;
@@ -16,7 +16,7 @@ use JsonSerializable;
 use Stringable;
 
 interface HttpMessageInterface extends
-    MessageInterface,
+    PsrMessageInterface,
     HasHttpHeaders,
     Stringable,
     JsonSerializable,
@@ -27,15 +27,15 @@ interface HttpMessageInterface extends
     /**
      * Get an instance of the class from a compatible PSR-7 message
      *
-     * @template T of MessageInterface
+     * @template T of PsrMessageInterface
      *
      * @param T $message
      * @return T&HttpMessageInterface
      * @throws InvalidArgumentException if the class cannot be instantiated from
-     * `$message`, e.g. if the class implements {@see RequestInterface} and
-     * `$message` is a {@see ResponseInterface}.
+     * `$message`, e.g. if the class implements {@see PsrRequestInterface} and
+     * `$message` is a {@see PsrResponseInterface}.
      */
-    public static function fromPsr7(MessageInterface $message): HttpMessageInterface;
+    public static function fromPsr7(PsrMessageInterface $message): HttpMessageInterface;
 
     /**
      * Get message headers

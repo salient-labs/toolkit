@@ -2,17 +2,17 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\RequestFactoryInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseFactoryInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestFactoryInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamFactoryInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UploadedFileFactoryInterface;
-use Psr\Http\Message\UploadedFileInterface;
-use Psr\Http\Message\UriFactoryInterface;
+use Psr\Http\Message\RequestFactoryInterface as PsrRequestFactoryInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseFactoryInterface as PsrResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
+use Psr\Http\Message\ServerRequestFactoryInterface as PsrServerRequestFactoryInterface;
+use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
+use Psr\Http\Message\StreamFactoryInterface as PsrStreamFactoryInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
+use Psr\Http\Message\UploadedFileFactoryInterface as PsrUploadedFileFactoryInterface;
+use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
+use Psr\Http\Message\UriFactoryInterface as PsrUriFactoryInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Utility\File;
 
@@ -20,17 +20,17 @@ use Salient\Utility\File;
  * A PSR-17 HTTP message factory
  */
 class HttpFactory implements
-    RequestFactoryInterface,
-    ResponseFactoryInterface,
-    ServerRequestFactoryInterface,
-    StreamFactoryInterface,
-    UploadedFileFactoryInterface,
-    UriFactoryInterface
+    PsrRequestFactoryInterface,
+    PsrResponseFactoryInterface,
+    PsrServerRequestFactoryInterface,
+    PsrStreamFactoryInterface,
+    PsrUploadedFileFactoryInterface,
+    PsrUriFactoryInterface
 {
     /**
      * @inheritDoc
      */
-    public function createRequest(string $method, $uri): RequestInterface
+    public function createRequest(string $method, $uri): PsrRequestInterface
     {
         return new HttpRequest($method, $uri);
     }
@@ -41,7 +41,7 @@ class HttpFactory implements
     public function createResponse(
         int $code = 200,
         string $reasonPhrase = ''
-    ): ResponseInterface {
+    ): PsrResponseInterface {
         return new HttpResponse($code, null, null, $reasonPhrase);
     }
 
@@ -52,14 +52,14 @@ class HttpFactory implements
         string $method,
         $uri,
         array $serverParams = []
-    ): ServerRequestInterface {
+    ): PsrServerRequestInterface {
         return new HttpServerRequest($method, $uri, $serverParams);
     }
 
     /**
      * @inheritDoc
      */
-    public function createStream(string $content = ''): StreamInterface
+    public function createStream(string $content = ''): PsrStreamInterface
     {
         return HttpStream::fromString($content);
     }
@@ -70,14 +70,14 @@ class HttpFactory implements
     public function createStreamFromFile(
         string $filename,
         string $mode = 'r'
-    ): StreamInterface {
+    ): PsrStreamInterface {
         return new HttpStream(File::open($filename, $mode));
     }
 
     /**
      * @inheritDoc
      */
-    public function createStreamFromResource($resource): StreamInterface
+    public function createStreamFromResource($resource): PsrStreamInterface
     {
         return new HttpStream($resource);
     }
@@ -86,12 +86,12 @@ class HttpFactory implements
      * @inheritDoc
      */
     public function createUploadedFile(
-        StreamInterface $stream,
+        PsrStreamInterface $stream,
         ?int $size = null,
         int $error = \UPLOAD_ERR_OK,
         ?string $clientFilename = null,
         ?string $clientMediaType = null
-    ): UploadedFileInterface {
+    ): PsrUploadedFileInterface {
         return new HttpServerRequestUpload(
             $stream,
             $size,

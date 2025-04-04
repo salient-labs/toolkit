@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Http;
 
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Http\HttpMultipartStreamPart;
 use Salient\Http\HttpStream;
 use Salient\Tests\TestCase;
@@ -74,7 +75,7 @@ class HttpMultipartStreamPartTest extends TestCase
     public function testInvalidContent(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($content) must be of type StreamInterface|resource|string|null, int given');
+        $this->expectExceptionMessage('Argument #1 ($content) must be of type ' . PsrStreamInterface::class . '|resource|string|null, int given');
         // @phpstan-ignore argument.type
         new HttpMultipartStreamPart(123, 'file');
     }

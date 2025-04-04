@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Exception;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\Exception\CurlErrorException as CurlErrorExceptionInterface;
 
 /**
@@ -17,7 +17,7 @@ class CurlErrorException extends GenericRequestException implements CurlErrorExc
      */
     public function __construct(
         int $curlError,
-        RequestInterface $request,
+        PsrRequestInterface $request,
         array $data = []
     ) {
         $this->CurlError = $curlError;

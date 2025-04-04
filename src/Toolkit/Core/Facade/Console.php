@@ -2,7 +2,7 @@
 
 namespace Salient\Core\Facade;
 
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Salient\Console\Console as ConsoleService;
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\Target\TargetInterface;
@@ -38,7 +38,7 @@ use Throwable;
  * @method static ConsoleInterface log(string $msg1, string|null $msg2 = null) Print "- $msg1 $msg2" or similar with level LEVEL_INFO (see {@see ConsoleInterface::log()})
  * @method static ConsoleInterface logOnce(string $msg1, string|null $msg2 = null) Print "- $msg1 $msg2" or similar with level LEVEL_INFO once per run (see {@see ConsoleInterface::logOnce()})
  * @method static ConsoleInterface logProgress(string $msg1, string|null $msg2 = null) Print "⠋ $msg1 $msg2" or similar with level LEVEL_INFO to TTY targets without moving to the next line (see {@see ConsoleInterface::logProgress()})
- * @method static LoggerInterface logger() Get a PSR-3 logger backed by the console
+ * @method static PsrLoggerInterface logger() Get a PSR-3 logger backed by the console
  * @method static ConsoleInterface message(string $msg1, string|null $msg2 = null, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNDECORATED, Throwable|null $ex = null, bool $count = true) Print "$msg1 $msg2" or similar with level- and type-based formatting (see {@see ConsoleInterface::message()})
  * @method static ConsoleInterface messageOnce(string $msg1, string|null $msg2 = null, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO, ConsoleInterface::TYPE_* $type = ConsoleInterface::TYPE_UNDECORATED, Throwable|null $ex = null, bool $count = true) Print "$msg1 $msg2" or similar with level- and type-based formatting once per run (see {@see ConsoleInterface::messageOnce()})
  * @method static ConsoleInterface print(string $msg, ConsoleInterface::LEVEL_* $level = ConsoleInterface::LEVEL_INFO) Print "$msg" to registered targets (see {@see ConsoleInterface::print()})

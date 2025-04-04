@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Pager;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
@@ -33,10 +33,10 @@ final class ODataPager implements CurlerPagerInterface
      * @inheritDoc
      */
     public function getFirstRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
-    ): RequestInterface {
+    ): PsrRequestInterface {
         if ($this->MaxPageSize === null) {
             return $request;
         }
@@ -62,7 +62,7 @@ final class ODataPager implements CurlerPagerInterface
      */
     public function getPage(
         $data,
-        RequestInterface $request,
+        PsrRequestInterface $request,
         HttpResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,

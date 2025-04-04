@@ -2,7 +2,7 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
 use Salient\Contract\Http\Message\HttpStreamInterface;
@@ -122,7 +122,7 @@ class HttpStream implements HttpStreamInterface, HasFormDataFlag
     /**
      * Copy data from a stream to a string
      */
-    public static function copyToString(StreamInterface $from): string
+    public static function copyToString(PsrStreamInterface $from): string
     {
         $out = '';
         while (!$from->eof()) {
@@ -140,7 +140,7 @@ class HttpStream implements HttpStreamInterface, HasFormDataFlag
     /**
      * Copy data from one stream to another
      */
-    public static function copyToStream(StreamInterface $from, StreamInterface $to): void
+    public static function copyToStream(PsrStreamInterface $from, PsrStreamInterface $to): void
     {
         $out = '';
         while (!$from->eof()) {

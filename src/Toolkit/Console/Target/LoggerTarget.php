@@ -2,9 +2,9 @@
 
 namespace Salient\Console\Target;
 
-use Psr\Log\LoggerAwareInterface;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
+use Psr\Log\LoggerAwareInterface as PsrLoggerAwareInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
+use Psr\Log\LogLevel as PsrLogLevel;
 use Salient\Contract\Console\ConsoleInterface as Console;
 
 /**
@@ -12,28 +12,28 @@ use Salient\Contract\Console\ConsoleInterface as Console;
  *
  * @api
  */
-class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
+class LoggerTarget extends AbstractTarget implements PsrLoggerAwareInterface
 {
     /**
-     * @var array<Console::LEVEL_*,LogLevel::*>
+     * @var array<Console::LEVEL_*,PsrLogLevel::*>
      */
     private const LOG_LEVEL_MAP = [
-        Console::LEVEL_EMERGENCY => LogLevel::EMERGENCY,
-        Console::LEVEL_ALERT => LogLevel::ALERT,
-        Console::LEVEL_CRITICAL => LogLevel::CRITICAL,
-        Console::LEVEL_ERROR => LogLevel::ERROR,
-        Console::LEVEL_WARNING => LogLevel::WARNING,
-        Console::LEVEL_NOTICE => LogLevel::NOTICE,
-        Console::LEVEL_INFO => LogLevel::INFO,
-        Console::LEVEL_DEBUG => LogLevel::DEBUG,
+        Console::LEVEL_EMERGENCY => PsrLogLevel::EMERGENCY,
+        Console::LEVEL_ALERT => PsrLogLevel::ALERT,
+        Console::LEVEL_CRITICAL => PsrLogLevel::CRITICAL,
+        Console::LEVEL_ERROR => PsrLogLevel::ERROR,
+        Console::LEVEL_WARNING => PsrLogLevel::WARNING,
+        Console::LEVEL_NOTICE => PsrLogLevel::NOTICE,
+        Console::LEVEL_INFO => PsrLogLevel::INFO,
+        Console::LEVEL_DEBUG => PsrLogLevel::DEBUG,
     ];
 
-    private LoggerInterface $Logger;
+    private PsrLoggerInterface $Logger;
 
     /**
      * @api
      */
-    public function __construct(LoggerInterface $logger)
+    public function __construct(PsrLoggerInterface $logger)
     {
         $this->setLogger($logger);
     }
@@ -41,7 +41,7 @@ class LoggerTarget extends AbstractTarget implements LoggerAwareInterface
     /**
      * @inheritDoc
      */
-    public function setLogger(LoggerInterface $logger): void
+    public function setLogger(PsrLoggerInterface $logger): void
     {
         $this->Logger = $logger;
     }

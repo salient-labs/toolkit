@@ -2,7 +2,7 @@
 
 namespace Salient\Tests\Http;
 
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\HasHeader;
 use Salient\Http\HttpRequest;
 use Salient\Http\Uri;
@@ -76,7 +76,7 @@ final class HttpRequestTest extends TestCase implements HasHeader
     {
         $r = new HttpRequest('GET', '/');
         $this->assertSame('/', (string) $r->getUri());
-        $this->assertInstanceOf(StreamInterface::class, $r->getBody());
+        $this->assertInstanceOf(PsrStreamInterface::class, $r->getBody());
         $this->assertSame('', (string) $r->getBody());
 
         $uri = new Uri('/');
@@ -84,15 +84,15 @@ final class HttpRequestTest extends TestCase implements HasHeader
         $this->assertSame($uri, $r->getUri());
 
         $r = new HttpRequest('GET', '/', 'baz');
-        $this->assertInstanceOf(StreamInterface::class, $r->getBody());
+        $this->assertInstanceOf(PsrStreamInterface::class, $r->getBody());
         $this->assertSame('baz', (string) $r->getBody());
 
         $r = new HttpRequest('GET', '/', '0');
-        $this->assertInstanceOf(StreamInterface::class, $r->getBody());
+        $this->assertInstanceOf(PsrStreamInterface::class, $r->getBody());
         $this->assertSame('0', (string) $r->getBody());
 
         $r = new HttpRequest('GET', '/', Str::toStream('baz'));
-        $this->assertInstanceOf(StreamInterface::class, $r->getBody());
+        $this->assertInstanceOf(PsrStreamInterface::class, $r->getBody());
         $this->assertSame('baz', (string) $r->getBody());
 
         $r = new HttpRequest('GET', '');
@@ -172,7 +172,7 @@ final class HttpRequestTest extends TestCase implements HasHeader
     public function testConstructorWithInvalidBody(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
+        $this->expectExceptionMessage('Argument #1 ($body) must be of type ' . PsrStreamInterface::class . '|resource|string|null, int given');
         // @phpstan-ignore argument.type
         new HttpRequest('GET', '/', 123);
     }
@@ -180,7 +180,7 @@ final class HttpRequestTest extends TestCase implements HasHeader
     public function testWithInvalidBody(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($body) must be of type StreamInterface|resource|string|null, int given');
+        $this->expectExceptionMessage('Argument #1 ($body) must be of type ' . PsrStreamInterface::class . '|resource|string|null, int given');
         // @phpstan-ignore argument.type
         (new HttpRequest('GET', '/'))->withBody(123);
     }

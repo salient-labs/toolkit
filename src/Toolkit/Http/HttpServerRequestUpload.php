@@ -2,8 +2,8 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
+use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
 use Salient\Http\Exception\UploadedFileException;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
@@ -11,7 +11,7 @@ use Salient\Utility\File;
 /**
  * A PSR-7 uploaded file (incoming, server-side)
  */
-class HttpServerRequestUpload implements UploadedFileInterface
+class HttpServerRequestUpload implements PsrUploadedFileInterface
 {
     protected const ERROR_MESSAGE = [
         \UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
@@ -24,7 +24,7 @@ class HttpServerRequestUpload implements UploadedFileInterface
         \UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload',
     ];
 
-    protected StreamInterface $Stream;
+    protected PsrStreamInterface $Stream;
     protected string $File;
     protected ?int $Size;
     protected int $Error;
@@ -33,7 +33,7 @@ class HttpServerRequestUpload implements UploadedFileInterface
     private bool $IsMoved = false;
 
     /**
-     * @param StreamInterface|resource|string $resource
+     * @param PsrStreamInterface|resource|string $resource
      */
     public function __construct(
         $resource,
@@ -51,7 +51,7 @@ class HttpServerRequestUpload implements UploadedFileInterface
             return;
         }
 
-        if ($resource instanceof StreamInterface) {
+        if ($resource instanceof PsrStreamInterface) {
             $this->Stream = $resource;
         } elseif (File::isStream($resource)) {
             $this->Stream = new HttpStream($resource);
@@ -61,7 +61,7 @@ class HttpServerRequestUpload implements UploadedFileInterface
             throw new InvalidArgumentTypeException(
                 1,
                 'resource',
-                'StreamInterface|resource|string',
+                PsrStreamInterface::class . '|resource|string',
                 $resource
             );
         }
@@ -70,7 +70,7 @@ class HttpServerRequestUpload implements UploadedFileInterface
     /**
      * @inheritDoc
      */
-    public function getStream(): StreamInterface
+    public function getStream(): PsrStreamInterface
     {
         $this->assertIsValid();
 

@@ -2,9 +2,9 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpRequestInterface;
@@ -29,7 +29,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
 
     /**
      * @param PsrUriInterface|Stringable|string $uri
-     * @param StreamInterface|resource|string|null $body
+     * @param PsrStreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
@@ -59,14 +59,14 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(MessageInterface $message): HttpRequest
+    public static function fromPsr7(PsrMessageInterface $message): HttpRequest
     {
         if ($message instanceof HttpRequest) {
             return $message;
         }
 
-        if (!$message instanceof RequestInterface) {
-            throw new InvalidArgumentTypeException(1, 'message', RequestInterface::class, $message);
+        if (!$message instanceof PsrRequestInterface) {
+            throw new InvalidArgumentTypeException(1, 'message', PsrRequestInterface::class, $message);
         }
 
         return new self(
@@ -120,7 +120,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     /**
      * @inheritDoc
      */
-    public function withRequestTarget(string $requestTarget): RequestInterface
+    public function withRequestTarget(string $requestTarget): PsrRequestInterface
     {
         return $this->with('RequestTarget', $this->filterRequestTarget($requestTarget));
     }
@@ -128,7 +128,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     /**
      * @inheritDoc
      */
-    public function withMethod(string $method): RequestInterface
+    public function withMethod(string $method): PsrRequestInterface
     {
         return $this->with('Method', $this->filterMethod($method));
     }
@@ -136,7 +136,7 @@ class HttpRequest extends AbstractHttpMessage implements HttpRequestInterface
     /**
      * @inheritDoc
      */
-    public function withUri(PsrUriInterface $uri, bool $preserveHost = false): RequestInterface
+    public function withUri(PsrUriInterface $uri, bool $preserveHost = false): PsrRequestInterface
     {
         if ((string) $uri === (string) $this->Uri) {
             $instance = $this;

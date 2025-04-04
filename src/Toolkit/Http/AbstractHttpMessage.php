@@ -2,8 +2,8 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\MessageInterface;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\HttpMessageInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamInterface;
@@ -23,7 +23,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
 
     protected string $ProtocolVersion;
     protected HttpHeadersInterface $Headers;
-    protected StreamInterface $Body;
+    protected PsrStreamInterface $Body;
 
     /**
      * Get the start line of the message
@@ -31,7 +31,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     abstract protected function getStartLine(): string;
 
     /**
-     * @param StreamInterface|resource|string|null $body
+     * @param PsrStreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
     public function __construct(
@@ -57,7 +57,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     /**
      * @inheritDoc
      */
-    public function getBody(): StreamInterface
+    public function getBody(): PsrStreamInterface
     {
         return $this->Body;
     }
@@ -82,15 +82,15 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     /**
      * @inheritDoc
      */
-    public function withProtocolVersion(string $version): MessageInterface
+    public function withProtocolVersion(string $version): PsrMessageInterface
     {
         return $this->with('ProtocolVersion', $this->filterProtocolVersion($version));
     }
 
     /**
-     * @param StreamInterface|resource|string|null $body
+     * @param PsrStreamInterface|resource|string|null $body
      */
-    public function withBody($body): MessageInterface
+    public function withBody($body): PsrMessageInterface
     {
         return $this
             ->with('Body', $this->filterBody($body))
@@ -119,11 +119,11 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
     }
 
     /**
-     * @param StreamInterface|resource|string|null $body
+     * @param PsrStreamInterface|resource|string|null $body
      */
-    private function filterBody($body): StreamInterface
+    private function filterBody($body): PsrStreamInterface
     {
-        if ($body instanceof StreamInterface) {
+        if ($body instanceof PsrStreamInterface) {
             return $body;
         }
         if (is_string($body) || $body === null) {
@@ -135,7 +135,7 @@ abstract class AbstractHttpMessage implements HttpMessageInterface
             throw new InvalidArgumentTypeException(
                 1,
                 'body',
-                'StreamInterface|resource|string|null',
+                PsrStreamInterface::class . '|resource|string|null',
                 $body
             );
         }

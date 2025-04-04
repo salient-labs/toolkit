@@ -2,7 +2,7 @@
 
 namespace Salient\Curler;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerPageRequestInterface;
 
 /**
@@ -12,7 +12,7 @@ use Salient\Contract\Curler\CurlerPageRequestInterface;
  */
 class CurlerPageRequest implements CurlerPageRequestInterface
 {
-    protected RequestInterface $NextRequest;
+    protected PsrRequestInterface $NextRequest;
     /** @var mixed[]|null */
     protected ?array $NextQuery;
 
@@ -22,7 +22,7 @@ class CurlerPageRequest implements CurlerPageRequestInterface
      * @param mixed[]|null $nextQuery
      */
     public function __construct(
-        RequestInterface $nextRequest,
+        PsrRequestInterface $nextRequest,
         ?array $nextQuery = null
     ) {
         $this->NextRequest = $nextRequest;
@@ -32,7 +32,7 @@ class CurlerPageRequest implements CurlerPageRequestInterface
     /**
      * @inheritDoc
      */
-    public function getRequest(): RequestInterface
+    public function getRequest(): PsrRequestInterface
     {
         return $this->NextRequest;
     }

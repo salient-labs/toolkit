@@ -2,7 +2,7 @@
 
 namespace Salient\Http;
 
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\Message\HttpMultipartStreamPartInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
@@ -24,10 +24,10 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     protected ?string $Filename;
     protected ?string $FallbackFilename;
     protected ?string $MediaType;
-    protected StreamInterface $Content;
+    protected PsrStreamInterface $Content;
 
     /**
-     * @param StreamInterface|resource|string|null $content
+     * @param PsrStreamInterface|resource|string|null $content
      */
     public function __construct(
         $content,
@@ -138,7 +138,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     /**
      * @inheritDoc
      */
-    public function getContent(): StreamInterface
+    public function getContent(): PsrStreamInterface
     {
         return $this->Content;
     }
@@ -179,11 +179,11 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
     }
 
     /**
-     * @param StreamInterface|resource|string|null $content
+     * @param PsrStreamInterface|resource|string|null $content
      */
-    protected function filterContent($content): StreamInterface
+    protected function filterContent($content): PsrStreamInterface
     {
-        if ($content instanceof StreamInterface) {
+        if ($content instanceof PsrStreamInterface) {
             return $content;
         }
         if (is_string($content) || $content === null) {
@@ -195,7 +195,7 @@ class HttpMultipartStreamPart implements HttpMultipartStreamPartInterface
             throw new InvalidArgumentTypeException(
                 1,
                 'content',
-                'StreamInterface|resource|string|null',
+                PsrStreamInterface::class . '|resource|string|null',
                 $content
             );
         }

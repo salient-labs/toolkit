@@ -3,7 +3,7 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\StreamIntegrationTest;
-use Psr\Http\Message\StreamInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Http\HttpStream;
 
 /**
@@ -13,7 +13,7 @@ class StreamTest extends StreamIntegrationTest
 {
     public function createStream($data)
     {
-        if ($data instanceof StreamInterface) {
+        if ($data instanceof PsrStreamInterface) {
             return $data;
         }
         if (is_string($data)) {

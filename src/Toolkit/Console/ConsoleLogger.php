@@ -2,9 +2,9 @@
 
 namespace Salient\Console;
 
-use Psr\Log\InvalidArgumentException;
-use Psr\Log\LoggerInterface;
-use Psr\Log\LogLevel;
+use Psr\Log\InvalidArgumentException as PsrInvalidArgumentException;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
+use Psr\Log\LogLevel as PsrLogLevel;
 use Salient\Contract\Console\ConsoleInterface as Console;
 use Salient\Utility\Format;
 use Throwable;
@@ -12,17 +12,17 @@ use Throwable;
 /**
  * @api
  */
-class ConsoleLogger implements LoggerInterface
+class ConsoleLogger implements PsrLoggerInterface
 {
     private const LOG_LEVEL_MAP = [
-        LogLevel::EMERGENCY => Console::LEVEL_EMERGENCY,
-        LogLevel::ALERT => Console::LEVEL_ALERT,
-        LogLevel::CRITICAL => Console::LEVEL_CRITICAL,
-        LogLevel::ERROR => Console::LEVEL_ERROR,
-        LogLevel::WARNING => Console::LEVEL_WARNING,
-        LogLevel::NOTICE => Console::LEVEL_NOTICE,
-        LogLevel::INFO => Console::LEVEL_INFO,
-        LogLevel::DEBUG => Console::LEVEL_DEBUG,
+        PsrLogLevel::EMERGENCY => Console::LEVEL_EMERGENCY,
+        PsrLogLevel::ALERT => Console::LEVEL_ALERT,
+        PsrLogLevel::CRITICAL => Console::LEVEL_CRITICAL,
+        PsrLogLevel::ERROR => Console::LEVEL_ERROR,
+        PsrLogLevel::WARNING => Console::LEVEL_WARNING,
+        PsrLogLevel::NOTICE => Console::LEVEL_NOTICE,
+        PsrLogLevel::INFO => Console::LEVEL_INFO,
+        PsrLogLevel::DEBUG => Console::LEVEL_DEBUG,
     ];
 
     private Console $Console;
@@ -40,7 +40,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function emergency($message, array $context = [])
     {
-        $this->log(LogLevel::EMERGENCY, $message, $context);
+        $this->log(PsrLogLevel::EMERGENCY, $message, $context);
     }
 
     /**
@@ -48,7 +48,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function alert($message, array $context = [])
     {
-        $this->log(LogLevel::ALERT, $message, $context);
+        $this->log(PsrLogLevel::ALERT, $message, $context);
     }
 
     /**
@@ -56,7 +56,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function critical($message, array $context = [])
     {
-        $this->log(LogLevel::CRITICAL, $message, $context);
+        $this->log(PsrLogLevel::CRITICAL, $message, $context);
     }
 
     /**
@@ -64,7 +64,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function error($message, array $context = [])
     {
-        $this->log(LogLevel::ERROR, $message, $context);
+        $this->log(PsrLogLevel::ERROR, $message, $context);
     }
 
     /**
@@ -72,7 +72,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function warning($message, array $context = [])
     {
-        $this->log(LogLevel::WARNING, $message, $context);
+        $this->log(PsrLogLevel::WARNING, $message, $context);
     }
 
     /**
@@ -80,7 +80,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function notice($message, array $context = [])
     {
-        $this->log(LogLevel::NOTICE, $message, $context);
+        $this->log(PsrLogLevel::NOTICE, $message, $context);
     }
 
     /**
@@ -88,7 +88,7 @@ class ConsoleLogger implements LoggerInterface
      */
     public function info($message, array $context = [])
     {
-        $this->log(LogLevel::INFO, $message, $context);
+        $this->log(PsrLogLevel::INFO, $message, $context);
     }
 
     /**
@@ -106,7 +106,7 @@ class ConsoleLogger implements LoggerInterface
     public function log($level, $message, array $context = [])
     {
         if (!isset(self::LOG_LEVEL_MAP[$level])) {
-            throw new InvalidArgumentException('Invalid log level');
+            throw new PsrInvalidArgumentException('Invalid log level');
         }
 
         $msg1 = $this->applyContext((string) $message, $context, $ex);

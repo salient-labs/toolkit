@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Curler\Event;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 
 /**
  * Dispatched before a cURL request is executed
@@ -14,5 +14,5 @@ interface CurlRequestEvent extends CurlEvent
     /**
      * Get the request being sent to the endpoint
      */
-    public function getRequest(): RequestInterface;
+    public function getRequest(): PsrRequestInterface;
 }

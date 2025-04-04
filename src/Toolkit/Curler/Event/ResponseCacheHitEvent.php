@@ -2,7 +2,7 @@
 
 namespace Salient\Curler\Event;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\Event\ResponseCacheHitEvent as ResponseCacheHitEventInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
@@ -12,10 +12,10 @@ use Salient\Contract\Http\Message\HttpResponseInterface;
  */
 class ResponseCacheHitEvent extends CurlerEvent implements ResponseCacheHitEventInterface
 {
-    protected RequestInterface $Request;
+    protected PsrRequestInterface $Request;
     protected HttpResponseInterface $Response;
 
-    public function __construct(CurlerInterface $curler, RequestInterface $request, HttpResponseInterface $response)
+    public function __construct(CurlerInterface $curler, PsrRequestInterface $request, HttpResponseInterface $response)
     {
         $this->Request = $request;
         $this->Response = $response;
@@ -26,7 +26,7 @@ class ResponseCacheHitEvent extends CurlerEvent implements ResponseCacheHitEvent
     /**
      * @inheritDoc
      */
-    public function getRequest(): RequestInterface
+    public function getRequest(): PsrRequestInterface
     {
         return $this->Request;
     }

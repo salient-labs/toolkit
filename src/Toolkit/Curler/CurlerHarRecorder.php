@@ -2,7 +2,7 @@
 
 namespace Salient\Curler;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\Event\CurlRequestEvent;
 use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Event\ResponseCacheHitEvent;
@@ -33,7 +33,7 @@ class CurlerHarRecorder
     protected bool $IsRecording = false;
     /** @var int[] */
     protected array $ListenerIds = [];
-    protected ?RequestInterface $LastRequest = null;
+    protected ?PsrRequestInterface $LastRequest = null;
     protected float $LastRequestTime;
     protected int $EntryCount = 0;
 

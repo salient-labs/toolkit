@@ -2,9 +2,9 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Client\ClientInterface as PsrClientInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\DateFormatterInterface;
@@ -29,7 +29,7 @@ use Stringable;
  * @api
  */
 interface CurlerInterface extends
-    ClientInterface,
+    PsrClientInterface,
     HasHttpHeaders,
     Immutable,
     HasFormDataFlag,
@@ -56,12 +56,12 @@ interface CurlerInterface extends
      *
      * @return static
      */
-    public function withRequest(RequestInterface $request);
+    public function withRequest(PsrRequestInterface $request);
 
     /**
      * Get the last request sent to the endpoint or passed to middleware
      */
-    public function getLastRequest(): ?RequestInterface;
+    public function getLastRequest(): ?PsrRequestInterface;
 
     /**
      * Get the last response received from the endpoint or returned by
@@ -235,11 +235,11 @@ interface CurlerInterface extends
      * Use the form data flags and date formatter applied to the instance to
      * replace the query string of a request or URI
      *
-     * @template T of RequestInterface|PsrUriInterface|Stringable|string
+     * @template T of PsrRequestInterface|PsrUriInterface|Stringable|string
      *
      * @param T $value
      * @param mixed[] $query
-     * @return (T is RequestInterface|PsrUriInterface ? T : UriInterface)
+     * @return (T is PsrRequestInterface|PsrUriInterface ? T : UriInterface)
      */
     public function replaceQuery($value, array $query);
 
@@ -492,7 +492,7 @@ interface CurlerInterface extends
      * Get an instance with the given middleware applied to the request handler
      * stack
      *
-     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface $middleware
+     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): HttpResponseInterface $next, CurlerInterface $curler): PsrResponseInterface $middleware
      * @return static
      */
     public function withMiddleware($middleware, ?string $name = null);
@@ -593,7 +593,7 @@ interface CurlerInterface extends
      * The callback's return value is hashed and combined with request method
      * and URI to create a response cache key.
      *
-     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $callback
+     * @param (callable(PsrRequestInterface $request, CurlerInterface $curler): (string[]|string))|null $callback
      * @return static
      */
     public function withCacheKeyCallback(?callable $callback);

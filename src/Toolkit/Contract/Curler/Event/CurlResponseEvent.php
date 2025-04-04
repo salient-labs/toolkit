@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Curler\Event;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Http\Message\HttpResponseInterface;
 
 /**
@@ -15,7 +15,7 @@ interface CurlResponseEvent extends CurlEvent
     /**
      * Get the request sent to the endpoint
      */
-    public function getRequest(): RequestInterface;
+    public function getRequest(): PsrRequestInterface;
 
     /**
      * Get the response received from the endpoint

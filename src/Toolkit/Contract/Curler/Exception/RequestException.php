@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Curler\Exception;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 
 /**
  * @api
@@ -12,5 +12,5 @@ interface RequestException extends CurlerException
     /**
      * Get the request associated with the exception
      */
-    public function getRequest(): RequestInterface;
+    public function getRequest(): PsrRequestInterface;
 }
