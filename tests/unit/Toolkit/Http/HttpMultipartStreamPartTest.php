@@ -23,25 +23,25 @@ class HttpMultipartStreamPartTest extends TestCase
         $p = new HttpMultipartStreamPart($content, 'file');
         $this->assertEquals('file', $p->getName());
         $this->assertNull($p->getFilename());
-        $this->assertNull($p->getFallbackFilename());
+        $this->assertNull($p->getAsciiFilename());
         $this->assertNull($p->getMediaType());
-        $this->assertEquals($content, (string) $p->getContent());
+        $this->assertEquals($content, (string) $p->getBody());
 
         $p = new HttpMultipartStreamPart(Str::toStream($content), 'file', 'file.txt', 'text/plain');
         $this->assertEquals('file.txt', $p->getFilename());
-        $this->assertEquals('file.txt', $p->getFallbackFilename());
+        $this->assertEquals('file.txt', $p->getAsciiFilename());
         $this->assertEquals('text/plain', $p->getMediaType());
-        $this->assertEquals($content, (string) $p->getContent());
+        $this->assertEquals($content, (string) $p->getBody());
 
         $p = new HttpMultipartStreamPart(HttpStream::fromString($content), 'file', '');
         $this->assertNull($p->getFilename());
-        $this->assertNull($p->getFallbackFilename());
-        $this->assertEquals($content, (string) $p->getContent());
+        $this->assertNull($p->getAsciiFilename());
+        $this->assertEquals($content, (string) $p->getBody());
 
         $p = new HttpMultipartStreamPart(null, 'file', '%.txt', null, '');
         $this->assertEquals('%.txt', $p->getFilename());
-        $this->assertEquals('%.txt', $p->getFallbackFilename());
-        $this->assertEquals('', (string) $p->getContent());
+        $this->assertEquals('%.txt', $p->getAsciiFilename());
+        $this->assertEquals('', (string) $p->getBody());
     }
 
     public function testWithName(): void
@@ -58,13 +58,13 @@ class HttpMultipartStreamPartTest extends TestCase
         $p = HttpMultipartStreamPart::fromFile(__FILE__, 'upload');
         $this->assertSame('upload', $p->getName());
         $this->assertSame($basename = basename(__FILE__), $p->getFilename());
-        $this->assertSame($basename, $p->getFallbackFilename());
+        $this->assertSame($basename, $p->getAsciiFilename());
         $this->assertSame('text/x-php', $p->getMediaType());
-        $this->assertSame(File::getContents(__FILE__), (string) $p->getContent());
+        $this->assertSame(File::getContents(__FILE__), (string) $p->getBody());
 
         $p = HttpMultipartStreamPart::fromFile(__FILE__, 'upload', 'source.php', 'application/x-httpd-php', 'fallback.php');
         $this->assertSame('source.php', $p->getFilename());
-        $this->assertSame('fallback.php', $p->getFallbackFilename());
+        $this->assertSame('fallback.php', $p->getAsciiFilename());
         $this->assertSame('application/x-httpd-php', $p->getMediaType());
 
         $this->expectException(InvalidArgumentException::class);
@@ -87,11 +87,11 @@ class HttpMultipartStreamPartTest extends TestCase
     {
         $p = new HttpMultipartStreamPart(null, 'file', $filename);
         $this->assertSame($filename, $p->getFilename());
-        $this->assertNull($p->getFallbackFilename());
+        $this->assertNull($p->getAsciiFilename());
 
         $p = new HttpMultipartStreamPart(null, 'file', $filename, null, 'file.txt');
         $this->assertSame($filename, $p->getFilename());
-        $this->assertSame('file.txt', $p->getFallbackFilename());
+        $this->assertSame('file.txt', $p->getAsciiFilename());
 
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid fallback filename: ');

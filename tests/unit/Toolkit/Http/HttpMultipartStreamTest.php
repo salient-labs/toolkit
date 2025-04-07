@@ -3,6 +3,7 @@
 namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Message\StreamPartInterface;
+use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\HttpMultipartStream;
 use Salient\Http\HttpMultipartStreamPart;
@@ -105,7 +106,9 @@ final class HttpMultipartStreamTest extends TestCase
         $stream = $this->getStream();
         $this->assertNull($stream->detach());
         $this->assertIsResource($this->LastHandle, 'Underlying PHP stream should not be closed');
-        $this->assertSame(self::CONTENTS_FINAL, (string) $stream);
+        $this->expectException(StreamDetachedException::class);
+        $this->expectExceptionMessage('Stream is closed or detached');
+        (string) $stream;
     }
 
     public function testClose(): void
@@ -114,7 +117,9 @@ final class HttpMultipartStreamTest extends TestCase
         $this->assertIsResource($this->LastHandle);
         $stream->close();
         $this->assertFalse(is_resource($this->LastHandle));
-        $this->assertSame(self::CONTENTS_FINAL, (string) $stream);
+        $this->expectException(StreamDetachedException::class);
+        $this->expectExceptionMessage('Stream is closed or detached');
+        (string) $stream;
     }
 
     public function testReadInvalidLength(): void
@@ -139,7 +144,7 @@ final class HttpMultipartStreamTest extends TestCase
         $dir = File::createTempDir();
         $file = $dir . '/file';
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Stream must be readable');
+        $this->expectExceptionMessage('Body not readable: 4');
         try {
             $this->getStream(
                 new HttpMultipartStreamPart(new HttpStream(File::open($file, 'w')), 'unreadable'),

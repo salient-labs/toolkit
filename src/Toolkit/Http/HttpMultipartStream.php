@@ -5,89 +5,95 @@ namespace Salient\Http;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\Message\StreamPartInterface;
-use Salient\Http\Exception\StreamException;
+use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
-use Throwable;
 
 /**
- * A PSR-7 multipart data stream wrapper
+ * @api
  */
 class HttpMultipartStream implements MultipartStreamInterface
 {
     protected const CHUNK_SIZE = 8192;
 
-    protected string $Boundary;
-    protected bool $IsSeekable = true;
+    /** @var StreamPartInterface[] */
+    private array $Parts;
+    private string $Boundary;
+    private bool $IsSeekable = true;
     /** @var PsrStreamInterface[] */
-    protected array $Streams = [];
-    protected int $Stream = 0;
-    protected int $Pos = 0;
+    private array $Streams = [];
+    private int $Stream = 0;
+    private int $Pos = 0;
+    private bool $IsOpen = true;
 
     /**
+     * @api
+     *
      * @param StreamPartInterface[] $parts
      */
     public function __construct(array $parts = [], ?string $boundary = null)
     {
+        $this->Parts = $parts;
         $this->Boundary = $boundary ??= '------' . bin2hex(random_bytes(18));
-        $this->applyParts($parts);
-    }
 
-    /**
-     * @param StreamPartInterface[] $parts
-     */
-    private function applyParts(array $parts): void
-    {
-        foreach ($parts as $part) {
-            $contentStream = $part->getContent();
-
-            if (!$contentStream->isReadable()) {
-                throw new InvalidArgumentException('Stream must be readable');
+        foreach ($parts as $key => $part) {
+            $body = $part->getBody();
+            if (!$body->isReadable()) {
+                throw new InvalidArgumentException(
+                    sprintf('Body not readable: %s', $key),
+                );
             }
-
-            // For the stream to be seekable, every part must be seekable
-            if ($this->IsSeekable && !$contentStream->isSeekable()) {
+            if ($this->IsSeekable && !$body->isSeekable()) {
                 $this->IsSeekable = false;
             }
 
+            $name = $part->getName();
+            $filename = $part->getFilename();
+            $asciiFilename = $part->getAsciiFilename();
+            $mediaType = $part->getMediaType();
+
             $disposition = [
                 'form-data',
-                sprintf('name="%s"', HttpUtil::escapeQuotedString($part->getName())),
+                sprintf('name="%s"', HttpUtil::escapeQuotedString($name)),
             ];
-            $fallbackFilename = $part->getFallbackFilename();
-            if ($fallbackFilename !== null) {
+            if ($asciiFilename !== null) {
                 $disposition[] = sprintf(
                     'filename="%s"',
-                    HttpUtil::escapeQuotedString($fallbackFilename),
+                    HttpUtil::escapeQuotedString($asciiFilename),
                 );
             }
-            $filename = $part->getFilename();
-            if ($filename !== null && $filename !== $fallbackFilename) {
+            if ($filename !== null && $filename !== $asciiFilename) {
                 $disposition[] = sprintf(
                     "filename*=UTF-8''%s",
-                    $this->encode($filename),
+                    // Percent-encode as per [RFC5987] Section 3.2 ("Parameter
+                    // Value Character Set and Language Information")
+                    Regex::replaceCallback(
+                        '/[^!#$&+^`|]++/',
+                        fn($matches) => rawurlencode($matches[0]),
+                        $filename,
+                    ),
                 );
             }
-            $headers = new HttpHeaders([
+            $headers = [
                 self::HEADER_CONTENT_DISPOSITION => implode('; ', $disposition),
-            ]);
-            $mediaType = $part->getMediaType();
+            ];
             if ($mediaType !== null) {
-                $headers = $headers->set(self::HEADER_CONTENT_TYPE, $mediaType);
+                $headers[self::HEADER_CONTENT_TYPE] = $mediaType;
             }
-            $headers = sprintf(
+            $this->Streams[] = HttpStream::fromString(sprintf(
                 "--%s\r\n%s\r\n\r\n",
-                $this->Boundary,
-                (string) $headers,
-            );
-
-            $this->Streams[] = HttpStream::fromString($headers);
-            $this->Streams[] = $contentStream;
+                $boundary,
+                (string) new HttpHeaders($headers),
+            ));
+            $this->Streams[] = $body;
             $this->Streams[] = HttpStream::fromString("\r\n");
         }
 
-        $this->Streams[] = HttpStream::fromString(sprintf("--%s--\r\n", $this->Boundary));
+        $this->Streams[] = HttpStream::fromString(sprintf(
+            "--%s--\r\n",
+            $boundary,
+        ));
     }
 
     /**
@@ -95,7 +101,7 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function isReadable(): bool
     {
-        return true;
+        return $this->IsOpen;
     }
 
     /**
@@ -117,8 +123,20 @@ class HttpMultipartStream implements MultipartStreamInterface
     /**
      * @inheritDoc
      */
+    public function getParts(): array
+    {
+        $this->assertIsOpen();
+
+        return $this->Parts;
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function getBoundary(): string
     {
+        $this->assertIsOpen();
+
         return $this->Boundary;
     }
 
@@ -127,16 +145,17 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function getSize(): ?int
     {
+        $this->assertIsOpen();
+
         $total = 0;
         foreach ($this->Streams as $stream) {
             $size = $stream->getSize();
             if ($size === null) {
-                // @codeCoverageIgnoreStart
                 return null;
-                // @codeCoverageIgnoreEnd
             }
             $total += $size;
         }
+
         return $total;
     }
 
@@ -145,6 +164,8 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function getMetadata(?string $key = null)
     {
+        $this->assertIsOpen();
+
         return $key === null ? [] : null;
     }
 
@@ -156,6 +177,7 @@ class HttpMultipartStream implements MultipartStreamInterface
         if ($this->IsSeekable) {
             $this->rewind();
         }
+
         return $this->getContents();
     }
 
@@ -164,6 +186,8 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function getContents(): string
     {
+        $this->assertIsOpen();
+
         return HttpStream::copyToString($this);
     }
 
@@ -172,6 +196,8 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function tell(): int
     {
+        $this->assertIsOpen();
+
         return $this->Pos;
     }
 
@@ -180,9 +206,10 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function eof(): bool
     {
-        return !$this->Streams
-            || ($this->Stream >= count($this->Streams) - 1
-                && $this->Streams[$this->Stream]->eof());
+        $this->assertIsOpen();
+
+        return $this->Stream === count($this->Streams) - 1
+            && $this->Streams[$this->Stream]->eof();
     }
 
     /**
@@ -198,6 +225,8 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function read(int $length): string
     {
+        $this->assertIsOpen();
+
         if ($length === 0) {
             return '';
         }
@@ -207,13 +236,12 @@ class HttpMultipartStream implements MultipartStreamInterface
         }
 
         $buffer = '';
-        $remaining = $length;
-        $last = count($this->Streams) - 1;
+        $lastStream = count($this->Streams) - 1;
         $eof = false;
 
-        while ($remaining > 0) {
+        while ($length > 0) {
             if ($eof || $this->Streams[$this->Stream]->eof()) {
-                if ($this->Stream < $last) {
+                if ($this->Stream < $lastStream) {
                     $eof = false;
                     $this->Stream++;
                 } else {
@@ -221,18 +249,18 @@ class HttpMultipartStream implements MultipartStreamInterface
                 }
             }
 
-            $data = $this->Streams[$this->Stream]->read($remaining);
+            $data = $this->Streams[$this->Stream]->read($length);
 
             if ($data === '') {
                 $eof = true;
                 continue;
             }
 
-            $bytes = strlen($data);
+            $dataLength = strlen($data);
 
             $buffer .= $data;
-            $remaining -= $bytes;
-            $this->Pos += $bytes;
+            $length -= $dataLength;
+            $this->Pos += $dataLength;
         }
 
         return $buffer;
@@ -243,6 +271,8 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function write(string $string): int
     {
+        $this->assertIsOpen();
+
         throw new StreamInvalidRequestException('Stream is not writable');
     }
 
@@ -251,6 +281,8 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function seek(int $offset, int $whence = \SEEK_SET): void
     {
+        $this->assertIsOpen();
+
         if (!$this->IsSeekable) {
             throw new StreamInvalidRequestException('Stream is not seekable');
         }
@@ -276,11 +308,9 @@ class HttpMultipartStream implements MultipartStreamInterface
                 break;
 
             default:
-                // @codeCoverageIgnoreStart
                 throw new InvalidArgumentException(
-                    sprintf('Invalid whence: %d', $whence)
+                    sprintf('Invalid whence: %d', $whence),
                 );
-                // @codeCoverageIgnoreEnd
         }
 
         if ($offsetPos < 0) {
@@ -294,23 +324,12 @@ class HttpMultipartStream implements MultipartStreamInterface
         $this->Stream = 0;
         $this->Pos = 0;
 
-        foreach ($this->Streams as $i => $stream) {
-            try {
-                $stream->rewind();
-                // @codeCoverageIgnoreStart
-            } catch (Throwable $ex) {
-                throw new StreamException(sprintf('Error seeking stream %d', $i), $ex);
-            }
-            // @codeCoverageIgnoreEnd
+        foreach ($this->Streams as $stream) {
+            $stream->rewind();
         }
 
         while ($this->Pos < $offsetPos && !$this->eof()) {
-            $data = $this->read(min(static::CHUNK_SIZE, $offsetPos - $this->Pos));
-            if ($data === '') {
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
-            }
+            $this->read(min(static::CHUNK_SIZE, $offsetPos - $this->Pos));
         }
     }
 
@@ -319,10 +338,15 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function close(): void
     {
+        if (!$this->IsOpen) {
+            return;
+        }
+
         foreach ($this->Streams as $stream) {
             $stream->close();
         }
-        $this->reset();
+
+        $this->doClose();
     }
 
     /**
@@ -330,32 +354,30 @@ class HttpMultipartStream implements MultipartStreamInterface
      */
     public function detach()
     {
+        if (!$this->IsOpen) {
+            return null;
+        }
+
         foreach ($this->Streams as $stream) {
             $stream->detach();
         }
-        $this->reset();
+
+        $this->doClose();
         return null;
     }
 
-    private function reset(): void
+    private function doClose(): void
     {
-        $this->IsSeekable = true;
+        $this->IsOpen = false;
+        $this->IsSeekable = false;
+        $this->Parts = [];
         $this->Streams = [];
-        $this->Stream = 0;
-        $this->Pos = 0;
-        $this->applyParts([]);
     }
 
-    /**
-     * Percent-encode characters as per [RFC5987] Section 3.2 ("Parameter Value
-     * Character Set and Language Information")
-     */
-    private function encode(string $string): string
+    private function assertIsOpen(): void
     {
-        return Regex::replaceCallback(
-            '/[^!#$&+^`|]++/',
-            fn(array $matches) => rawurlencode($matches[0]),
-            $string,
-        );
+        if (!$this->IsOpen) {
+            throw new StreamDetachedException('Stream is closed or detached');
+        }
     }
 }

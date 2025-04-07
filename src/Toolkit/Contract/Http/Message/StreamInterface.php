@@ -5,6 +5,7 @@ namespace Salient\Contract\Http\Message;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Stringable;
 
-interface StreamInterface extends
-    PsrStreamInterface,
-    Stringable {}
+/**
+ * @api
+ */
+interface StreamInterface extends PsrStreamInterface, Stringable {}

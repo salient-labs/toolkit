@@ -6,17 +6,22 @@ use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Immutable;
 use Salient\Contract\Http\HasMediaType;
 
+/**
+ * @api
+ */
 interface StreamPartInterface extends Immutable, HasMediaType
 {
-    /**
-     * Get an instance with the given field name
-     */
-    public function withName(string $name): StreamPartInterface;
-
     /**
      * Get the field name of the part
      */
     public function getName(): string;
+
+    /**
+     * Get an instance with the given field name
+     *
+     * @return static
+     */
+    public function withName(string $name): StreamPartInterface;
 
     /**
      * Get the filename of the part
@@ -24,9 +29,9 @@ interface StreamPartInterface extends Immutable, HasMediaType
     public function getFilename(): ?string;
 
     /**
-     * Get the ASCII fallback filename of the part
+     * Get the ASCII filename of the part
      */
-    public function getFallbackFilename(): ?string;
+    public function getAsciiFilename(): ?string;
 
     /**
      * Get the media type of the part
@@ -34,7 +39,7 @@ interface StreamPartInterface extends Immutable, HasMediaType
     public function getMediaType(): ?string;
 
     /**
-     * Get the content of the part
+     * Get the body of the part
      */
-    public function getContent(): PsrStreamInterface;
+    public function getBody(): PsrStreamInterface;
 }

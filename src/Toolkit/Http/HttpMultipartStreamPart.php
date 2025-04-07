@@ -22,9 +22,9 @@ class HttpMultipartStreamPart implements StreamPartInterface
 
     protected ?string $Name;
     protected ?string $Filename;
-    protected ?string $FallbackFilename;
+    protected ?string $AsciiFilename;
     protected ?string $MediaType;
-    protected PsrStreamInterface $Content;
+    protected PsrStreamInterface $Body;
 
     /**
      * @param PsrStreamInterface|resource|string|null $content
@@ -38,12 +38,12 @@ class HttpMultipartStreamPart implements StreamPartInterface
     ) {
         $this->Name = $name;
         $this->Filename = Str::coalesce($filename, null);
-        $this->FallbackFilename = $this->filterFallbackFilename(
+        $this->AsciiFilename = $this->filterFallbackFilename(
             Str::coalesce($fallbackFilename, null),
             $this->Filename
         );
         $this->MediaType = Str::coalesce($mediaType, null);
-        $this->Content = $this->filterContent($content);
+        $this->Body = $this->filterContent($content);
     }
 
     /**
@@ -122,9 +122,9 @@ class HttpMultipartStreamPart implements StreamPartInterface
     /**
      * @inheritDoc
      */
-    public function getFallbackFilename(): ?string
+    public function getAsciiFilename(): ?string
     {
-        return $this->FallbackFilename;
+        return $this->AsciiFilename;
     }
 
     /**
@@ -138,9 +138,9 @@ class HttpMultipartStreamPart implements StreamPartInterface
     /**
      * @inheritDoc
      */
-    public function getContent(): PsrStreamInterface
+    public function getBody(): PsrStreamInterface
     {
-        return $this->Content;
+        return $this->Body;
     }
 
     /**
