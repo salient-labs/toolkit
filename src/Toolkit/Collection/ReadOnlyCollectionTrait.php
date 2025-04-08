@@ -3,6 +3,7 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Collection\DictionaryInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Comparable;
 use Salient\Contract\Core\Jsonable;
@@ -22,7 +23,7 @@ use Traversable;
  * @template TKey of array-key
  * @template TValue
  *
- * @phpstan-require-implements CollectionInterface
+ * @phpstan-require-implements DictionaryInterface
  * @phpstan-require-implements IteratorAggregate
  */
 trait ReadOnlyCollectionTrait

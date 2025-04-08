@@ -3,17 +3,17 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Collection\DictionaryInterface;
 
 /**
  * @api
  *
  * @template TKey of array-key
  * @template TValue
- * @template TKeyless
  *
- * @phpstan-require-implements CollectionInterface
+ * @phpstan-require-implements DictionaryInterface
  */
-trait CollectionTrait
+trait DictionaryTrait
 {
     /** @use ReadOnlyCollectionTrait<TKey,TValue> */
     use ReadOnlyCollectionTrait;
@@ -39,17 +39,6 @@ trait CollectionTrait
         $items = $this->Items;
         unset($items[$key]);
         return $this->replaceItems($items);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function add($value)
-    {
-        $items = $this->Items;
-        $items[] = $value;
-        /** @var TKeyless */
-        return $this->replaceItems($items, true);
     }
 
     /**
@@ -199,21 +188,6 @@ trait CollectionTrait
     /**
      * @inheritDoc
      */
-    public function push(...$items)
-    {
-        if (!$items) {
-            /** @var TKeyless */
-            return $this;
-        }
-        $_items = $this->Items;
-        array_push($_items, ...$items);
-        /** @var TKeyless */
-        return $this->replaceItems($_items, true);
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function pop(&$last = null)
     {
         if (!$this->Items) {
@@ -238,21 +212,6 @@ trait CollectionTrait
         $first = reset($items);
         unset($items[key($items)]);
         return $this->replaceItems($items);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function unshift(...$items)
-    {
-        if (!$items) {
-            /** @var TKeyless */
-            return $this;
-        }
-        $_items = $this->Items;
-        array_unshift($_items, ...$items);
-        /** @var TKeyless */
-        return $this->replaceItems($_items, true);
     }
 
     /**

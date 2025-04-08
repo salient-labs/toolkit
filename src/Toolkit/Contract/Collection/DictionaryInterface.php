@@ -20,7 +20,7 @@ use Traversable;
  * @extends Traversable<TKey,TValue>
  * @extends Arrayable<TKey,TValue|mixed[]>
  */
-interface CollectionInterface extends
+interface DictionaryInterface extends
     ArrayAccess,
     Countable,
     JsonSerializable,
@@ -104,14 +104,6 @@ interface CollectionInterface extends
     public function unset($key);
 
     /**
-     * Add an item
-     *
-     * @param TValue $value
-     * @return static<TKey|int,TValue>
-     */
-    public function add($value);
-
-    /**
      * Merge the collection with the given items
      *
      * @param Arrayable<TKey,TValue>|iterable<TKey,TValue> $items
@@ -138,18 +130,16 @@ interface CollectionInterface extends
      *
      * The callback's return values are discarded.
      *
-     * @template TMode of int-mask-of<CollectionInterface::*>
-     *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): mixed)|(callable(TKey, TKey|null $next, TKey|null $prev): mixed)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): mixed) $callback
      * @phpstan-param (
-     *     TMode is 3|11|19
+     *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): mixed)
-     *     : (TMode is 2|10|18
+     *     : ($mode is 2|10|18
      *         ? (callable(TKey, TKey|null $next, TKey|null $prev): mixed)
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): mixed)
      *     )
      * ) $callback
-     * @param TMode $mode
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @return $this
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -158,19 +148,18 @@ interface CollectionInterface extends
      * Pass each item in the collection to a callback and populate a new
      * collection with its return values
      *
-     * @template TMode of int-mask-of<CollectionInterface::*>
      * @template TReturn of TValue
      *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): TReturn)|(callable(TKey, TKey|null $next, TKey|null $prev): TReturn)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TReturn) $callback
      * @phpstan-param (
-     *     TMode is 3|11|19
+     *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TReturn)
-     *     : (TMode is 2|10|18
+     *     : ($mode is 2|10|18
      *         ? (callable(TKey, TKey|null $next, TKey|null $prev): TReturn)
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): TReturn)
      *     )
      * ) $callback
-     * @param TMode $mode
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @return static<TKey,TReturn>
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -178,18 +167,16 @@ interface CollectionInterface extends
     /**
      * Reduce the collection to items that satisfy a callback
      *
-     * @template TMode of int-mask-of<CollectionInterface::*>
-     *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): bool)|(callable(TKey, TKey|null $next, TKey|null $prev): bool)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool) $callback
      * @phpstan-param (
-     *     TMode is 3|11|19
+     *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool)
-     *     : (TMode is 2|10|18
+     *     : ($mode is 2|10|18
      *         ? (callable(TKey, TKey|null $next, TKey|null $prev): bool)
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): bool)
      *     )
      * ) $callback
-     * @param TMode $mode
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @return static
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -198,19 +185,17 @@ interface CollectionInterface extends
      * Get the first item that satisfies a callback, or null if there is no such
      * item in the collection
      *
-     * @template TMode of int-mask-of<CollectionInterface::*>
-     *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): bool)|(callable(TKey, TKey|null $next, TKey|null $prev): bool)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool) $callback
      * @phpstan-param (
-     *     TMode is 3|11|19
+     *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool)
-     *     : (TMode is 2|10|18
+     *     : ($mode is 2|10|18
      *         ? (callable(TKey, TKey|null $next, TKey|null $prev): bool)
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): bool)
      *     )
      * ) $callback
-     * @param TMode $mode
-     * @return (TMode is 16|17|18|19 ? TKey : TValue)|null
+     * @param int-mask-of<CollectionInterface::*> $mode
+     * @return ($mode is 16|17|18|19 ? TKey : TValue)|null
      */
     public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE);
 
@@ -314,14 +299,6 @@ interface CollectionInterface extends
     public function nth(int $n);
 
     /**
-     * Push items onto the end of the collection
-     *
-     * @param TValue ...$items
-     * @return static<TKey|int,TValue>
-     */
-    public function push(...$items);
-
-    /**
      * Pop an item off the end of the collection
      *
      * @param TValue|null $last Receives the value removed from the collection,
@@ -338,14 +315,4 @@ interface CollectionInterface extends
      * @return static
      */
     public function shift(&$first = null);
-
-    /**
-     * Add items to the beginning of the collection
-     *
-     * Items are added in one operation and stay in the given order.
-     *
-     * @param TValue ...$items
-     * @return static<TKey|int,TValue>
-     */
-    public function unshift(...$items);
 }
