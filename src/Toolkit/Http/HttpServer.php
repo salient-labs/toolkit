@@ -390,7 +390,7 @@ class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
                 }
 
                 $headers = $headers->addLine($line, true);
-                if ($headers->hasLastLine()) {
+                if ($headers->hasEmptyLine()) {
                     break;
                 }
             } while (true);

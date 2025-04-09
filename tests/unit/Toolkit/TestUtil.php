@@ -77,7 +77,7 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
                 continue;
             }
             $headers = $headers->addLine($line);
-            if ($headers->hasLastLine()) {
+            if ($headers->hasEmptyLine()) {
                 if ($headers->hasHeader(self::HEADER_TRANSFER_ENCODING)) {
                     $encoding = Arr::last(Str::split(
                         ',',

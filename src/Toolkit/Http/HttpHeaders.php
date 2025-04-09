@@ -261,6 +261,9 @@ REGEX;
 
     /**
      * @inheritDoc
+     *
+     * @throws InvalidArgumentException if `$strict` is `true` and `$line` is
+     * not \[RFC7230]-compliant.
      */
     public function addLine(string $line, bool $strict = false)
     {
@@ -325,13 +328,13 @@ REGEX;
 
         /** @var string $name */
         /** @var string $value */
-        return $this->append($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
+        return $this->addValue($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
     }
 
     /**
      * @inheritDoc
      */
-    public function hasLastLine(): bool
+    public function hasEmptyLine(): bool
     {
         return $this->Closed;
     }
@@ -339,7 +342,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function append($key, $value)
+    public function addValue($key, $value)
     {
         $values = (array) $value;
         if (!$values) {
@@ -422,15 +425,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function add($value)
-    {
-        throw new LogicException('HTTP header required');
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function merge($items, bool $addToExisting = false)
+    public function merge($items, bool $preserveValues = false)
     {
         $headers = $this->Headers;
         $index = $this->Index;
@@ -439,7 +434,7 @@ REGEX;
             $values = (array) $value;
             $lower = Str::lower($key);
             if (
-                !$addToExisting
+                !$preserveValues
                 // Checking against $this->Index instead of $index means any
                 // duplicates in $items will be preserved
                 && isset($this->Index[$lower])
@@ -460,7 +455,7 @@ REGEX;
         }
 
         if (
-            ($addToExisting && !$applied)
+            ($preserveValues && !$applied)
             || $this->getIndexValues($headers, $index) === $this->getIndexValues($this->Headers, $this->Index)
         ) {
             return $this;
@@ -486,7 +481,7 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function canonicalize()
+    public function normalise()
     {
         return $this->maybeReplaceHeaders($this->Headers, $this->Index, true);
     }
@@ -674,14 +669,6 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function push(...$items)
-    {
-        throw new LogicException('HTTP header required');
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function pop(&$last = null)
     {
         if (!$this->Index) {
@@ -707,14 +694,6 @@ REGEX;
         array_shift($index);
         $first = Arr::first($this->Items);
         return $this->replaceHeaders(null, $index);
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function unshift(...$items)
-    {
-        throw new LogicException('HTTP header required');
     }
 
     /**

@@ -259,14 +259,14 @@ final class HttpHeadersTest extends TestCase implements
         ];
     }
 
-    public function testHasLastLine(): void
+    public function testHasEmptyLine(): void
     {
         $headers = new HttpHeaders();
-        $this->assertFalse($headers->hasLastLine());
+        $this->assertFalse($headers->hasEmptyLine());
         $headers = $headers->addLine("foo: bar\r\n");
-        $this->assertFalse($headers->hasLastLine());
+        $this->assertFalse($headers->hasEmptyLine());
         $headers = $headers->addLine("\r\n");
-        $this->assertTrue($headers->hasLastLine());
+        $this->assertTrue($headers->hasEmptyLine());
     }
 
     public function testHostHeaderIsFirst(): void
@@ -334,7 +334,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testAddInvalidHeader(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders())->append($key, $value);
+        (new HttpHeaders())->addValue($key, $value);
     }
 
     /**
@@ -367,12 +367,12 @@ final class HttpHeadersTest extends TestCase implements
     public function testGetHeader(): void
     {
         $headers = (new HttpHeaders())
-            ->append('foo', ['qux', 'quux', 'quuux'])
-            ->append('bar', ['baz'])
-            ->append('qux', ['quux="comma,separated,value", quuux'])
-            ->append('size1', ['100', '100'])
-            ->append('size2', ['100', '101'])
-            ->append('items', ['item1, item2', 'item3, item4,item5', 'item6,item7']);
+            ->addValue('foo', ['qux', 'quux', 'quuux'])
+            ->addValue('bar', ['baz'])
+            ->addValue('qux', ['quux="comma,separated,value", quuux'])
+            ->addValue('size1', ['100', '100'])
+            ->addValue('size2', ['100', '101'])
+            ->addValue('items', ['item1, item2', 'item3, item4,item5', 'item6,item7']);
 
         $this->assertTrue($headers->hasHeader('Foo'));
         $this->assertFalse($headers->hasHeader('Baz'));
@@ -412,10 +412,10 @@ final class HttpHeadersTest extends TestCase implements
         $this->assertSame([], (new HttpHeaders())->getPreferences());
 
         $headers = (new HttpHeaders())
-            ->append(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
-            ->append(self::HEADER_PREFER, 'wait=10; baz=qux')
-            ->append(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
-            ->append(self::HEADER_PREFER, 'odata.maxpagesize=100');
+            ->addValue(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
+            ->addValue(self::HEADER_PREFER, 'wait=10; baz=qux')
+            ->addValue(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
+            ->addValue(self::HEADER_PREFER, 'odata.maxpagesize=100');
 
         $this->assertSame([
             'respond-async' => ['value' => '', 'parameters' => []],
@@ -454,8 +454,8 @@ final class HttpHeadersTest extends TestCase implements
         $this->assertSame($d, $c);
 
         $a = new HttpHeaders();
-        $b = $a->append(self::HEADER_PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
-        $c = $b->append(self::HEADER_PREFER, 'odata.maxpagesize=100');
+        $b = $a->addValue(self::HEADER_PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
+        $c = $b->addValue(self::HEADER_PREFER, 'odata.maxpagesize=100');
         $d = $c->set(self::HEADER_PREFER, [
             'respond-async',
             'wait=5',
@@ -504,37 +504,43 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testEmptyValue(): void
     {
-        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->append('foo', '')->set('qux', '');
+        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->addValue('foo', '')->set('qux', '');
         $this->assertSame(['foo' => ['bar', ''], 'baz' => [''], 'qux' => ['']], $headers->getHeaders());
         $this->assertSame(['foo: bar', 'baz: ', 'foo: ', 'qux: '], $headers->getLines());
         $this->assertSame(['foo:bar', 'baz;', 'foo;', 'qux;'], $headers->getLines('%s:%s', '%s;'));
     }
 
-    public function testCanonicalize(): void
+    public function testNormalise(): void
     {
-        $headers = $this->getHeaders()->set('host', 'example.com')->canonicalize();
-        $this->assertSame([
+        $headers1 = $this->getHeaders()->set('host', 'example.com');
+        $headers2 = $headers1->normalise();
+        $this->assertNotSame($headers1, $headers2);
+        $this->assertSame($headers2, $headers2->normalise());
+        $this->assertSame($all = [
             'host' => ['example.com'],
             'foo2' => ['*'],
             'foo' => ['bar', 'baz'],
             'abc' => ['def'],
             'qux' => ['quux'],
-        ], $headers->all());
-        $this->assertSame([
+        ], $headers1->all());
+        $this->assertSame($all, $headers2->all());
+        $this->assertSame($headers = [
             'host' => ['example.com'],
             'Foo2' => ['*'],
             'foo' => ['bar', 'baz'],
             'abc' => ['def'],
             'qux' => ['quux'],
-        ], $headers->getHeaders());
-        $this->assertSame([
+        ], $headers1->getHeaders());
+        $this->assertSame($headers, $headers2->getHeaders());
+        $this->assertNotSame($lines = [
             'host: example.com',
             'Foo2: *',
             'foo: bar',
             'abc: def',
             'Foo: baz',
             'qux: quux',
-        ], $headers->getLines());
+        ], $headers1->getLines());
+        $this->assertSame($lines, $headers2->getLines());
     }
 
     public function testSort(): void
