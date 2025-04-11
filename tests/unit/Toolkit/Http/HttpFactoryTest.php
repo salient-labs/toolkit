@@ -8,16 +8,16 @@ use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Http\HttpFactory;
+use Salient\Http\MessageFactory;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 
 /**
- * @covers \Salient\Http\HttpFactory
+ * @covers \Salient\Http\MessageFactory
  */
 final class HttpFactoryTest extends TestCase
 {
-    private HttpFactory $Factory;
+    private MessageFactory $Factory;
 
     public function testCreateRequest(): void
     {
@@ -93,6 +93,6 @@ final class HttpFactoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->Factory = new HttpFactory();
+        $this->Factory = new MessageFactory();
     }
 }

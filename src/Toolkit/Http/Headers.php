@@ -24,11 +24,11 @@ use LogicException;
  * An [RFC7230]-compliant HTTP header collection
  *
  * Headers can be applied explicitly or by passing HTTP header fields to
- * {@see HttpHeaders::addLine()}.
+ * {@see addLine()}.
  *
  * @implements IteratorAggregate<string,string[]>
  */
-class HttpHeaders implements HeadersInterface, IteratorAggregate
+class Headers implements HeadersInterface, IteratorAggregate
 {
     /** @use ReadOnlyCollectionTrait<string,string[]> */
     use ReadOnlyCollectionTrait;
@@ -95,7 +95,7 @@ REGEX;
     }
 
     /**
-     * Resolve a value to an HttpHeaders object
+     * Resolve a value to a Headers object
      *
      * If `$value` is a string, it is parsed as an HTTP message.
      *
@@ -469,7 +469,7 @@ REGEX;
      */
     public function authorize(
         CredentialInterface $credential,
-        string $headerName = HttpHeaders::HEADER_AUTHORIZATION
+        string $headerName = Headers::HEADER_AUTHORIZATION
     ) {
         return $this->set($headerName, sprintf(
             '%s %s',

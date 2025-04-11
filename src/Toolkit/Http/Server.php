@@ -21,7 +21,7 @@ use InvalidArgumentException;
 /**
  * A simple HTTP server
  */
-class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
+class Server implements Immutable, HasHttpHeader, HasRequestMethod
 {
     use ImmutableTrait;
 
@@ -266,10 +266,10 @@ class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
      * @template T
      *
      * @param callable(ServerRequestInterface $request, bool &$continue, T|null &$return): PsrResponseInterface $callback Receives
-     * an {@see HttpServerRequestInterface} and returns a
+     * an {@see ServerRequestInterface} and returns a
      * {@see PsrResponseInterface}. May also set `$continue = true` to make
-     * {@see HttpServer::listen()} wait for another request, or pass a value
-     * back to the caller by assigning it to `$return`.
+     * {@see Server::listen()} wait for another request, or pass a value back to
+     * the caller by assigning it to `$return`.
      * @return T|null
      */
     public function listen(callable $callback, ?int $timeout = null)
@@ -302,7 +302,7 @@ class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
             $target = '';
             $targetUri = null;
             $version = '';
-            $headers = new HttpHeaders();
+            $headers = new Headers();
             $body = null;
             do {
                 $line = @fgets($socket);
@@ -446,7 +446,7 @@ class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
                 }
             }
 
-            $request = new HttpServerRequest(
+            $request = new ServerRequest(
                 $method,
                 $uri,
                 $serverParams,
@@ -468,8 +468,8 @@ class HttpServer implements Immutable, HasHttpHeader, HasRequestMethod
                 $response = $response instanceof PsrResponseInterface
                     ? ($response instanceof ResponseInterface
                         ? $response
-                        : HttpResponse::fromPsr7($response))
-                    : new HttpResponse(500, 'Internal server error');
+                        : Response::fromPsr7($response))
+                    : new Response(500, 'Internal server error');
                 File::write($socket, (string) $response);
                 File::close($socket);
             }

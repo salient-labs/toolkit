@@ -11,9 +11,9 @@ use Salient\Utility\Exception\InvalidArgumentTypeException;
 /**
  * A PSR-7 request (incoming, server-side)
  *
- * @extends AbstractHttpRequest<PsrServerRequestInterface>
+ * @extends AbstractRequest<PsrServerRequestInterface>
  */
-class HttpServerRequest extends AbstractHttpRequest implements ServerRequestInterface
+class ServerRequest extends AbstractRequest implements ServerRequestInterface
 {
     use ImmutableTrait;
 
@@ -50,7 +50,7 @@ class HttpServerRequest extends AbstractHttpRequest implements ServerRequestInte
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(PsrMessageInterface $message): HttpServerRequest
+    public static function fromPsr7(PsrMessageInterface $message): ServerRequest
     {
         if ($message instanceof static) {
             return $message;

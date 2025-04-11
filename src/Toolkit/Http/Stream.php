@@ -19,7 +19,7 @@ use InvalidArgumentException;
 /**
  * A PSR-7 stream wrapper
  */
-class HttpStream implements StreamInterface, HasFormDataFlag
+class Stream implements StreamInterface, HasFormDataFlag
 {
     protected const CHUNK_SIZE = 8192;
 
@@ -57,7 +57,7 @@ class HttpStream implements StreamInterface, HasFormDataFlag
     }
 
     /**
-     * Creates a new HttpStream object from a string
+     * Creates a new Stream object from a string
      */
     public static function fromString(string $content): self
     {
@@ -65,15 +65,15 @@ class HttpStream implements StreamInterface, HasFormDataFlag
     }
 
     /**
-     * Encapsulate arbitrarily nested data in a new HttpStream or
-     * HttpMultipartStream object
+     * Encapsulate arbitrarily nested data in a new Stream or MultipartStream
+     * object
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<HttpStream::DATA_*> $flags
+     * @param int-mask-of<Stream::DATA_*> $flags
      */
     public static function fromData(
         $data,
-        int $flags = HttpStream::DATA_PRESERVE_NUMERIC_KEYS | HttpStream::DATA_PRESERVE_STRING_KEYS,
+        int $flags = Stream::DATA_PRESERVE_NUMERIC_KEYS | Stream::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         bool $asJson = false,
         ?string $boundary = null
@@ -113,10 +113,10 @@ class HttpStream implements StreamInterface, HasFormDataFlag
             if ($content instanceof StreamPartInterface) {
                 $parts[] = $content->withName($name);
             } else {
-                $parts[] = new HttpMultipartStreamPart($content, $name);
+                $parts[] = new StreamPart($content, $name);
             }
         }
-        return new HttpMultipartStream($parts ?? [], $boundary);
+        return new MultipartStream($parts ?? [], $boundary);
     }
 
     /**

@@ -13,7 +13,7 @@ use InvalidArgumentException;
 /**
  * @api
  */
-class HttpMultipartStream implements MultipartStreamInterface
+class MultipartStream implements MultipartStreamInterface
 {
     protected const CHUNK_SIZE = 8192;
 
@@ -81,16 +81,16 @@ class HttpMultipartStream implements MultipartStreamInterface
             if ($mediaType !== null) {
                 $headers[self::HEADER_CONTENT_TYPE] = $mediaType;
             }
-            $this->Streams[] = HttpStream::fromString(sprintf(
+            $this->Streams[] = Stream::fromString(sprintf(
                 "--%s\r\n%s\r\n\r\n",
                 $boundary,
-                (string) new HttpHeaders($headers),
+                (string) new Headers($headers),
             ));
             $this->Streams[] = $body;
-            $this->Streams[] = HttpStream::fromString("\r\n");
+            $this->Streams[] = Stream::fromString("\r\n");
         }
 
-        $this->Streams[] = HttpStream::fromString(sprintf(
+        $this->Streams[] = Stream::fromString(sprintf(
             "--%s--\r\n",
             $boundary,
         ));
@@ -188,7 +188,7 @@ class HttpMultipartStream implements MultipartStreamInterface
     {
         $this->assertIsOpen();
 
-        return HttpStream::copyToString($this);
+        return Stream::copyToString($this);
     }
 
     /**

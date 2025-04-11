@@ -5,10 +5,10 @@ namespace Salient\Tests\Http;
 use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
-use Salient\Http\HttpMultipartStream;
-use Salient\Http\HttpMultipartStreamPart;
-use Salient\Http\HttpRequest;
-use Salient\Http\HttpStream;
+use Salient\Http\MultipartStream;
+use Salient\Http\Request;
+use Salient\Http\Stream;
+use Salient\Http\StreamPart;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Str;
@@ -16,11 +16,12 @@ use Salient\Utility\Sys;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\Http\HttpMultipartStream
- * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\AbstractHttpMessage
- * @covers \Salient\Http\HasHttpHeaders
- * @covers \Salient\Http\HttpHeaders
+ * @covers \Salient\Http\MultipartStream
+ * @covers \Salient\Http\Request
+ * @covers \Salient\Http\AbstractRequest
+ * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\HasInnerHeadersTrait
+ * @covers \Salient\Http\Headers
  */
 final class HttpMultipartStreamTest extends TestCase
 {
@@ -147,7 +148,7 @@ final class HttpMultipartStreamTest extends TestCase
         $this->expectExceptionMessage('Body not readable: 4');
         try {
             $this->getStream(
-                new HttpMultipartStreamPart(new HttpStream(File::open($file, 'w')), 'unreadable'),
+                new StreamPart(new Stream(File::open($file, 'w')), 'unreadable'),
             );
         } finally {
             File::pruneDir($dir, true);
@@ -158,7 +159,7 @@ final class HttpMultipartStreamTest extends TestCase
     {
         $command = Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'data';"]);
         $stream = $this->getStream(
-            new HttpMultipartStreamPart(new HttpStream(File::openPipe($command, 'r')), 'unseekable'),
+            new StreamPart(new Stream(File::openPipe($command, 'r')), 'unseekable'),
         );
         $this->assertFalse($stream->isSeekable());
         $this->assertSame($this->getContents(
@@ -175,7 +176,7 @@ final class HttpMultipartStreamTest extends TestCase
     public function testWithRequest(): void
     {
         $stream = $this->getStream();
-        $request = new HttpRequest('POST', 'https://example.com', $stream);
+        $request = new Request('POST', 'https://example.com', $stream);
         $this->assertSame(($headers = "POST / HTTP/1.1\r\n"
                 . "Content-Type: multipart/form-data; boundary=boundary\r\n"
                 . "Host: example.com\r\n\r\n")
@@ -183,15 +184,15 @@ final class HttpMultipartStreamTest extends TestCase
         $this->assertSame($headers, (string) $request->withBody(null));
     }
 
-    private function getStream(StreamPartInterface ...$streams): HttpMultipartStream
+    private function getStream(StreamPartInterface ...$streams): MultipartStream
     {
         $handle = Str::toStream('value1');
         $this->LastHandle = $handle;
-        return new HttpMultipartStream([
-            new HttpMultipartStreamPart($handle, 'field1'),
-            new HttpMultipartStreamPart('value2', 'field2', 'example2.txt'),
-            new HttpMultipartStreamPart('value3', 'field3', 'example 3-ä-€.txt', 'text/plain', 'example3.txt'),
-            new HttpMultipartStreamPart('value4', 'field4', null, null, 'example4.txt'),
+        return new MultipartStream([
+            new StreamPart($handle, 'field1'),
+            new StreamPart('value2', 'field2', 'example2.txt'),
+            new StreamPart('value3', 'field3', 'example 3-ä-€.txt', 'text/plain', 'example3.txt'),
+            new StreamPart('value4', 'field4', null, null, 'example4.txt'),
             ...$streams,
         ], 'boundary');
     }

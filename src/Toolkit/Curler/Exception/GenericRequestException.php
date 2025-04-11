@@ -4,7 +4,7 @@ namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Core\Exception\Exception;
-use Salient\Http\HttpRequest;
+use Salient\Http\Request;
 use Salient\Utility\Format;
 use Throwable;
 
@@ -46,7 +46,7 @@ class GenericRequestException extends Exception
     public function getMetadata(): array
     {
         return [
-            'Request' => (string) HttpRequest::fromPsr7($this->Request),
+            'Request' => (string) Request::fromPsr7($this->Request),
             'Data' => $this->Data
                 ? Format::array($this->Data)
                 : '<none>',

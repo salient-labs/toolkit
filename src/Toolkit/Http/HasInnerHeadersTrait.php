@@ -2,16 +2,16 @@
 
 namespace Salient\Http;
 
-use Salient\Contract\Http\HasInnerHeaders as HasHttpHeadersInterface;
+use Salient\Contract\Http\HasInnerHeaders;
 use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 
 /**
  * @api
  *
- * @phpstan-require-implements HasHttpHeadersInterface
+ * @phpstan-require-implements HasInnerHeaders
  */
-trait HasHttpHeaders
+trait HasInnerHeadersTrait
 {
     use ImmutableTrait;
 

@@ -5,8 +5,8 @@ namespace Salient\Tests\Http;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\HasMediaType;
-use Salient\Http\HttpRequest;
 use Salient\Http\HttpUtil;
+use Salient\Http\Request;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
@@ -280,9 +280,9 @@ final class HttpUtilTest extends TestCase implements HasMediaType
             $expected,
             (string) HttpUtil::mergeQuery($uri, $data, $flags, $dateFormatter),
         );
-        $request = new HttpRequest('GET', $uri);
+        $request = new Request('GET', $uri);
         $request = HttpUtil::mergeQuery($request, $data, $flags, $dateFormatter);
-        $this->assertInstanceOf(HttpRequest::class, $request);
+        $this->assertInstanceOf(Request::class, $request);
         $this->assertSame($expected, (string) $request->getUri());
     }
 
@@ -342,9 +342,9 @@ final class HttpUtilTest extends TestCase implements HasMediaType
             $expected,
             (string) HttpUtil::replaceQuery($uri, $data, $flags, $dateFormatter),
         );
-        $request = new HttpRequest('GET', $uri);
+        $request = new Request('GET', $uri);
         $request = HttpUtil::replaceQuery($request, $data, $flags, $dateFormatter);
-        $this->assertInstanceOf(HttpRequest::class, $request);
+        $this->assertInstanceOf(Request::class, $request);
         $this->assertSame($expected, (string) $request->getUri());
     }
 

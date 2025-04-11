@@ -9,9 +9,9 @@ use Salient\Core\Concern\ImmutableTrait;
 /**
  * A PSR-7 request (outgoing, client-side)
  *
- * @extends AbstractHttpRequest<PsrRequestInterface>
+ * @extends AbstractRequest<PsrRequestInterface>
  */
-class HttpRequest extends AbstractHttpRequest
+class Request extends AbstractRequest
 {
     use ImmutableTrait;
 
@@ -29,7 +29,7 @@ class HttpRequest extends AbstractHttpRequest
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(PsrMessageInterface $message): HttpRequest
+    public static function fromPsr7(PsrMessageInterface $message): Request
     {
         return $message instanceof static
             ? $message

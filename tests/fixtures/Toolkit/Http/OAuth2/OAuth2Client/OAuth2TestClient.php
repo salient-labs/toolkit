@@ -7,7 +7,7 @@ use Salient\Core\Facade\Console;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\OAuth2\OAuth2Client;
 use Salient\Http\OAuth2\OAuth2Flow;
-use Salient\Http\HttpServer;
+use Salient\Http\Server;
 use Salient\Utility\Env;
 
 final class OAuth2TestClient extends OAuth2Client
@@ -28,9 +28,9 @@ final class OAuth2TestClient extends OAuth2Client
     /**
      * @inheritDoc
      */
-    protected function getListener(): ?HttpServer
+    protected function getListener(): ?Server
     {
-        $listener = new HttpServer(
+        $listener = new Server(
             Env::get('app_host', 'localhost'),
             Env::getInt('app_port', 27755),
         );

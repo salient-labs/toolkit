@@ -2,7 +2,7 @@
 
 namespace Salient\Curler;
 
-use Salient\Http\HttpMultipartStreamPart;
+use Salient\Http\StreamPart;
 use Salient\Utility\File;
 use InvalidArgumentException;
 
@@ -11,7 +11,7 @@ use InvalidArgumentException;
  *
  * @api
  */
-class CurlerFile extends HttpMultipartStreamPart
+class CurlerFile extends StreamPart
 {
     /**
      * @api

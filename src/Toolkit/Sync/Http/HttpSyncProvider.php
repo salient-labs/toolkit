@@ -12,7 +12,7 @@ use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Curler\Curler;
-use Salient\Http\HttpHeaders;
+use Salient\Http\Headers;
 use Salient\Sync\Exception\UnreachableBackendException;
 use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Get;
@@ -85,11 +85,11 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     }
 
     /**
-     * Get a new HttpHeaders instance
+     * Get a new Headers instance
      */
-    final protected function headers(): HttpHeaders
+    final protected function headers(): Headers
     {
-        return new HttpHeaders();
+        return new Headers();
     }
 
     /**

@@ -11,7 +11,7 @@ use Salient\Utility\File;
 /**
  * A PSR-7 uploaded file (incoming, server-side)
  */
-class HttpServerRequestUpload implements PsrUploadedFileInterface
+class ServerRequestUpload implements PsrUploadedFileInterface
 {
     protected const ERROR_MESSAGE = [
         \UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
@@ -54,7 +54,7 @@ class HttpServerRequestUpload implements PsrUploadedFileInterface
         if ($resource instanceof PsrStreamInterface) {
             $this->Stream = $resource;
         } elseif (File::isStream($resource)) {
-            $this->Stream = new HttpStream($resource);
+            $this->Stream = new Stream($resource);
         } elseif (is_string($resource)) {
             $this->File = $resource;
         } else {
@@ -74,7 +74,7 @@ class HttpServerRequestUpload implements PsrUploadedFileInterface
     {
         $this->assertIsValid();
 
-        return $this->Stream ?? new HttpStream(File::open($this->File, 'r'));
+        return $this->Stream ?? new Stream(File::open($this->File, 'r'));
     }
 
     /**
@@ -99,8 +99,8 @@ class HttpServerRequestUpload implements PsrUploadedFileInterface
                 ));
             }
         } else {
-            $target = new HttpStream(File::open($targetPath, 'w'));
-            HttpStream::copyToStream($this->Stream, $target);
+            $target = new Stream(File::open($targetPath, 'w'));
+            Stream::copyToStream($this->Stream, $target);
         }
 
         $this->IsMoved = true;

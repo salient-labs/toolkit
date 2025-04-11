@@ -9,7 +9,7 @@ use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Http\OAuth2\AccessToken;
-use Salient\Http\HttpHeaders;
+use Salient\Http\Headers;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use ArrayIterator;
@@ -17,7 +17,7 @@ use InvalidArgumentException;
 use LogicException;
 
 /**
- * @covers \Salient\Http\HttpHeaders
+ * @covers \Salient\Http\Headers
  */
 final class HttpHeadersTest extends TestCase implements
     HasHttpHeader,
@@ -34,7 +34,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testConstructor($expected, ?array $expectedLines, array $items): void
     {
         $this->maybeExpectException($expected);
-        $headers = new HttpHeaders($items);
+        $headers = new Headers($items);
         $this->assertSame($expected, $headers->all());
         $this->assertSame($expectedLines, $headers->getLines());
     }
@@ -82,7 +82,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testAddLine($expected, array $lines, bool $strict = false, ?bool $trailers = null): void
     {
         $this->maybeExpectException($expected);
-        $headers = new HttpHeaders();
+        $headers = new Headers();
         foreach ($lines as $line) {
             $headers = $headers->addLine($line, $strict);
         }
@@ -261,7 +261,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testHasEmptyLine(): void
     {
-        $headers = new HttpHeaders();
+        $headers = new Headers();
         $this->assertFalse($headers->hasEmptyLine());
         $headers = $headers->addLine("foo: bar\r\n");
         $this->assertFalse($headers->hasEmptyLine());
@@ -272,9 +272,9 @@ final class HttpHeadersTest extends TestCase implements
     public function testHostHeaderIsFirst(): void
     {
         $headers = [
-            new HttpHeaders(['Foo' => 'bar', 'Host' => 'example.com']),
-            (new HttpHeaders())->addLine("Foo: bar\r\n")->addLine("Host: example.com\r\n"),
-            (new HttpHeaders())->set('Foo', 'bar')->set('Host', 'example.com'),
+            new Headers(['Foo' => 'bar', 'Host' => 'example.com']),
+            (new Headers())->addLine("Foo: bar\r\n")->addLine("Host: example.com\r\n"),
+            (new Headers())->set('Foo', 'bar')->set('Host', 'example.com'),
         ];
 
         foreach ($headers as $headers) {
@@ -301,7 +301,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testInvalidHeaderArray(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders([$key => $value]));
+        (new Headers([$key => $value]));
     }
 
     /**
@@ -312,7 +312,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testInvalidHeaderArrayable(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders(new Collection([$key => $value])));
+        (new Headers(new Collection([$key => $value])));
     }
 
     /**
@@ -323,7 +323,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testInvalidHeaderIterator(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders(new ArrayIterator([$key => $value])));
+        (new Headers(new ArrayIterator([$key => $value])));
     }
 
     /**
@@ -334,7 +334,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testAddInvalidHeader(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders())->addValue($key, $value);
+        (new Headers())->addValue($key, $value);
     }
 
     /**
@@ -345,7 +345,7 @@ final class HttpHeadersTest extends TestCase implements
     public function testSetInvalidHeader(string $key, $value): void
     {
         $this->expectException(InvalidArgumentException::class);
-        (new HttpHeaders())->set($key, $value);
+        (new Headers())->set($key, $value);
     }
 
     /**
@@ -366,7 +366,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testGetHeader(): void
     {
-        $headers = (new HttpHeaders())
+        $headers = (new Headers())
             ->addValue('foo', ['qux', 'quux', 'quuux'])
             ->addValue('bar', ['baz'])
             ->addValue('qux', ['quux="comma,separated,value", quuux'])
@@ -409,9 +409,9 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testGetPreferences(): void
     {
-        $this->assertSame([], (new HttpHeaders())->getPreferences());
+        $this->assertSame([], (new Headers())->getPreferences());
 
-        $headers = (new HttpHeaders())
+        $headers = (new Headers())
             ->addValue(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
             ->addValue(self::HEADER_PREFER, 'wait=10; baz=qux')
             ->addValue(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
@@ -428,11 +428,11 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testMergePreferences(): void
     {
-        $this->assertSame('', HttpHeaders::mergePreferences([]));
+        $this->assertSame('', Headers::mergePreferences([]));
 
         $this->assertSame(
             'respond-async, WAIT=5; foo=bar, handling=lenient, task_priority=2; baz="foo bar", odata.maxpagesize=100',
-            HttpHeaders::mergePreferences([
+            Headers::mergePreferences([
                 'respond-async' => '',
                 'WAIT' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
                 'wait' => '10',
@@ -445,7 +445,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testImmutability(): void
     {
-        $a = new HttpHeaders();
+        $a = new Headers();
         $b = $a->set(self::HEADER_CONTENT_TYPE, self::TYPE_TEXT);
         $c = $b->set(self::HEADER_CONTENT_TYPE, self::TYPE_JSON);
         $d = $c->set(self::HEADER_CONTENT_TYPE, self::TYPE_JSON);
@@ -453,7 +453,7 @@ final class HttpHeadersTest extends TestCase implements
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
 
-        $a = new HttpHeaders();
+        $a = new Headers();
         $b = $a->addValue(self::HEADER_PREFER, ['respond-async', 'wait=5', 'handling=lenient', 'task_priority=2']);
         $c = $b->addValue(self::HEADER_PREFER, 'odata.maxpagesize=100');
         $d = $c->set(self::HEADER_PREFER, [
@@ -504,7 +504,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testEmptyValue(): void
     {
-        $headers = (new HttpHeaders(['foo' => 'bar', 'baz' => '']))->addValue('foo', '')->set('qux', '');
+        $headers = (new Headers(['foo' => 'bar', 'baz' => '']))->addValue('foo', '')->set('qux', '');
         $this->assertSame(['foo' => ['bar', ''], 'baz' => [''], 'qux' => ['']], $headers->getHeaders());
         $this->assertSame(['foo: bar', 'baz: ', 'foo: ', 'qux: '], $headers->getLines());
         $this->assertSame(['foo:bar', 'baz;', 'foo;', 'qux;'], $headers->getLines('%s:%s', '%s;'));
@@ -612,9 +612,9 @@ final class HttpHeadersTest extends TestCase implements
         )->all());
     }
 
-    private function getHeaders(): HttpHeaders
+    private function getHeaders(): Headers
     {
-        return new HttpHeaders([
+        return new Headers([
             'Foo2' => '*',
             'foo' => 'bar',
             'abc' => 'def',
@@ -627,7 +627,7 @@ final class HttpHeadersTest extends TestCase implements
     {
         $index = Arr::toIndex(Arr::lower(self::HEADERS_SENSITIVE));
         $token = new AccessToken('foo.bar.baz', 'Bearer', time() + 3600);
-        $headers = (new HttpHeaders())
+        $headers = (new Headers())
             ->authorize($token)
             ->set(self::HEADER_ACCEPT, '*/*')
             ->set('foo', ['bar', 'baz']);
@@ -655,7 +655,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testCompareItems(): void
     {
-        $this->assertTrue((new HttpHeaders(['foo' => 'bar']))->hasValue(['bar']));
+        $this->assertTrue((new Headers(['foo' => 'bar']))->hasValue(['bar']));
     }
 
     /**
@@ -667,11 +667,11 @@ final class HttpHeadersTest extends TestCase implements
      */
     public function testOnly(array $expected, array $items, array $keys): void
     {
-        $headers = new HttpHeaders($items);
+        $headers = new Headers($items);
         $headers1 = $headers->only($keys);
         $headers2 = $headers1->only($keys);
         $this->assertNotSame($headers, $headers1);
-        $this->assertInstanceOf(HttpHeaders::class, $headers1);
+        $this->assertInstanceOf(Headers::class, $headers1);
         $this->assertSame($expected, $headers1->all());
         $this->assertSame($headers1, $headers2);
 
@@ -717,11 +717,11 @@ final class HttpHeadersTest extends TestCase implements
      */
     public function testExcept(array $expected, array $items, array $keys): void
     {
-        $headers = new HttpHeaders($items);
+        $headers = new Headers($items);
         $headers1 = $headers->except($keys);
         $headers2 = $headers1->except($keys);
         $this->assertNotSame($headers, $headers1);
-        $this->assertInstanceOf(HttpHeaders::class, $headers1);
+        $this->assertInstanceOf(Headers::class, $headers1);
         $this->assertSame($expected, $headers1->all());
         $this->assertSame($headers1, $headers2);
 
@@ -761,14 +761,14 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testOffsetSet(): void
     {
-        $headers = new HttpHeaders();
+        $headers = new Headers();
         $this->expectException(LogicException::class);
         $headers[self::HEADER_CONTENT_TYPE] = [self::TYPE_JSON];
     }
 
     public function testOffsetUnset(): void
     {
-        $headers = new HttpHeaders();
+        $headers = new Headers();
         $this->expectException(LogicException::class);
         unset($headers[self::HEADER_CONTENT_TYPE]);
     }

@@ -10,8 +10,8 @@ use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Curler\Curler;
-use Salient\Http\HttpResponse;
-use Salient\Http\HttpServer;
+use Salient\Http\Response;
+use Salient\Http\Server;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Json;
@@ -26,7 +26,7 @@ use UnexpectedValueException;
  */
 abstract class OAuth2Client
 {
-    private ?HttpServer $Listener;
+    private ?Server $Listener;
     private AbstractProvider $Provider;
     /** @var OAuth2Flow::* */
     private int $Flow;
@@ -42,9 +42,9 @@ abstract class OAuth2Client
      * <?php
      * class OAuth2TestClient extends OAuth2Client
      * {
-     *     protected function getListener(): ?HttpServer
+     *     protected function getListener(): ?Server
      *     {
-     *         $listener = new HttpServer(
+     *         $listener = new Server(
      *             Env::get('app_host', 'localhost'),
      *             Env::getInt('app_port', 27755),
      *         );
@@ -66,7 +66,7 @@ abstract class OAuth2Client
      * }
      * ```
      */
-    abstract protected function getListener(): ?HttpServer;
+    abstract protected function getListener(): ?Server;
 
     /**
      * Return an OAuth 2.0 provider to request and validate tokens that
@@ -314,7 +314,7 @@ abstract class OAuth2Client
             Console::log('Follow the link to authorize access:', "\n$url");
             Console::info('Waiting for authorization');
             $code = $this->Listener->listen(
-                fn(ServerRequestInterface $request, bool &$continue, &$return): HttpResponse =>
+                fn(ServerRequestInterface $request, bool &$continue, &$return): Response =>
                     $this->receiveAuthorizationCode($request, $continue, $return)
             );
         } finally {
@@ -335,14 +335,14 @@ abstract class OAuth2Client
     /**
      * @param mixed $return
      */
-    private function receiveAuthorizationCode(ServerRequestInterface $request, bool &$continue, &$return): HttpResponse
+    private function receiveAuthorizationCode(ServerRequestInterface $request, bool &$continue, &$return): Response
     {
         if (
             Str::upper($request->getMethod()) !== ServerRequestInterface::METHOD_GET
             || $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
             $continue = true;
-            return new HttpResponse(400, 'Invalid request.');
+            return new Response(400, 'Invalid request.');
         }
 
         $state = Cache::getString("{$this->TokenKey}:state");
@@ -357,11 +357,11 @@ abstract class OAuth2Client
         ) {
             Console::debug('Authorization code received and verified');
             $return = $code;
-            return new HttpResponse(200, 'Authorization received. You may now close this window.');
+            return new Response(200, 'Authorization received. You may now close this window.');
         }
 
         Console::debug('Request did not provide a valid authorization code');
-        return new HttpResponse(400, 'Invalid request. Please try again.');
+        return new Response(400, 'Invalid request. Please try again.');
     }
 
     /**

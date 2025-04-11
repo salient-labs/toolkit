@@ -19,7 +19,7 @@ use Salient\Utility\File;
 /**
  * A PSR-17 HTTP message factory
  */
-class HttpFactory implements
+class MessageFactory implements
     PsrRequestFactoryInterface,
     PsrResponseFactoryInterface,
     PsrServerRequestFactoryInterface,
@@ -32,7 +32,7 @@ class HttpFactory implements
      */
     public function createRequest(string $method, $uri): PsrRequestInterface
     {
-        return new HttpRequest($method, $uri);
+        return new Request($method, $uri);
     }
 
     /**
@@ -42,7 +42,7 @@ class HttpFactory implements
         int $code = 200,
         string $reasonPhrase = ''
     ): PsrResponseInterface {
-        return new HttpResponse($code, null, null, $reasonPhrase);
+        return new Response($code, null, null, $reasonPhrase);
     }
 
     /**
@@ -53,7 +53,7 @@ class HttpFactory implements
         $uri,
         array $serverParams = []
     ): PsrServerRequestInterface {
-        return new HttpServerRequest($method, $uri, $serverParams);
+        return new ServerRequest($method, $uri, $serverParams);
     }
 
     /**
@@ -61,7 +61,7 @@ class HttpFactory implements
      */
     public function createStream(string $content = ''): PsrStreamInterface
     {
-        return HttpStream::fromString($content);
+        return Stream::fromString($content);
     }
 
     /**
@@ -71,7 +71,7 @@ class HttpFactory implements
         string $filename,
         string $mode = 'r'
     ): PsrStreamInterface {
-        return new HttpStream(File::open($filename, $mode));
+        return new Stream(File::open($filename, $mode));
     }
 
     /**
@@ -79,7 +79,7 @@ class HttpFactory implements
      */
     public function createStreamFromResource($resource): PsrStreamInterface
     {
-        return new HttpStream($resource);
+        return new Stream($resource);
     }
 
     /**
@@ -92,7 +92,7 @@ class HttpFactory implements
         ?string $clientFilename = null,
         ?string $clientMediaType = null
     ): PsrUploadedFileInterface {
-        return new HttpServerRequestUpload(
+        return new ServerRequestUpload(
             $stream,
             $size,
             $error,

@@ -7,7 +7,7 @@ use Salient\Contract\Curler\Event\CurlRequestEvent;
 use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Event\ResponseCacheHitEvent;
 use Salient\Core\Facade\Event;
-use Salient\Http\HttpRequest;
+use Salient\Http\Request;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Package;
@@ -212,7 +212,7 @@ class CurlerHarRecorder
             'startedDateTime' => (new DateTimeImmutable(sprintf('@%.6f', $requestTime)))->format('Y-m-d\TH:i:s.vP'),
             // Sum of non-negative timings
             'time' => $totalTime,
-            'request' => HttpRequest::fromPsr7($request)->jsonSerialize(),
+            'request' => Request::fromPsr7($request)->jsonSerialize(),
             'response' => $event->getResponse()->jsonSerialize(),
             'cache' => new stdClass(),
             'timings' => [
@@ -263,7 +263,7 @@ class CurlerHarRecorder
         $entry = [
             'startedDateTime' => (new DateTimeImmutable())->format('Y-m-d\TH:i:s.vP'),
             'time' => 0,
-            'request' => HttpRequest::fromPsr7($request)->jsonSerialize(),
+            'request' => Request::fromPsr7($request)->jsonSerialize(),
             'response' => $event->getResponse()->jsonSerialize(),
             'cache' => new stdClass(),
             'timings' => [

@@ -20,9 +20,9 @@ use InvalidArgumentException;
  *
  * @implements MessageInterface<TPsr7>
  */
-abstract class AbstractHttpMessage implements MessageInterface
+abstract class AbstractMessage implements MessageInterface
 {
-    use HasHttpHeaders;
+    use HasInnerHeadersTrait;
     use ImmutableTrait;
 
     protected string $ProtocolVersion;
@@ -102,7 +102,7 @@ abstract class AbstractHttpMessage implements MessageInterface
         if ($headers instanceof HeadersInterface) {
             return $headers;
         }
-        return new HttpHeaders($headers ?? []);
+        return new Headers($headers ?? []);
     }
 
     /**
@@ -114,10 +114,10 @@ abstract class AbstractHttpMessage implements MessageInterface
             return $body;
         }
         if (is_string($body) || $body === null) {
-            return HttpStream::fromString((string) $body);
+            return Stream::fromString((string) $body);
         }
         try {
-            return new HttpStream($body);
+            return new Stream($body);
         } catch (InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,

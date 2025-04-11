@@ -13,9 +13,9 @@ use InvalidArgumentException;
 /**
  * A PSR-7 response
  *
- * @extends AbstractHttpMessage<PsrResponseInterface>
+ * @extends AbstractMessage<PsrResponseInterface>
  */
-class HttpResponse extends AbstractHttpMessage implements ResponseInterface
+class Response extends AbstractMessage implements ResponseInterface
 {
     use ImmutableTrait;
 
@@ -102,7 +102,7 @@ class HttpResponse extends AbstractHttpMessage implements ResponseInterface
     /**
      * @inheritDoc
      */
-    public static function fromPsr7(PsrMessageInterface $message): HttpResponse
+    public static function fromPsr7(PsrMessageInterface $message): Response
     {
         return $message instanceof static
             ? $message

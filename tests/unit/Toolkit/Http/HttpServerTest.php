@@ -9,27 +9,28 @@ use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
-use Salient\Http\HttpResponse as Response;
-use Salient\Http\HttpServer;
+use Salient\Http\Response;
+use Salient\Http\Server;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
 /**
- * @covers \Salient\Http\HttpServer
- * @covers \Salient\Http\HttpServerRequest
- * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\HttpResponse
- * @covers \Salient\Http\AbstractHttpMessage
- * @covers \Salient\Http\HasHttpHeaders
- * @covers \Salient\Http\HttpHeaders
+ * @covers \Salient\Http\Server
+ * @covers \Salient\Http\ServerRequest
+ * @covers \Salient\Http\Request
+ * @covers \Salient\Http\AbstractRequest
+ * @covers \Salient\Http\Response
+ * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\HasInnerHeadersTrait
+ * @covers \Salient\Http\Headers
  */
 final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaType, HasRequestMethod
 {
-    private HttpServer $Server;
+    private Server $Server;
 
     public function testConstructor(): void
     {
-        $server = new HttpServer('localhost', 8080, 300);
+        $server = new Server('localhost', 8080, 300);
         $this->assertSame('localhost', $server->getHost());
         $this->assertSame(8080, $server->getPort());
         $this->assertSame(300, $server->getTimeout());
@@ -82,7 +83,7 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
         $this->assertSame('/api', $proxied->getProxyBasePath());
         $this->assertSame('http://example.com:443/api', $proxied->getBaseUri());
 
-        $server = new HttpServer('localhost', 80);
+        $server = new Server('localhost', 80);
         $this->assertSame(80, $server->getPort());
         $this->assertSame(-1, $server->getTimeout());
         $this->assertSame('http://localhost', $server->getBaseUri());
@@ -135,8 +136,8 @@ EOF, $client->getOutputAsText(Process::STDERR));
         string $target = '/',
         string $body = '',
         string ...$headers
-    ): HttpServer {
-        $this->Server ??= new HttpServer('localhost', 3008, 30);
+    ): Server {
+        $this->Server ??= new Server('localhost', 3008, 30);
         if (!$this->Server->isRunning()) {
             $this->Server->start();
         }

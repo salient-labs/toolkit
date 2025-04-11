@@ -3,13 +3,14 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\RequestIntegrationTest;
-use Salient\Http\HttpRequest;
+use Salient\Http\Request;
 
 /**
- * @covers \Salient\Http\HttpRequest
- * @covers \Salient\Http\AbstractHttpMessage
- * @covers \Salient\Http\HasHttpHeaders
- * @covers \Salient\Http\HttpHeaders
+ * @covers \Salient\Http\Request
+ * @covers \Salient\Http\AbstractRequest
+ * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\HasInnerHeadersTrait
+ * @covers \Salient\Http\Headers
  */
 class RequestTest extends RequestIntegrationTest
 {
@@ -22,6 +23,6 @@ class RequestTest extends RequestIntegrationTest
 
     public function createSubject()
     {
-        return new HttpRequest('GET', '/');
+        return new Request('GET', '/');
     }
 }

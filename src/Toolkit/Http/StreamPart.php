@@ -16,7 +16,7 @@ use LogicException;
 /**
  * Part of a PSR-7 multipart data stream
  */
-class HttpMultipartStreamPart implements StreamPartInterface
+class StreamPart implements StreamPartInterface
 {
     use ImmutableTrait;
 
@@ -47,7 +47,7 @@ class HttpMultipartStreamPart implements StreamPartInterface
     }
 
     /**
-     * Creates a new HttpMultipartStreamPart object backed by a local file
+     * Creates a new StreamPart object backed by a local file
      *
      * @param string|null $uploadFilename Default: `basename($filename)`
      * @param string|null $mediaType Default: `mime_content_type($filename)`,
@@ -187,10 +187,10 @@ class HttpMultipartStreamPart implements StreamPartInterface
             return $content;
         }
         if (is_string($content) || $content === null) {
-            return HttpStream::fromString((string) $content);
+            return Stream::fromString((string) $content);
         }
         try {
-            return new HttpStream($content);
+            return new Stream($content);
         } catch (InvalidArgumentException $ex) {
             throw new InvalidArgumentTypeException(
                 1,

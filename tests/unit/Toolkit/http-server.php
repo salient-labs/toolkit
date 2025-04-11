@@ -4,8 +4,8 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HasHttpHeader as Header;
 use Salient\Contract\Http\HasRequestMethod as Method;
-use Salient\Http\HttpResponse;
 use Salient\Http\HttpUtil;
+use Salient\Http\Response;
 use Salient\Utility\File;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;
@@ -91,7 +91,7 @@ do {
     }
 
     $response = $responses[$i]
-        ?? (string) (new HttpResponse())
+        ?? (string) (new Response())
             ->withHeader(Header::HEADER_DATE, HttpUtil::getDate())
             ->withHeader(Header::HEADER_SERVER, HttpUtil::getProduct());
 

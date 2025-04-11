@@ -13,10 +13,10 @@ use Stringable;
 /**
  * @template TPsr7 of PsrRequestInterface
  *
- * @extends AbstractHttpMessage<TPsr7>
+ * @extends AbstractMessage<TPsr7>
  * @implements RequestInterface<TPsr7>
  */
-abstract class AbstractHttpRequest extends AbstractHttpMessage implements RequestInterface
+abstract class AbstractRequest extends AbstractMessage implements RequestInterface
 {
     use ImmutableTrait;
 

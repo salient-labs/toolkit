@@ -9,7 +9,7 @@ use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\HasFileDescriptor;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
-use Salient\Http\HttpHeaders;
+use Salient\Http\Headers;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
@@ -77,7 +77,7 @@ abstract class HttpTestCase extends TestCase implements
         );
 
         $actual = explode("\r\n\r\n", $actual, 2);
-        $headers = HttpHeaders::from($actual[0])->except($ignore)->sort();
+        $headers = Headers::from($actual[0])->except($ignore)->sort();
         $actual[0] = implode("\r\n", [
             explode("\r\n", $actual[0], 2)[0],
             ...$headers->getLines(),

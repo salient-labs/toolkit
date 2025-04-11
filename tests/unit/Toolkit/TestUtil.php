@@ -3,7 +3,7 @@
 namespace Salient\Tests;
 
 use Salient\Contract\Http\HasHttpHeader;
-use Salient\Http\HttpHeaders;
+use Salient\Http\Headers;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
@@ -16,18 +16,18 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
      * Read an HTTP message from a stream and write it to STDOUT
      *
      * @param resource $stream
-     * @param-out HttpHeaders $headers
+     * @param-out Headers $headers
      * @param-out string $body
      */
     public static function dumpHttpMessage(
         $stream,
         bool $isRequest = false,
         ?string &$startLine = null,
-        ?HttpHeaders &$headers = null,
+        ?Headers &$headers = null,
         ?string &$body = null
     ): void {
         $startLine = null;
-        $headers = new HttpHeaders();
+        $headers = new Headers();
         $body = '';
         $contentLength = null;
         $chunked = null;

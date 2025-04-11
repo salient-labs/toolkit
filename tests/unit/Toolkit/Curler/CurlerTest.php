@@ -19,10 +19,10 @@ use Salient\Core\Process;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerFile;
 use Salient\Curler\CurlerPage;
-use Salient\Http\HttpHeaders;
-use Salient\Http\HttpResponse;
-use Salient\Http\HttpStream;
+use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
+use Salient\Http\Response;
+use Salient\Http\Stream;
 use Salient\Tests\HttpTestCase;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
@@ -138,7 +138,7 @@ EOF,
         $curler = $this->getCurler('/foo');
         $result = $curler->{$m}($data, self::QUERY);
         $output = $server->getNewOutput();
-        $boundaryParam = HttpHeaders::from($output)->getMultipartBoundary();
+        $boundaryParam = Headers::from($output)->getMultipartBoundary();
         $this->assertNotNull($boundaryParam);
         $boundary = HttpUtil::unquoteString($boundaryParam);
         $content = File::getContents($file);
@@ -225,7 +225,7 @@ EOF,
                             : $request
                                 ->withMethod(self::METHOD_GET)
                                 ->withUri($curler->replaceQuery($request->getUri(), ['page' => 2]))
-                                ->withBody(HttpStream::fromString(''))
+                                ->withBody(Stream::fromString(''))
                                 ->withoutHeader(self::HEADER_CONTENT_TYPE)
                     );
                 }
@@ -391,8 +391,8 @@ EOF,
 
     public function testThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
-        $good = new HttpResponse(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $bad = new Response(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new Response(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
         $server = $this->startHttpServer($bad, $good, $bad);
         $output = [];
         $curler = $this
@@ -434,8 +434,8 @@ EOF;
 
     public function testWithoutThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
-        $good = new HttpResponse(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $bad = new Response(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new Response(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
         $server = $this->startHttpServer($bad, $good, $bad);
         $output = [];
         $curler = $this
@@ -475,10 +475,10 @@ EOF;
     public function testFollowRedirects(): void
     {
         $responses = [
-            new HttpResponse(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
-            new HttpResponse(302, '', [self::HEADER_LOCATION => '/foo/bar']),
-            new HttpResponse(302, '', [self::HEADER_LOCATION => '/foo/bar?baz=1']),
-            new HttpResponse(200, Json::encode(self::OUTPUT), [self::HEADER_CONTENT_TYPE => self::TYPE_JSON]),
+            new Response(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new Response(302, '', [self::HEADER_LOCATION => '/foo/bar']),
+            new Response(302, '', [self::HEADER_LOCATION => '/foo/bar?baz=1']),
+            new Response(200, Json::encode(self::OUTPUT), [self::HEADER_CONTENT_TYPE => self::TYPE_JSON]),
         ];
         $server = $this->startHttpServer(...$responses);
         $output = [];
@@ -535,9 +535,9 @@ EOF,
     public function testTooManyRedirects(): void
     {
         $responses = [
-            new HttpResponse(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
-            new HttpResponse(302, '', [self::HEADER_LOCATION => '/foo/bar']),
-            new HttpResponse(302, '', [self::HEADER_LOCATION => '/']),
+            new Response(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new Response(302, '', [self::HEADER_LOCATION => '/foo/bar']),
+            new Response(302, '', [self::HEADER_LOCATION => '/']),
         ];
         $server = $this->startHttpServer(...$responses, ...$responses);
         $output = [];
@@ -602,7 +602,7 @@ EOF,
     private function getJsonServer(array ...$data): Process
     {
         foreach ($data as $data) {
-            $responses[] = new HttpResponse(
+            $responses[] = new Response(
                 200,
                 Json::encode($data),
                 [self::HEADER_CONTENT_TYPE => self::TYPE_JSON],

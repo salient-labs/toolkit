@@ -37,12 +37,12 @@ use Salient\Curler\Exception\NetworkException;
 use Salient\Curler\Exception\RequestException;
 use Salient\Curler\Exception\TooManyRedirectsException;
 use Salient\Http\Exception\InvalidHeaderException;
-use Salient\Http\HasHttpHeaders;
-use Salient\Http\HttpHeaders;
-use Salient\Http\HttpRequest;
-use Salient\Http\HttpResponse;
-use Salient\Http\HttpStream;
+use Salient\Http\HasInnerHeadersTrait;
+use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
+use Salient\Http\Request;
+use Salient\Http\Response;
+use Salient\Http\Stream;
 use Salient\Http\Uri;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
@@ -70,7 +70,7 @@ class Curler implements CurlerInterface, Buildable
 {
     /** @use BuildableTrait<CurlerBuilder> */
     use BuildableTrait;
-    use HasHttpHeaders;
+    use HasInnerHeadersTrait;
     use ImmutableTrait;
 
     /**
@@ -788,7 +788,7 @@ class Curler implements CurlerInterface, Buildable
     {
         $curler = $this->withUri($request->getUri());
 
-        $headers = HttpHeaders::from($request);
+        $headers = Headers::from($request);
         $_headers = $this->getInnerHeaders();
         if (Arr::same($headers->all(), $_headers->all())) {
             return $curler;
@@ -1140,7 +1140,7 @@ class Curler implements CurlerInterface, Buildable
         }
 
         if ($size === null || $size > 0) {
-            $size ??= HttpHeaders::from($request)->getContentLength();
+            $size ??= Headers::from($request)->getContentLength();
             if ($size !== null && $size <= static::MAX_INPUT_LENGTH) {
                 $body = (string) $body;
                 $opt[\CURLOPT_POSTFIELDS] = $body;
@@ -1184,13 +1184,13 @@ class Curler implements CurlerInterface, Buildable
 
         /** @var string|null */
         $statusLine = null;
-        /** @var HttpHeaders|null */
+        /** @var Headers|null */
         $headersIn = null;
         $opt[\CURLOPT_HEADERFUNCTION] =
             static function ($handle, string $header) use (&$statusLine, &$headersIn): int {
                 if (substr($header, 0, 5) === 'HTTP/') {
                     $statusLine = rtrim($header, "\r\n");
-                    $headersIn = new HttpHeaders();
+                    $headersIn = new Headers();
                     return strlen($header);
                 }
                 if ($headersIn === null) {
@@ -1200,11 +1200,11 @@ class Curler implements CurlerInterface, Buildable
                 return strlen($header);
             };
 
-        /** @var HttpStream|null */
+        /** @var Stream|null */
         $bodyIn = null;
         $opt[\CURLOPT_WRITEFUNCTION] =
             static function ($handle, string $data) use (&$bodyIn): int {
-                /** @var HttpStream $bodyIn */
+                /** @var Stream $bodyIn */
                 return $bodyIn->write($data);
             };
 
@@ -1221,7 +1221,7 @@ class Curler implements CurlerInterface, Buildable
         }
 
         $request = $this->normaliseRequest($request, $uri);
-        $headers = HttpHeaders::from($request);
+        $headers = Headers::from($request);
 
         $cacheKey = null;
         $transfer = 0;
@@ -1268,17 +1268,17 @@ class Curler implements CurlerInterface, Buildable
                 && !$this->RefreshCache
                 && ($last = $this->getCacheInstance()->getArray($cacheKey)) !== null
             ) {
-                /** @var array{code:int,body:string,headers:array<array{name:string,value:string}>|HttpHeaders,reason:string|null,version:string}|array{int,string,HttpHeaders,string} $last */
+                /** @var array{code:int,body:string,headers:array<array{name:string,value:string}>|Headers,reason:string|null,version:string}|array{int,string,Headers,string} $last */
                 $code = $last['code'] ?? $last[0] ?? 200;
-                $bodyIn = HttpStream::fromString($last['body'] ?? $last[3] ?? '');
+                $bodyIn = Stream::fromString($last['body'] ?? $last[3] ?? '');
                 $lastHeaders = $last['headers'] ?? $last[2] ?? null;
                 if (is_array($lastHeaders)) {
                     $lastHeaders = HttpUtil::getNameValueGenerator($lastHeaders);
                 }
-                $headersIn = HttpHeaders::from($lastHeaders ?? []);
+                $headersIn = Headers::from($lastHeaders ?? []);
                 $reason = $last['reason'] ?? $last[1] ?? null;
                 $version = $last['version'] ?? '1.1';
-                $response = new HttpResponse($code, $bodyIn, $headersIn, $reason, $version);
+                $response = new Response($code, $bodyIn, $headersIn, $reason, $version);
                 Event::dispatch(new ResponseCacheHitEvent($this, $request, $response));
             } else {
                 if ($transfer) {
@@ -1294,7 +1294,7 @@ class Curler implements CurlerInterface, Buildable
                     $statusLine = null;
                     $headersIn = null;
                 }
-                $bodyIn = new HttpStream(File::open('php://temp', 'r+'));
+                $bodyIn = new Stream(File::open('php://temp', 'r+'));
 
                 if ($resetHandle || !$transfer) {
                     if ($resetHandle) {
@@ -1339,10 +1339,10 @@ class Curler implements CurlerInterface, Buildable
                     // @codeCoverageIgnoreEnd
                 }
 
-                /** @var HttpHeaders $headersIn */
+                /** @var Headers $headersIn */
                 $code = (int) $split[1];
                 $reason = $split[2] ?? null;
-                $response = new HttpResponse($code, $bodyIn, $headersIn, $reason, $version);
+                $response = new Response($code, $bodyIn, $headersIn, $reason, $version);
                 Event::dispatch(new CurlResponseEvent($this, self::$Handle, $request, $response));
 
                 if ($this->CookiesCacheKey !== null) {
@@ -1387,7 +1387,7 @@ class Curler implements CurlerInterface, Buildable
                     || (self::REQUEST_METHOD_HAS_BODY[$method] ?? false)
                 )) {
                     $method = self::METHOD_GET;
-                    $body = HttpStream::fromString('');
+                    $body = Stream::fromString('');
                     $request = $request
                         ->withMethod($method)
                         ->withBody($body)
@@ -1412,7 +1412,7 @@ class Curler implements CurlerInterface, Buildable
                     );
                 }
                 $request = $this->normaliseRequest($request, $uri);
-                $headers = HttpHeaders::from($request);
+                $headers = Headers::from($request);
                 $cacheKey = null;
                 $redirects--;
                 $retrying = false;
@@ -1474,14 +1474,14 @@ class Curler implements CurlerInterface, Buildable
      * @param mixed[]|null $query
      * @param mixed[]|object|string|false|null $data
      */
-    private function createRequest(string $method, ?array $query, $data): HttpRequest
+    private function createRequest(string $method, ?array $query, $data): Request
     {
         $uri = $this->Uri;
         if ($query) {
             $uri = $this->replaceQuery($uri, $query);
         }
         $headers = $this->getInnerHeaders();
-        $request = new HttpRequest($method, $uri, null, $headers);
+        $request = new Request($method, $uri, null, $headers);
         return $data !== false
             ? $this->applyData($request, $data)
             : $request;
@@ -1490,7 +1490,7 @@ class Curler implements CurlerInterface, Buildable
     /**
      * @param mixed[]|object|string|null $data
      */
-    private function applyData(HttpRequest $request, $data): HttpRequest
+    private function applyData(Request $request, $data): Request
     {
         if ($data === null) {
             if ($this->PostJson) {
@@ -1502,11 +1502,11 @@ class Curler implements CurlerInterface, Buildable
             return $request->withHeader(self::HEADER_CONTENT_TYPE, self::TYPE_FORM);
         }
         if (is_string($data)) {
-            return $request->withBody(HttpStream::fromString($data));
+            return $request->withBody(Stream::fromString($data));
         }
         if ($this->PostJson) {
             try {
-                $body = HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter, true);
+                $body = Stream::fromData($data, $this->FormDataFlags, $this->DateFormatter, true);
                 $mediaType = self::TYPE_JSON;
             } catch (StreamEncapsulationException $ex) {
                 $this->debug(sprintf(
@@ -1516,7 +1516,7 @@ class Curler implements CurlerInterface, Buildable
                 ));
             }
         }
-        $body ??= HttpStream::fromData($data, $this->FormDataFlags, $this->DateFormatter);
+        $body ??= Stream::fromData($data, $this->FormDataFlags, $this->DateFormatter);
         $mediaType ??= $body instanceof MultipartStreamInterface
             ? self::TYPE_FORM_MULTIPART
             : self::TYPE_FORM;
@@ -1545,7 +1545,7 @@ class Curler implements CurlerInterface, Buildable
         return $this->handleHttpResponse(
             $response instanceof ResponseInterface
                 ? $response
-                : HttpResponse::fromPsr7($response),
+                : Response::fromPsr7($response),
             $request,
         );
     }
@@ -1587,7 +1587,7 @@ class Curler implements CurlerInterface, Buildable
         if ($headers instanceof HeadersInterface) {
             return $headers;
         }
-        return new HttpHeaders($headers ?? []);
+        return new Headers($headers ?? []);
     }
 
     private static function filterCookiesCacheKey(?string $cacheKey): string
