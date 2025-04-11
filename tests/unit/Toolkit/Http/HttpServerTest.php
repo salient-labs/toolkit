@@ -9,18 +9,18 @@ use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
-use Salient\Http\Response;
-use Salient\Http\Server;
+use Salient\Http\Message\Response;
+use Salient\Http\Server\Server;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
 /**
- * @covers \Salient\Http\Server
- * @covers \Salient\Http\ServerRequest
- * @covers \Salient\Http\Request
- * @covers \Salient\Http\AbstractRequest
- * @covers \Salient\Http\Response
- * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\Server\Server
+ * @covers \Salient\Http\Message\ServerRequest
+ * @covers \Salient\Http\Message\Request
+ * @covers \Salient\Http\Message\AbstractRequest
+ * @covers \Salient\Http\Message\Response
+ * @covers \Salient\Http\Message\AbstractMessage
  * @covers \Salient\Http\HasInnerHeadersTrait
  * @covers \Salient\Http\Headers
  */

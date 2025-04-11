@@ -6,8 +6,8 @@ use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Core\Date\DateFormatter;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
-use Salient\Http\Stream;
-use Salient\Http\StreamPart;
+use Salient\Http\Message\Stream;
+use Salient\Http\Message\StreamPart;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Format;
@@ -20,7 +20,7 @@ use Throwable;
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
- * @covers \Salient\Http\Stream
+ * @covers \Salient\Http\Message\Stream
  */
 final class HttpStreamTest extends TestCase
 {

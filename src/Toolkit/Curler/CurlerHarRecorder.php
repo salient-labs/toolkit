@@ -7,7 +7,7 @@ use Salient\Contract\Curler\Event\CurlRequestEvent;
 use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Event\ResponseCacheHitEvent;
 use Salient\Core\Facade\Event;
-use Salient\Http\Request;
+use Salient\Http\Message\Request;
 use Salient\Utility\File;
 use Salient\Utility\Json;
 use Salient\Utility\Package;

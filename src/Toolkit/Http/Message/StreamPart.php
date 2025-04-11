@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Message;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\Message\StreamPartInterface;

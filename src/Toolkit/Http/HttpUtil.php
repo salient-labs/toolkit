@@ -8,6 +8,7 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
+use Salient\Http\Internal\FormData;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
 use Salient\Utility\Package;

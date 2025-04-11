@@ -4,8 +4,8 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HasHttpHeader as Header;
 use Salient\Contract\Http\HasRequestMethod as Method;
+use Salient\Http\Message\Response;
 use Salient\Http\HttpUtil;
-use Salient\Http\Response;
 use Salient\Utility\File;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;

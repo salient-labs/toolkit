@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Message;
 
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;

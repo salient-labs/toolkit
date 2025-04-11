@@ -3,12 +3,12 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\RequestIntegrationTest;
-use Salient\Http\Request;
+use Salient\Http\Message\Request;
 
 /**
- * @covers \Salient\Http\Request
- * @covers \Salient\Http\AbstractRequest
- * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\Message\Request
+ * @covers \Salient\Http\Message\AbstractRequest
+ * @covers \Salient\Http\Message\AbstractMessage
  * @covers \Salient\Http\HasInnerHeadersTrait
  * @covers \Salient\Http\Headers
  */

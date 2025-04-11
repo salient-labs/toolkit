@@ -2,7 +2,7 @@
 
 namespace Salient\Curler;
 
-use Salient\Http\StreamPart;
+use Salient\Http\Message\StreamPart;
 use Salient\Utility\File;
 use InvalidArgumentException;
 

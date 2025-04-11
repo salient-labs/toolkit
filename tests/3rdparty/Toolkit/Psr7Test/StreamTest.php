@@ -4,10 +4,10 @@ namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\StreamIntegrationTest;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Salient\Http\Stream;
+use Salient\Http\Message\Stream;
 
 /**
- * @covers \Salient\Http\Stream
+ * @covers \Salient\Http\Message\Stream
  */
 class StreamTest extends StreamIntegrationTest
 {

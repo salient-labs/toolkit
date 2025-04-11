@@ -4,7 +4,7 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\HasHttpHeader;
-use Salient\Http\Request;
+use Salient\Http\Message\Request;
 use Salient\Http\Uri;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
@@ -13,9 +13,9 @@ use InvalidArgumentException;
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
- * @covers \Salient\Http\Request
- * @covers \Salient\Http\AbstractRequest
- * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\Message\Request
+ * @covers \Salient\Http\Message\AbstractRequest
+ * @covers \Salient\Http\Message\AbstractMessage
  * @covers \Salient\Http\HasInnerHeadersTrait
  * @covers \Salient\Http\Headers
  */

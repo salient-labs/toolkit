@@ -3,11 +3,11 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\UploadedFileIntegrationTest;
-use Salient\Http\ServerRequestUpload;
-use Salient\Http\Stream;
+use Salient\Http\Message\ServerRequestUpload;
+use Salient\Http\Message\Stream;
 
 /**
- * @covers \Salient\Http\ServerRequestUpload
+ * @covers \Salient\Http\Message\ServerRequestUpload
  */
 class UploadedFileTest extends UploadedFileIntegrationTest
 {

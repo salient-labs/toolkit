@@ -1,11 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Message;
 
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\Message\RequestInterface;
 use Salient\Core\Concern\ImmutableTrait;
+use Salient\Http\HttpUtil;
+use Salient\Http\Uri;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
 use Stringable;

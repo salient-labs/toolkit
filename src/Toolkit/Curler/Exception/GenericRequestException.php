@@ -4,7 +4,7 @@ namespace Salient\Curler\Exception;
 
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Core\Exception\Exception;
-use Salient\Http\Request;
+use Salient\Http\Message\Request;
 use Salient\Utility\Format;
 use Throwable;
 

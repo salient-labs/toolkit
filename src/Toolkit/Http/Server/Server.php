@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Server;
 
 use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Salient\Contract\Core\Immutable;
@@ -12,6 +12,11 @@ use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
+use Salient\Http\Message\Response;
+use Salient\Http\Message\ServerRequest;
+use Salient\Http\Headers;
+use Salient\Http\HttpUtil;
+use Salient\Http\Uri;
 use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;

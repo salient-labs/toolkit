@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Message;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
@@ -10,6 +10,7 @@ use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Http\Internal\FormData;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 use Salient\Utility\Json;

@@ -7,7 +7,7 @@ use Salient\Core\Facade\Console;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\OAuth2\OAuth2Client;
 use Salient\Http\OAuth2\OAuth2Flow;
-use Salient\Http\Server;
+use Salient\Http\Server\Server;
 use Salient\Utility\Env;
 
 final class OAuth2TestClient extends OAuth2Client

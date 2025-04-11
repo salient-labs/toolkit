@@ -5,10 +5,10 @@ namespace Salient\Tests\Http;
 use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
-use Salient\Http\MultipartStream;
-use Salient\Http\Request;
-use Salient\Http\Stream;
-use Salient\Http\StreamPart;
+use Salient\Http\Message\MultipartStream;
+use Salient\Http\Message\Request;
+use Salient\Http\Message\Stream;
+use Salient\Http\Message\StreamPart;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Str;
@@ -16,10 +16,10 @@ use Salient\Utility\Sys;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\Http\MultipartStream
- * @covers \Salient\Http\Request
- * @covers \Salient\Http\AbstractRequest
- * @covers \Salient\Http\AbstractMessage
+ * @covers \Salient\Http\Message\MultipartStream
+ * @covers \Salient\Http\Message\Request
+ * @covers \Salient\Http\Message\AbstractRequest
+ * @covers \Salient\Http\Message\AbstractMessage
  * @covers \Salient\Http\HasInnerHeadersTrait
  * @covers \Salient\Http\Headers
  */

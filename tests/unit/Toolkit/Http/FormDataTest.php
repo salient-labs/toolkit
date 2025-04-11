@@ -5,7 +5,7 @@ namespace Salient\Tests\Http;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Jsonable;
 use Salient\Core\Date\DateFormatter;
-use Salient\Http\FormData;
+use Salient\Http\Internal\FormData;
 use Salient\Tests\TestCase;
 use Salient\Utility\Json;
 use ArrayIterator;
@@ -17,7 +17,7 @@ use stdClass;
 use Stringable;
 
 /**
- * @covers \Salient\Http\FormData
+ * @covers \Salient\Http\Internal\FormData
  */
 final class FormDataTest extends TestCase
 {

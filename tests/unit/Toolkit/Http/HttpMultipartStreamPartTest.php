@@ -3,8 +3,8 @@
 namespace Salient\Tests\Http;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
-use Salient\Http\Stream;
-use Salient\Http\StreamPart;
+use Salient\Http\Message\Stream;
+use Salient\Http\Message\StreamPart;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Str;
@@ -12,7 +12,7 @@ use InvalidArgumentException;
 use LogicException;
 
 /**
- * @covers \Salient\Http\StreamPart
+ * @covers \Salient\Http\Message\StreamPart
  */
 class HttpMultipartStreamPartTest extends TestCase
 {

@@ -8,12 +8,12 @@ use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Http\MessageFactory;
+use Salient\Http\Message\MessageFactory;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 
 /**
- * @covers \Salient\Http\MessageFactory
+ * @covers \Salient\Http\Message\MessageFactory
  */
 final class HttpFactoryTest extends TestCase
 {

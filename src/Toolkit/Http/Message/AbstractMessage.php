@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Message;
 
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
@@ -9,6 +9,9 @@ use Salient\Contract\Http\Message\MessageInterface;
 use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
+use Salient\Http\HasInnerHeadersTrait;
+use Salient\Http\Headers;
+use Salient\Http\HttpUtil;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Regex;
 use InvalidArgumentException;

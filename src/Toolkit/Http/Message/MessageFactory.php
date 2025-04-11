@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace Salient\Http;
+namespace Salient\Http\Message;
 
 use Psr\Http\Message\RequestFactoryInterface as PsrRequestFactoryInterface;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
@@ -14,6 +14,7 @@ use Psr\Http\Message\UploadedFileFactoryInterface as PsrUploadedFileFactoryInter
 use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
 use Psr\Http\Message\UriFactoryInterface as PsrUriFactoryInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Http\Uri;
 use Salient\Utility\File;
 
 /**
