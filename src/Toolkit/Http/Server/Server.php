@@ -400,7 +400,7 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
                 }
             } while (true);
 
-            // As per [RFC7230], Section 5.5 ("Effective Request URI")
+            // As per [RFC7230] Section 5.5 ("Effective Request URI")
             $uri = implode('', [
                 $this->getScheme(),
                 '://',

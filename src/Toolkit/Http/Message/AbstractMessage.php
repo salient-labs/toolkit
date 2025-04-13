@@ -6,18 +6,17 @@ use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Message\MessageInterface;
-use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Http\HasInnerHeadersTrait;
 use Salient\Http\Headers;
-use Salient\Http\HttpUtil;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
+use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
 
 /**
- * Base class for PSR-7 HTTP message classes
+ * @internal
  *
  * @template TPsr7 of PsrMessageInterface
  *
@@ -29,7 +28,6 @@ abstract class AbstractMessage implements MessageInterface
     use ImmutableTrait;
 
     protected string $ProtocolVersion;
-    protected HeadersInterface $Headers;
     protected PsrStreamInterface $Body;
 
     /**
@@ -44,8 +42,6 @@ abstract class AbstractMessage implements MessageInterface
         $this->ProtocolVersion = $this->filterProtocolVersion($version);
         $this->Headers = $this->filterHeaders($headers);
         $this->Body = $this->filterBody($body);
-
-        $this->maybeSetContentType();
     }
 
     /**
@@ -77,16 +73,14 @@ abstract class AbstractMessage implements MessageInterface
      */
     public function withBody($body): PsrMessageInterface
     {
-        return $this
-            ->with('Body', $this->filterBody($body))
-            ->maybeSetContentType();
+        return $this->with('Body', $this->filterBody($body));
     }
 
     private function filterProtocolVersion(string $version): string
     {
         if (!Regex::match('/^[0-9](?:\.[0-9])?$/D', $version)) {
             throw new InvalidArgumentException(
-                sprintf('Invalid HTTP protocol version: %s', $version)
+                sprintf('Invalid HTTP protocol version: %s', $version),
             );
         }
         return $version;
@@ -97,10 +91,9 @@ abstract class AbstractMessage implements MessageInterface
      */
     private function filterHeaders($headers): HeadersInterface
     {
-        if ($headers instanceof HeadersInterface) {
-            return $headers;
-        }
-        return new Headers($headers ?? []);
+        return $headers instanceof HeadersInterface
+            ? $headers
+            : new Headers($headers ?? []);
     }
 
     /**
@@ -111,9 +104,11 @@ abstract class AbstractMessage implements MessageInterface
         if ($body instanceof PsrStreamInterface) {
             return $body;
         }
+
         if (is_string($body) || $body === null) {
             return Stream::fromString((string) $body);
         }
+
         try {
             return new Stream($body);
         } catch (InvalidArgumentException $ex) {
@@ -121,27 +116,9 @@ abstract class AbstractMessage implements MessageInterface
                 1,
                 'body',
                 PsrStreamInterface::class . '|resource|string|null',
-                $body
+                $body,
             );
         }
-    }
-
-    /**
-     * @return $this
-     */
-    private function maybeSetContentType(): self
-    {
-        if ($this->Body instanceof MultipartStreamInterface) {
-            $this->Headers = $this->Headers->set(
-                self::HEADER_CONTENT_TYPE,
-                sprintf(
-                    '%s; boundary=%s',
-                    self::TYPE_FORM_MULTIPART,
-                    HttpUtil::maybeQuoteString($this->Body->getBoundary()),
-                ),
-            );
-        }
-        return $this;
     }
 
     /**
@@ -149,21 +126,21 @@ abstract class AbstractMessage implements MessageInterface
      */
     public function __toString(): string
     {
-        return implode("\r\n", [
+        return Arr::implode("\r\n", [
             $this->getStartLine(),
-            (string) $this->Headers,
-            '',
-            '',
-        ]) . $this->Body;
+            (string) $this->Headers->normalise(),
+        ], '') . "\r\n\r\n" . $this->Body;
     }
 
     /**
+     * @inheritDoc
+     *
      * @return array{httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,headersSize:int,bodySize:int}
      */
     public function jsonSerialize(): array
     {
         return [
-            'httpVersion' => sprintf('HTTP/%s', $this->ProtocolVersion),
+            'httpVersion' => 'HTTP/' . $this->ProtocolVersion,
             'cookies' => [],
             'headers' => $this->Headers->jsonSerialize(),
             'headersSize' => strlen((string) $this->withBody(null)),
@@ -172,7 +149,7 @@ abstract class AbstractMessage implements MessageInterface
     }
 
     /**
-     * Get the start line of the message
+     * @internal
      */
     abstract protected function getStartLine(): string;
 }

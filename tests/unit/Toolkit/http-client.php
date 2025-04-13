@@ -41,6 +41,7 @@ if (
         Method::METHOD_POST => true,
         Method::METHOD_PUT => true,
         Method::METHOD_PATCH => true,
+        Method::METHOD_DELETE => true,
     ][$method] ?? false)
 ) {
     $headers[] = 'Content-Length: ' . strlen($body);

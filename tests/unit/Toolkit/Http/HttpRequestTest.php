@@ -394,4 +394,19 @@ final class HttpRequestTest extends TestCase implements HasHttpHeader
 
         return $values;
     }
+
+    public function testToStringWithNoHeaders(): void
+    {
+        $r = new Request('GET', '/');
+        $this->assertSame(implode("\r\n", [
+            'GET / HTTP/1.1',
+            '',
+            '',
+        ]), (string) $r);
+        $this->assertSame(implode("\r\n", [
+            'GET / HTTP/1.1',
+            '',
+            'content',
+        ]), (string) $r->withBody('content'));
+    }
 }

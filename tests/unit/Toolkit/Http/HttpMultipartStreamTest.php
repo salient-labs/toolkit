@@ -3,12 +3,15 @@
 namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Message\StreamPartInterface;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Contract\Http\HasMediaType;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\Message\MultipartStream;
 use Salient\Http\Message\Request;
 use Salient\Http\Message\Stream;
 use Salient\Http\Message\StreamPart;
+use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Str;
@@ -22,8 +25,9 @@ use InvalidArgumentException;
  * @covers \Salient\Http\Message\AbstractMessage
  * @covers \Salient\Http\HasInnerHeadersTrait
  * @covers \Salient\Http\Headers
+ * @covers \Salient\Http\HttpUtil
  */
-final class HttpMultipartStreamTest extends TestCase
+final class HttpMultipartStreamTest extends TestCase implements HasHttpHeader, HasMediaType
 {
     private const CONTENTS_PART1 =
         "--boundary\r\n"
@@ -176,10 +180,12 @@ final class HttpMultipartStreamTest extends TestCase
     public function testWithRequest(): void
     {
         $stream = $this->getStream();
-        $request = new Request('POST', 'https://example.com', $stream);
+        $request = (new Request('POST', 'https://example.com', $stream))
+            ->withHeader(self::HEADER_CONTENT_TYPE, HttpUtil::getMultipartMediaType($stream));
         $this->assertSame(($headers = "POST / HTTP/1.1\r\n"
+                . "Host: example.com\r\n"
                 . "Content-Type: multipart/form-data; boundary=boundary\r\n"
-                . "Host: example.com\r\n\r\n")
+                . "\r\n")
             . self::CONTENTS, (string) $request);
         $this->assertSame($headers, (string) $request->withBody(null));
     }

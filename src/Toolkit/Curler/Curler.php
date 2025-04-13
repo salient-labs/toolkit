@@ -88,7 +88,6 @@ class Curler implements CurlerInterface, Buildable
     ];
 
     protected Uri $Uri;
-    protected HeadersInterface $Headers;
     protected ?CredentialInterface $Credential = null;
     protected string $CredentialHeaderName;
     /** @var array<string,true> */
@@ -1518,7 +1517,7 @@ class Curler implements CurlerInterface, Buildable
         }
         $body ??= Stream::fromData($data, $this->FormDataFlags, $this->DateFormatter);
         $mediaType ??= $body instanceof MultipartStreamInterface
-            ? self::TYPE_FORM_MULTIPART
+            ? HttpUtil::getMultipartMediaType($body)
             : self::TYPE_FORM;
         return $request
             ->withHeader(self::HEADER_CONTENT_TYPE, $mediaType)

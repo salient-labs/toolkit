@@ -9,10 +9,13 @@ use Salient\Core\Concern\ImmutableTrait;
 use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
 use Salient\Utility\Regex;
+use Salient\Utility\Str;
 use InvalidArgumentException;
 use Stringable;
 
 /**
+ * @internal
+ *
  * @template TPsr7 of PsrRequestInterface
  *
  * @extends AbstractMessage<TPsr7>
@@ -37,20 +40,18 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
         ?string $requestTarget = null,
         string $version = '1.1'
     ) {
+        $this->RequestTarget = $this->filterRequestTarget((string) $requestTarget);
         $this->Method = $this->filterMethod($method);
-        $this->RequestTarget = $this->filterRequestTarget($requestTarget);
         $this->Uri = $this->filterUri($uri);
 
         parent::__construct($body, $headers, $version);
 
-        if ($this->Headers->getHeaderLine(self::HEADER_HOST) !== '') {
-            return;
+        if (
+            !$this->hasHostHeader()
+            && ($host = $this->getUriHost()) !== ''
+        ) {
+            $this->Headers = $this->Headers->set(self::HEADER_HOST, $host);
         }
-        $host = $this->getUriHost();
-        if ($host === '') {
-            return;
-        }
-        $this->Headers = $this->Headers->set(self::HEADER_HOST, $host);
     }
 
     /**
@@ -62,17 +63,10 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
             return $this->RequestTarget;
         }
 
-        $target = $this->Uri->getPath();
-        if ($target === '') {
-            $target = '/';
-        }
-
+        // As per [RFC7230] Section 5.3.1 ("origin-form")
         $query = $this->Uri->getComponents()['query'] ?? null;
-        if ($query !== null) {
-            return "$target?$query";
-        }
-
-        return $target;
+        return Str::coalesce($this->Uri->getPath(), '/')
+            . ($query === null ? '' : '?' . $query);
     }
 
     /**
@@ -112,65 +106,46 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
      */
     public function withUri(PsrUriInterface $uri, bool $preserveHost = false): PsrRequestInterface
     {
-        if ((string) $uri === (string) $this->Uri) {
-            $instance = $this;
-        } else {
-            $instance = $this->with('Uri', $this->filterUri($uri));
-        }
+        $request = (
+            (string) $uri === (string) $this->Uri
+            || (string) ($uri = $this->filterUri($uri)) === (string) $this->Uri
+        )
+            ? $this
+            : $this->with('Uri', $uri);
 
-        if (
-            $preserveHost
-            && $instance->Headers->getHeaderLine(self::HEADER_HOST) !== ''
-        ) {
-            return $instance;
-        }
-
-        $host = $instance->getUriHost();
-        if ($host === '') {
-            return $instance;
-        }
-        return $instance->withHeader(self::HEADER_HOST, $host);
+        return (
+            ($preserveHost && $request->hasHostHeader())
+            || ($host = $request->getUriHost()) === ''
+        )
+            ? $request
+            : $request->withHeader(self::HEADER_HOST, $host);
     }
 
-    /**
-     * Validate a request target as per [RFC7230] Section 5.3
-     */
-    private function filterRequestTarget(?string $requestTarget): ?string
+    private function filterRequestTarget(string $requestTarget): ?string
     {
-        if ($requestTarget === null || $requestTarget === '') {
+        if ($requestTarget === '') {
             return null;
         }
 
-        // "asterisk-form"
-        if ($requestTarget === '*') {
+        // As per [RFC7230] Section 5.3 ("Request Target")
+        /** @disregard P1006 */
+        if (
+            // "asterisk-form"
+            $requestTarget === '*'
+            // "authority-form"
+            || HttpUtil::requestTargetIsAuthorityForm($requestTarget)
+            || (($parts = Uri::parse($requestTarget)) !== false && (
+                // "absolute-form"
+                isset($parts['scheme'])
+                // "origin-form"
+                || !array_diff_key($parts, ['path' => null, 'query' => null])
+            ))
+        ) {
             return $requestTarget;
         }
 
-        // "authority-form"
-        if (HttpUtil::requestTargetIsAuthorityForm($requestTarget)) {
-            return $requestTarget;
-        }
-
-        /** @var array<string,string|int>|false */
-        $parts = Uri::parse($requestTarget);
-        if ($parts === false) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid request target: %s', $requestTarget)
-            );
-        }
-
-        // "absolute-form"
-        if (isset($parts['scheme'])) {
-            return $requestTarget;
-        }
-
-        // "origin-form"
-        $invalid = array_diff_key($parts, array_flip(['path', 'query']));
-        if (!$invalid) {
-            return $requestTarget;
-        }
         throw new InvalidArgumentException(
-            sprintf('origin-form of request-target cannot have URI components other than path, query: %s', $requestTarget)
+            sprintf('Invalid request target: %s', $requestTarget),
         );
     }
 
@@ -178,7 +153,7 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
     {
         if (!Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $method)) {
             throw new InvalidArgumentException(
-                sprintf('Invalid HTTP method: %s', $method)
+                sprintf('Invalid HTTP method: %s', $method),
             );
         }
         return $method;
@@ -189,26 +164,27 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
      */
     private function filterUri($uri): Uri
     {
-        // `Psr\Http\Message\UriInterface` makes no distinction between empty
+        // `\Psr\Http\Message\UriInterface` makes no distinction between empty
         // and undefined URI components, but `/path?` and `/path` are not
-        // necessarily equivalent, so URIs are always converted to instances of
-        // `Salient\Http\Uri`, which surfaces empty and undefined queries via
-        // `Uri::getComponents()` as `""` and `null` respectively
+        // necessarily equivalent, so URIs are converted to `\Salient\Http\Uri`,
+        // allowing the distinction to be made via `getComponents()`
         return Uri::from($uri);
+    }
+
+    private function hasHostHeader(): bool
+    {
+        return $this->Headers->getHeaderLine(self::HEADER_HOST) !== '';
     }
 
     private function getUriHost(): string
     {
         $host = $this->Uri->getHost();
-        if ($host === '') {
-            return '';
+        if ($host !== '') {
+            $port = $this->Uri->getPort();
+            if ($port !== null) {
+                $host .= ':' . $port;
+            }
         }
-
-        $port = $this->Uri->getPort();
-        if ($port !== null) {
-            $host .= ':' . $port;
-        }
-
         return $host;
     }
 
@@ -242,8 +218,7 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
                 self::METHOD_DELETE => true,
             ][$this->Method] ?? false)
         ) {
-            $mediaType = $this->Headers->getHeaderValues(self::HEADER_CONTENT_TYPE);
-            $mediaType = count($mediaType) === 1 ? $mediaType[0] : '';
+            $mediaType = $this->Headers->getLastHeaderValue(self::HEADER_CONTENT_TYPE);
             $body = (string) $this->Body;
             $postData = [
                 'postData' => [
@@ -276,6 +251,7 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
         if ($query === '') {
             return [];
         }
+
         foreach (explode('&', $query) as $param) {
             $param = explode('=', $param, 2);
             $params[] = [

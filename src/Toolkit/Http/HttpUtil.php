@@ -5,6 +5,7 @@ namespace Salient\Http;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
@@ -182,6 +183,18 @@ final class HttpUtil extends AbstractUtility implements
             str_replace('/', '~', Package::name()),
             Package::version(true, true),
             \PHP_VERSION,
+        );
+    }
+
+    /**
+     * Get the media type of a multipart stream
+     */
+    public static function getMultipartMediaType(MultipartStreamInterface $stream): string
+    {
+        return sprintf(
+            '%s; boundary=%s',
+            self::TYPE_FORM_MULTIPART,
+            self::maybeQuoteString($stream->getBoundary()),
         );
     }
 
