@@ -22,8 +22,8 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
 {
     use ImmutableTrait;
 
-    protected string $Method;
     protected ?string $RequestTarget;
+    protected string $Method;
     protected Uri $Uri;
 
     /**
@@ -56,14 +56,6 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
     /**
      * @inheritDoc
      */
-    public function getMethod(): string
-    {
-        return $this->Method;
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function getRequestTarget(): string
     {
         if ($this->RequestTarget !== null) {
@@ -81,6 +73,14 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
         }
 
         return $target;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMethod(): string
+    {
+        return $this->Method;
     }
 
     /**
@@ -133,87 +133,6 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
     }
 
     /**
-     * @return array{method:string,url:string,httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,queryString:array<array{name:string,value:string}>,postData?:array{mimeType:string,params:array{},text:string},headersSize:int,bodySize:int}
-     */
-    public function jsonSerialize(): array
-    {
-        $request = parent::jsonSerialize();
-
-        if (
-            $request['bodySize'] === -1
-            || $request['bodySize'] > 0
-            || ([
-                self::METHOD_POST => true,
-                self::METHOD_PUT => true,
-                self::METHOD_PATCH => true,
-                self::METHOD_DELETE => true,
-            ][$this->Method] ?? false)
-        ) {
-            $mediaType = $this->Headers->getHeaderValues(self::HEADER_CONTENT_TYPE);
-            $mediaType = count($mediaType) === 1 ? $mediaType[0] : '';
-            $body = (string) $this->Body;
-            $postData = [
-                'postData' => [
-                    'mimeType' => $mediaType,
-                    'params' => HttpUtil::mediaTypeIs($mediaType, self::TYPE_FORM)
-                        ? $this->splitQuery($body)
-                        : [],
-                    'text' => $body,
-                ],
-            ];
-        } else {
-            $postData = [];
-        }
-
-        return [
-            'method' => $this->Method,
-            'url' => (string) $this->Uri,
-            'httpVersion' => $request['httpVersion'],
-            'cookies' => $request['cookies'],
-            'headers' => $request['headers'],
-            'queryString' => $this->splitQuery($this->Uri->getQuery()),
-        ] + $postData + $request;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function getStartLine(): string
-    {
-        return sprintf(
-            '%s %s HTTP/%s',
-            $this->Method,
-            $this->getRequestTarget(),
-            $this->ProtocolVersion,
-        );
-    }
-
-    private function getUriHost(): string
-    {
-        $host = $this->Uri->getHost();
-        if ($host === '') {
-            return '';
-        }
-
-        $port = $this->Uri->getPort();
-        if ($port !== null) {
-            $host .= ':' . $port;
-        }
-
-        return $host;
-    }
-
-    private function filterMethod(string $method): string
-    {
-        if (!Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $method)) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid HTTP method: %s', $method)
-            );
-        }
-        return $method;
-    }
-
-    /**
      * Validate a request target as per [RFC7230] Section 5.3
      */
     private function filterRequestTarget(?string $requestTarget): ?string
@@ -255,6 +174,16 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
         );
     }
 
+    private function filterMethod(string $method): string
+    {
+        if (!Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $method)) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid HTTP method: %s', $method)
+            );
+        }
+        return $method;
+    }
+
     /**
      * @param PsrUriInterface|Stringable|string $uri
      */
@@ -266,6 +195,77 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
         // `Salient\Http\Uri`, which surfaces empty and undefined queries via
         // `Uri::getComponents()` as `""` and `null` respectively
         return Uri::from($uri);
+    }
+
+    private function getUriHost(): string
+    {
+        $host = $this->Uri->getHost();
+        if ($host === '') {
+            return '';
+        }
+
+        $port = $this->Uri->getPort();
+        if ($port !== null) {
+            $host .= ':' . $port;
+        }
+
+        return $host;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getStartLine(): string
+    {
+        return sprintf(
+            '%s %s HTTP/%s',
+            $this->Method,
+            $this->getRequestTarget(),
+            $this->ProtocolVersion,
+        );
+    }
+
+    /**
+     * @return array{method:string,url:string,httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,queryString:array<array{name:string,value:string}>,postData?:array{mimeType:string,params:array{},text:string},headersSize:int,bodySize:int}
+     */
+    public function jsonSerialize(): array
+    {
+        $request = parent::jsonSerialize();
+
+        if (
+            $request['bodySize'] === -1
+            || $request['bodySize'] > 0
+            || ([
+                self::METHOD_POST => true,
+                self::METHOD_PUT => true,
+                self::METHOD_PATCH => true,
+                self::METHOD_DELETE => true,
+            ][$this->Method] ?? false)
+        ) {
+            $mediaType = $this->Headers->getHeaderValues(self::HEADER_CONTENT_TYPE);
+            $mediaType = count($mediaType) === 1 ? $mediaType[0] : '';
+            $body = (string) $this->Body;
+            $postData = [
+                'postData' => [
+                    'mimeType' => $mediaType,
+                    'params' => HttpUtil::mediaTypeIs($mediaType, self::TYPE_FORM)
+                        ? $this->splitQuery($body)
+                        : [],
+                    'text' => $body,
+                ],
+            ];
+        } else {
+            $postData = [];
+        }
+
+        return [
+            'method' => $this->Method,
+            'url' => (string) $this->Uri,
+            'httpVersion' => $request['httpVersion'],
+            'cookies' => $request['cookies'],
+            'headers' => $request['headers'],
+            'queryString' => $this->splitQuery($this->Uri->getQuery()),
+        ] + $postData + $request;
     }
 
     /**

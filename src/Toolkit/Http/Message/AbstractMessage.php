@@ -33,11 +33,6 @@ abstract class AbstractMessage implements MessageInterface
     protected PsrStreamInterface $Body;
 
     /**
-     * Get the start line of the message
-     */
-    abstract protected function getStartLine(): string;
-
-    /**
      * @param PsrStreamInterface|resource|string|null $body
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|null $headers
      */
@@ -175,4 +170,9 @@ abstract class AbstractMessage implements MessageInterface
             'bodySize' => $this->Body->getSize() ?? -1,
         ];
     }
+
+    /**
+     * Get the start line of the message
+     */
+    abstract protected function getStartLine(): string;
 }
