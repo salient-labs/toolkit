@@ -11,7 +11,7 @@ use Salient\Utility\Str;
 use InvalidArgumentException;
 
 /**
- * A PSR-7 response
+ * @api
  *
  * @extends AbstractMessage<PsrResponseInterface>
  */
@@ -19,6 +19,9 @@ class Response extends AbstractMessage implements ResponseInterface
 {
     use ImmutableTrait;
 
+    /**
+     * @var array<int,string>
+     */
     protected const STATUS_CODE = [
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -86,6 +89,9 @@ class Response extends AbstractMessage implements ResponseInterface
     protected int $StatusCode;
     protected ?string $ReasonPhrase;
 
+    /**
+     * @api
+     */
     final public function __construct(
         int $code = 200,
         $body = null,
@@ -141,6 +147,34 @@ class Response extends AbstractMessage implements ResponseInterface
             ->with('ReasonPhrase', $this->filterReasonPhrase($code, $reasonPhrase));
     }
 
+    private function filterStatusCode(int $code): int
+    {
+        if ($code < 100 || $code > 599) {
+            throw new InvalidArgumentException(
+                sprintf('Invalid HTTP status code: %d', $code),
+            );
+        }
+        return $code;
+    }
+
+    private function filterReasonPhrase(int $code, ?string $reasonPhrase): ?string
+    {
+        return Str::coalesce($reasonPhrase, null)
+            ?? static::STATUS_CODE[$code]
+            ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function getStartLine(): string
+    {
+        return Arr::implode(' ', [
+            sprintf('HTTP/%s %d', $this->ProtocolVersion, $this->StatusCode),
+            $this->ReasonPhrase,
+        ]);
+    }
+
     /**
      * @return array{status:int,statusText:string,httpVersion:string,cookies:array<array{name:string,value:string,path?:string,domain?:string,expires?:string,httpOnly?:bool,secure?:bool}>,headers:array<array{name:string,value:string}>,content:array{size:int,mimeType:string,text:string},redirectURL:string,headersSize:int,bodySize:int}
      */
@@ -164,33 +198,5 @@ class Response extends AbstractMessage implements ResponseInterface
             ],
             'redirectURL' => count($location) === 1 ? $location[0] : '',
         ] + $response;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    protected function getStartLine(): string
-    {
-        return Arr::implode(' ', [
-            sprintf('HTTP/%s %d', $this->ProtocolVersion, $this->StatusCode),
-            $this->ReasonPhrase,
-        ]);
-    }
-
-    private function filterStatusCode(int $code): int
-    {
-        if ($code < 100 || $code > 599) {
-            throw new InvalidArgumentException(
-                sprintf('Invalid HTTP status code: %d', $code)
-            );
-        }
-        return $code;
-    }
-
-    private function filterReasonPhrase(int $code, ?string $reasonPhrase): ?string
-    {
-        return Str::coalesce($reasonPhrase, null)
-            ?? static::STATUS_CODE[$code]
-            ?? null;
     }
 }

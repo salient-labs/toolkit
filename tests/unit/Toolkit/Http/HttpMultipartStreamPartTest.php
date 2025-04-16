@@ -6,6 +6,7 @@ use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Http\Message\Stream;
 use Salient\Http\Message\StreamPart;
 use Salient\Tests\TestCase;
+use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use InvalidArgumentException;
@@ -49,7 +50,7 @@ class HttpMultipartStreamPartTest extends TestCase
         $p = new StreamPart('');
         $this->assertSame('file', $p->withName('file')->getName());
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Name is not set');
+        $this->expectExceptionMessage('Name not applied');
         $p->getName();
     }
 
@@ -67,15 +68,14 @@ class HttpMultipartStreamPartTest extends TestCase
         $this->assertSame('fallback.php', $p->getAsciiFilename());
         $this->assertSame('application/x-httpd-php', $p->getMediaType());
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('File not found: ');
+        $this->expectException(FilesystemErrorException::class);
         StreamPart::fromFile(__DIR__ . '/does_not_exist');
     }
 
     public function testInvalidContent(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Argument #1 ($content) must be of type ' . PsrStreamInterface::class . '|resource|string|null, int given');
+        $this->expectExceptionMessage('Argument #1 ($body) must be of type ' . PsrStreamInterface::class . '|resource|string|null, int given');
         // @phpstan-ignore argument.type
         new StreamPart(123, 'file');
     }
@@ -94,7 +94,7 @@ class HttpMultipartStreamPartTest extends TestCase
         $this->assertSame('file.txt', $p->getAsciiFilename());
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid fallback filename: ');
+        $this->expectExceptionMessage('Invalid ASCII filename: ');
         new StreamPart(null, 'file', 'file.txt', null, $filename);
     }
 

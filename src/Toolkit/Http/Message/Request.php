@@ -4,17 +4,17 @@ namespace Salient\Http\Message;
 
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
-use Salient\Core\Concern\ImmutableTrait;
 
 /**
- * A PSR-7 request (outgoing, client-side)
+ * @api
  *
  * @extends AbstractRequest<PsrRequestInterface>
  */
 class Request extends AbstractRequest
 {
-    use ImmutableTrait;
-
+    /**
+     * @api
+     */
     final public function __construct(
         string $method,
         $uri,

@@ -5,14 +5,18 @@ namespace Salient\Http\Message;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
 use Salient\Http\Exception\UploadedFileException;
+use Salient\Http\HttpUtil;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 
 /**
- * A PSR-7 uploaded file (incoming, server-side)
+ * @api
  */
 class ServerRequestUpload implements PsrUploadedFileInterface
 {
+    /**
+     * @var array<int,string>
+     */
     protected const ERROR_MESSAGE = [
         \UPLOAD_ERR_OK => 'There is no error, the file uploaded with success',
         \UPLOAD_ERR_INI_SIZE => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
@@ -24,16 +28,18 @@ class ServerRequestUpload implements PsrUploadedFileInterface
         \UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload',
     ];
 
-    protected PsrStreamInterface $Stream;
-    protected string $File;
-    protected ?int $Size;
-    protected int $Error;
-    protected ?string $ClientFilename;
-    protected ?string $ClientMediaType;
+    private PsrStreamInterface $Stream;
+    private string $File;
+    private ?int $Size;
+    private int $Error;
+    private ?string $ClientFilename;
+    private ?string $ClientMediaType;
     private bool $IsMoved = false;
 
     /**
-     * @param PsrStreamInterface|resource|string $resource
+     * @api
+     *
+     * @param PsrStreamInterface|resource|string $resource Stream or filename.
      */
     public function __construct(
         $resource,
@@ -47,23 +53,21 @@ class ServerRequestUpload implements PsrUploadedFileInterface
         $this->ClientFilename = $clientFilename;
         $this->ClientMediaType = $clientMediaType;
 
-        if ($this->Error !== \UPLOAD_ERR_OK) {
-            return;
-        }
-
-        if ($resource instanceof PsrStreamInterface) {
-            $this->Stream = $resource;
-        } elseif (File::isStream($resource)) {
-            $this->Stream = new Stream($resource);
-        } elseif (is_string($resource)) {
-            $this->File = $resource;
-        } else {
-            throw new InvalidArgumentTypeException(
-                1,
-                'resource',
-                PsrStreamInterface::class . '|resource|string',
-                $resource
-            );
+        if ($error === \UPLOAD_ERR_OK) {
+            if ($resource instanceof PsrStreamInterface) {
+                $this->Stream = $resource;
+            } elseif (File::isStream($resource)) {
+                $this->Stream = new Stream($resource);
+            } elseif (is_string($resource)) {
+                $this->File = $resource;
+            } else {
+                throw new InvalidArgumentTypeException(
+                    1,
+                    'resource',
+                    PsrStreamInterface::class . '|resource|string',
+                    $resource,
+                );
+            }
         }
     }
 
@@ -85,22 +89,20 @@ class ServerRequestUpload implements PsrUploadedFileInterface
         $this->assertIsValid();
 
         if (isset($this->File)) {
-            if (\PHP_SAPI === 'cli') {
-                $result = @rename($this->File, $targetPath);
-            } else {
-                $result = @move_uploaded_file($this->File, $targetPath);
-            }
+            $result = \PHP_SAPI === 'cli'
+                ? @rename($this->File, $targetPath)
+                : @move_uploaded_file($this->File, $targetPath);
             if ($result === false) {
                 $error = error_get_last();
                 throw new UploadedFileException($error['message'] ?? sprintf(
-                    'Error moving uploaded file %s to %s',
+                    'Error moving %s to %s',
                     $this->File,
                     $targetPath,
                 ));
             }
         } else {
             $target = new Stream(File::open($targetPath, 'w'));
-            Stream::copyToStream($this->Stream, $target);
+            HttpUtil::copyStream($this->Stream, $target);
         }
 
         $this->IsMoved = true;
@@ -149,7 +151,7 @@ class ServerRequestUpload implements PsrUploadedFileInterface
         }
 
         if ($this->IsMoved) {
-            throw new UploadedFileException('Uploaded file already moved');
+            throw new UploadedFileException('Upload already moved');
         }
     }
 }

@@ -10,7 +10,6 @@ use Salient\Contract\Http\HeadersInterface;
 use Salient\Core\Concern\ImmutableTrait;
 use Salient\Http\HasInnerHeadersTrait;
 use Salient\Http\Headers;
-use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\Arr;
 use Salient\Utility\Regex;
 use InvalidArgumentException;
@@ -24,6 +23,7 @@ use InvalidArgumentException;
  */
 abstract class AbstractMessage implements MessageInterface
 {
+    use HasBody;
     use HasInnerHeadersTrait;
     use ImmutableTrait;
 
@@ -94,31 +94,6 @@ abstract class AbstractMessage implements MessageInterface
         return $headers instanceof HeadersInterface
             ? $headers
             : new Headers($headers ?? []);
-    }
-
-    /**
-     * @param PsrStreamInterface|resource|string|null $body
-     */
-    private function filterBody($body): PsrStreamInterface
-    {
-        if ($body instanceof PsrStreamInterface) {
-            return $body;
-        }
-
-        if (is_string($body) || $body === null) {
-            return Stream::fromString((string) $body);
-        }
-
-        try {
-            return new Stream($body);
-        } catch (InvalidArgumentException $ex) {
-            throw new InvalidArgumentTypeException(
-                1,
-                'body',
-                PsrStreamInterface::class . '|resource|string|null',
-                $body,
-            );
-        }
     }
 
     /**

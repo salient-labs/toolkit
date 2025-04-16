@@ -190,7 +190,7 @@ class MultipartStream implements MultipartStreamInterface
     {
         $this->assertIsOpen();
 
-        return Stream::copyToString($this);
+        return HttpUtil::getStreamContents($this);
     }
 
     /**

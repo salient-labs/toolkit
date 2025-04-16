@@ -8,6 +8,7 @@ use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\Message\Stream;
 use Salient\Http\Message\StreamPart;
+use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Format;
@@ -21,6 +22,7 @@ use Throwable;
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
  * @covers \Salient\Http\Message\Stream
+ * @covers \Salient\Http\HttpUtil
  */
 final class HttpStreamTest extends TestCase
 {
@@ -275,7 +277,7 @@ final class HttpStreamTest extends TestCase
             try {
                 $fn();
             } catch (Throwable $e) {
-                $this->assertStringContainsString('Stream is detached', $e->getMessage());
+                $this->assertStringContainsString('Stream is closed or detached', $e->getMessage());
 
                 return;
             }
@@ -298,7 +300,7 @@ final class HttpStreamTest extends TestCase
             $this->assertCallbackThrowsException(
                 $callback,
                 StreamDetachedException::class,
-                'Stream is detached',
+                'Stream is closed or detached',
                 sprintf('%s::%s() should throw an exception after stream is detached', Stream::class, $method)
             );
         }
@@ -430,7 +432,7 @@ final class HttpStreamTest extends TestCase
         $stream->write('foo');
         $stream->seek(0);
         $this->expectException(StreamInvalidRequestException::class);
-        $this->expectExceptionMessage('Stream is not open for reading');
+        $this->expectExceptionMessage('Stream is not readable');
         try {
             $stream->getContents();
         } finally {
@@ -447,7 +449,7 @@ final class HttpStreamTest extends TestCase
         $handle = File::open($file, 'r');
         $stream = new Stream($handle);
         $this->expectException(StreamInvalidRequestException::class);
-        $this->expectExceptionMessage('Stream is not open for writing');
+        $this->expectExceptionMessage('Stream is not writable');
         try {
             $stream->write('foo');
         } finally {
@@ -478,7 +480,7 @@ final class HttpStreamTest extends TestCase
         $from->rewind();
         $to = $this->getStream('r+', null);
         try {
-            Stream::copyToStream($from, $to);
+            HttpUtil::copyStream($from, $to);
             $this->assertSame($data, (string) $to);
         } finally {
             $from->close();

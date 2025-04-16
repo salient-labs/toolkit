@@ -4,7 +4,6 @@ namespace Salient\Curler;
 
 use Salient\Http\Message\StreamPart;
 use Salient\Utility\File;
-use InvalidArgumentException;
 
 /**
  * A file to upload to an HTTP endpoint
@@ -24,22 +23,15 @@ class CurlerFile extends StreamPart
         string $filename,
         ?string $uploadFilename = null,
         ?string $mediaType = null,
-        ?string $fallbackFilename = null,
+        ?string $asciiFilename = null,
         ?string $name = null
     ) {
-        if (!is_file($filename)) {
-            throw new InvalidArgumentException(sprintf(
-                'File not found: %s',
-                $filename,
-            ));
-        }
-
         parent::__construct(
             File::open($filename, 'r'),
             $name,
             $uploadFilename ?? basename($filename),
-            self::getFileMediaType($filename, $mediaType),
-            $fallbackFilename,
+            self::filterFileMediaType($mediaType, $filename),
+            $asciiFilename,
         );
     }
 }

@@ -3,6 +3,7 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Message\MultipartStreamInterface;
@@ -300,6 +301,41 @@ final class HttpUtil extends AbstractUtility implements
     {
         foreach ($items as $item) {
             yield $item['name'] => $item['value'];
+        }
+    }
+
+    /**
+     * Get the contents of a stream
+     */
+    public static function getStreamContents(PsrStreamInterface $from): string
+    {
+        $buffer = '';
+        while (!$from->eof()) {
+            $data = $from->read(1048576);
+            if ($data === '') {
+                break;
+            }
+            $buffer .= $data;
+        }
+        return $buffer;
+    }
+
+    /**
+     * Copy the contents of one stream to another
+     */
+    public static function copyStream(PsrStreamInterface $from, PsrStreamInterface $to): void
+    {
+        $buffer = '';
+        while (!$from->eof()) {
+            $data = $from->read(8192);
+            if ($data === '') {
+                break;
+            }
+            $buffer .= $data;
+            $buffer = substr($buffer, $to->write($buffer));
+        }
+        while ($buffer !== '') {
+            $buffer = substr($buffer, $to->write($buffer));
         }
     }
 }

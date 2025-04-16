@@ -2,7 +2,6 @@
 
 namespace Salient\Http\Message;
 
-use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Message\StreamInterface;
 use Salient\Contract\Http\Message\StreamPartInterface;
@@ -18,23 +17,23 @@ use Salient\Utility\Str;
 use InvalidArgumentException;
 
 /**
- * A PSR-7 stream wrapper
+ * @api
  */
 class Stream implements StreamInterface, HasFormDataFlag
 {
-    protected const CHUNK_SIZE = 8192;
-
-    protected ?string $Uri;
-    protected bool $IsReadable;
-    protected bool $IsWritable;
-    protected bool $IsSeekable;
+    private ?string $Uri;
+    private bool $IsReadable;
+    private bool $IsWritable;
+    private bool $IsSeekable;
     /** @var resource|null */
-    protected $Stream;
+    private $Stream;
 
     /**
+     * @api
+     *
      * @param resource $stream
      */
-    public function __construct($stream)
+    final public function __construct($stream)
     {
         if (!File::isStream($stream)) {
             throw new InvalidArgumentTypeException(1, 'stream', 'resource (stream)', $stream);
@@ -58,19 +57,21 @@ class Stream implements StreamInterface, HasFormDataFlag
     }
 
     /**
-     * Creates a new Stream object from a string
+     * Get an instance from a string
+     *
+     * @return static
      */
     public static function fromString(string $content): self
     {
-        return new self(Str::toStream($content));
+        return new static(Str::toStream($content));
     }
 
     /**
-     * Encapsulate arbitrarily nested data in a new Stream or MultipartStream
-     * object
+     * Get an instance from nested arrays and objects
      *
      * @param mixed[]|object $data
      * @param int-mask-of<Stream::DATA_*> $flags
+     * @return static|MultipartStream
      */
     public static function fromData(
         $data,
@@ -78,21 +79,23 @@ class Stream implements StreamInterface, HasFormDataFlag
         ?DateFormatterInterface $dateFormatter = null,
         bool $asJson = false,
         ?string $boundary = null
-    ): StreamInterface {
+    ) {
         $formData = new FormData($data);
         if ($asJson) {
-            $callback = static function (object $value) {
+            $callback = static function ($value) {
                 if ($value instanceof StreamPartInterface) {
-                    throw new StreamEncapsulationException('Multipart data streams cannot be JSON-encoded');
+                    throw new StreamEncapsulationException(
+                        'Multipart streams cannot be JSON-encoded',
+                    );
                 }
                 return false;
             };
             $data = $formData->getData($flags, $dateFormatter, $callback);
-            return self::fromString(Json::encode($data));
+            return static::fromString(Json::encode($data));
         }
 
         $multipart = false;
-        $callback = static function (object $value) use (&$multipart) {
+        $callback = static function ($value) use (&$multipart) {
             if ($value instanceof StreamPartInterface) {
                 $multipart = true;
                 return $value;
@@ -106,7 +109,7 @@ class Stream implements StreamInterface, HasFormDataFlag
             foreach ($data as [$name, $content]) {
                 $query[] = rawurlencode($name) . '=' . rawurlencode($content);
             }
-            return self::fromString(implode('&', $query ?? []));
+            return static::fromString(implode('&', $query ?? []));
         }
 
         /** @var string|StreamPartInterface $content */
@@ -118,45 +121,6 @@ class Stream implements StreamInterface, HasFormDataFlag
             }
         }
         return new MultipartStream($parts ?? [], $boundary);
-    }
-
-    /**
-     * Copy data from a stream to a string
-     */
-    public static function copyToString(PsrStreamInterface $from): string
-    {
-        $out = '';
-        while (!$from->eof()) {
-            $in = $from->read(static::CHUNK_SIZE);
-            if ($in === '') {
-                // @codeCoverageIgnoreStart
-                break;
-                // @codeCoverageIgnoreEnd
-            }
-            $out .= $in;
-        }
-        return $out;
-    }
-
-    /**
-     * Copy data from one stream to another
-     */
-    public static function copyToStream(PsrStreamInterface $from, PsrStreamInterface $to): void
-    {
-        $out = '';
-        while (!$from->eof()) {
-            $in = $from->read(static::CHUNK_SIZE);
-            if ($in === '') {
-                break;
-            }
-            $out .= $in;
-            $out = substr($out, $to->write($out));
-        }
-        while ($out !== '') {
-            // @codeCoverageIgnoreStart
-            $out = substr($out, $to->write($out));
-            // @codeCoverageIgnoreEnd
-        }
     }
 
     /**
@@ -190,8 +154,6 @@ class Stream implements StreamInterface, HasFormDataFlag
     {
         $this->assertHasStream();
 
-        clearstatcache();
-
         return File::stat($this->Stream, $this->Uri)['size'] ?? null;
     }
 
@@ -203,7 +165,6 @@ class Stream implements StreamInterface, HasFormDataFlag
         $this->assertHasStream();
 
         $meta = stream_get_meta_data($this->Stream);
-
         return $key === null ? $meta : ($meta[$key] ?? null);
     }
 
@@ -246,7 +207,7 @@ class Stream implements StreamInterface, HasFormDataFlag
     {
         $this->assertHasStream();
 
-        return @feof($this->Stream);
+        return File::eof($this->Stream);
     }
 
     /**
@@ -266,15 +227,15 @@ class Stream implements StreamInterface, HasFormDataFlag
     {
         $this->assertIsReadable();
 
-        if ($length === 0) {
-            return '';
-        }
-
         if ($length < 0) {
-            throw new InvalidArgumentException('Argument #1 ($length) must be greater than or equal to 0');
+            throw new InvalidArgumentException(
+                'Argument #1 ($length) must be greater than or equal to 0',
+            );
         }
 
-        return File::read($this->Stream, $length, $this->Uri);
+        return $length
+            ? File::read($this->Stream, $length, $this->Uri)
+            : '';
     }
 
     /**
@@ -285,13 +246,15 @@ class Stream implements StreamInterface, HasFormDataFlag
         $this->assertHasStream();
 
         if (!$this->IsWritable) {
-            throw new StreamInvalidRequestException('Stream is not open for writing');
+            throw new StreamInvalidRequestException('Stream is not writable');
         }
 
         return File::write($this->Stream, $string, null, $this->Uri);
     }
 
     /**
+     * @inheritDoc
+     *
      * @param \SEEK_SET|\SEEK_CUR|\SEEK_END $whence
      */
     public function seek(int $offset, int $whence = \SEEK_SET): void
@@ -327,7 +290,6 @@ class Stream implements StreamInterface, HasFormDataFlag
         $result = $this->Stream;
 
         $this->Stream = null;
-        $this->Uri = null;
         $this->IsReadable = false;
         $this->IsWritable = false;
         $this->IsSeekable = false;
@@ -337,9 +299,8 @@ class Stream implements StreamInterface, HasFormDataFlag
 
     /**
      * @phpstan-assert !null $this->Stream
-     * @phpstan-assert true $this->IsSeekable
      */
-    protected function assertIsSeekable(): void
+    private function assertIsSeekable(): void
     {
         $this->assertHasStream();
 
@@ -350,24 +311,23 @@ class Stream implements StreamInterface, HasFormDataFlag
 
     /**
      * @phpstan-assert !null $this->Stream
-     * @phpstan-assert true $this->IsReadable
      */
-    protected function assertIsReadable(): void
+    private function assertIsReadable(): void
     {
         $this->assertHasStream();
 
         if (!$this->IsReadable) {
-            throw new StreamInvalidRequestException('Stream is not open for reading');
+            throw new StreamInvalidRequestException('Stream is not readable');
         }
     }
 
     /**
      * @phpstan-assert !null $this->Stream
      */
-    protected function assertHasStream(): void
+    private function assertHasStream(): void
     {
         if (!$this->Stream) {
-            throw new StreamDetachedException('Stream is detached');
+            throw new StreamDetachedException('Stream is closed or detached');
         }
     }
 }

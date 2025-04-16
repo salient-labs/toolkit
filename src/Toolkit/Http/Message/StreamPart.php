@@ -5,8 +5,6 @@ namespace Salient\Http\Message;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Utility\Exception\InvalidArgumentTypeException;
-use Salient\Utility\Exception\InvalidRuntimeConfigurationException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
@@ -14,40 +12,43 @@ use InvalidArgumentException;
 use LogicException;
 
 /**
- * Part of a PSR-7 multipart data stream
+ * @api
  */
 class StreamPart implements StreamPartInterface
 {
+    use HasBody;
     use ImmutableTrait;
 
-    protected ?string $Name;
-    protected ?string $Filename;
-    protected ?string $AsciiFilename;
-    protected ?string $MediaType;
-    protected PsrStreamInterface $Body;
+    private ?string $Name;
+    private ?string $Filename;
+    private ?string $AsciiFilename;
+    private ?string $MediaType;
+    private PsrStreamInterface $Body;
 
     /**
-     * @param PsrStreamInterface|resource|string|null $content
+     * @api
+     *
+     * @param PsrStreamInterface|resource|string|null $body
      */
     public function __construct(
-        $content,
+        $body,
         ?string $name = null,
         ?string $filename = null,
         ?string $mediaType = null,
-        ?string $fallbackFilename = null
+        ?string $asciiFilename = null
     ) {
         $this->Name = $name;
         $this->Filename = Str::coalesce($filename, null);
-        $this->AsciiFilename = $this->filterFallbackFilename(
-            Str::coalesce($fallbackFilename, null),
-            $this->Filename
+        $this->AsciiFilename = $this->filterAsciiFilename(
+            Str::coalesce($asciiFilename, null),
+            $this->Filename,
         );
         $this->MediaType = Str::coalesce($mediaType, null);
-        $this->Body = $this->filterContent($content);
+        $this->Body = $this->filterBody($body);
     }
 
     /**
-     * Creates a new StreamPart object backed by a local file
+     * Get an instance backed by a local file
      *
      * @param string|null $uploadFilename Default: `basename($filename)`
      * @param string|null $mediaType Default: `mime_content_type($filename)`,
@@ -58,46 +59,34 @@ class StreamPart implements StreamPartInterface
         ?string $name = null,
         ?string $uploadFilename = null,
         ?string $mediaType = null,
-        ?string $fallbackFilename = null
+        ?string $asciiFilename = null
     ): self {
-        if (!is_file($filename)) {
-            throw new InvalidArgumentException(sprintf(
-                'File not found: %s',
-                $filename,
-            ));
-        }
-
         return new self(
             File::open($filename, 'r'),
             $name,
             $uploadFilename ?? basename($filename),
-            self::getFileMediaType($filename, $mediaType),
-            $fallbackFilename,
+            self::filterFileMediaType($mediaType, $filename),
+            $asciiFilename,
         );
     }
 
     /**
-     * Get $filename's MIME type if $mediaType is null, $mediaType otherwise
+     * @internal
      */
-    protected static function getFileMediaType(string $filename, ?string $mediaType = null): string
-    {
-        if ($mediaType === null) {
-            if (!extension_loaded('fileinfo')) {
-                // @codeCoverageIgnoreStart
-                throw new InvalidRuntimeConfigurationException(
-                    "'fileinfo' extension required for MIME type detection"
-                );
-                // @codeCoverageIgnoreEnd
-            }
-            $mediaType = @mime_content_type($filename);
-            if ($mediaType === false) {
-                // @codeCoverageIgnoreStart
-                $mediaType = self::TYPE_BINARY;
-                // @codeCoverageIgnoreEnd
-            }
+    protected static function filterFileMediaType(
+        ?string $mediaType,
+        string $filename
+    ): string {
+        if ($mediaType !== null) {
+            return $mediaType;
         }
 
-        return $mediaType;
+        $mediaType = extension_loaded('fileinfo')
+            ? @mime_content_type($filename)
+            : false;
+        return $mediaType === false
+            ? self::TYPE_BINARY
+            : $mediaType;
     }
 
     /**
@@ -106,7 +95,7 @@ class StreamPart implements StreamPartInterface
     public function getName(): string
     {
         if ($this->Name === null) {
-            throw new LogicException('Name is not set');
+            throw new LogicException('Name not applied');
         }
         return $this->Name;
     }
@@ -151,53 +140,25 @@ class StreamPart implements StreamPartInterface
         return $this->with('Name', $name);
     }
 
-    /**
-     * Get $filename if $fallbackFilename is null and $filename is valid per
-     * [RFC6266] Appendix D, $fallbackFilename otherwise
-     *
-     * @throws InvalidArgumentException if `$fallbackFilename` is not a valid
-     * ASCII string.
-     */
-    protected function filterFallbackFilename(?string $fallbackFilename, ?string $filename): ?string
+    private function filterAsciiFilename(?string $asciiFilename, ?string $filename): ?string
     {
-        $filename = $fallbackFilename ?? $filename;
+        $filename = $asciiFilename ?? $filename;
         if ($filename === null) {
             return null;
         }
+
+        // As per [RFC6266] Appendix D
         if (
             !Str::isAscii($filename)
             || Regex::match('/%[0-9a-f]{2}|\\\\|"/i', $filename)
         ) {
-            if ($fallbackFilename === null) {
-                return null;
+            if ($asciiFilename !== null) {
+                throw new InvalidArgumentException(
+                    sprintf('Invalid ASCII filename: %s', $filename),
+                );
             }
-            throw new InvalidArgumentException(
-                sprintf('Invalid fallback filename: %s', $filename)
-            );
+            return null;
         }
         return $filename;
-    }
-
-    /**
-     * @param PsrStreamInterface|resource|string|null $content
-     */
-    protected function filterContent($content): PsrStreamInterface
-    {
-        if ($content instanceof PsrStreamInterface) {
-            return $content;
-        }
-        if (is_string($content) || $content === null) {
-            return Stream::fromString((string) $content);
-        }
-        try {
-            return new Stream($content);
-        } catch (InvalidArgumentException $ex) {
-            throw new InvalidArgumentTypeException(
-                1,
-                'content',
-                PsrStreamInterface::class . '|resource|string|null',
-                $content
-            );
-        }
     }
 }

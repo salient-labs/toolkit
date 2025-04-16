@@ -18,7 +18,7 @@ use Salient\Http\Uri;
 use Salient\Utility\File;
 
 /**
- * A PSR-17 HTTP message factory
+ * @api
  */
 class MessageFactory implements
     PsrRequestFactoryInterface,
@@ -47,6 +47,8 @@ class MessageFactory implements
     }
 
     /**
+     * @inheritDoc
+     *
      * @param mixed[] $serverParams
      */
     public function createServerRequest(
@@ -98,7 +100,7 @@ class MessageFactory implements
             $size,
             $error,
             $clientFilename,
-            $clientMediaType
+            $clientMediaType,
         );
     }
 
