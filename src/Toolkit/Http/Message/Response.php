@@ -182,8 +182,8 @@ class Response extends AbstractMessage implements ResponseInterface
     {
         $response = parent::jsonSerialize();
 
-        $mediaType = $this->Headers->getHeaderValues(self::HEADER_CONTENT_TYPE);
-        $location = $this->Headers->getHeaderValues(self::HEADER_LOCATION);
+        $contentType = $this->Headers->getLastHeaderValue(self::HEADER_CONTENT_TYPE);
+        $location = $this->Headers->getHeader(self::HEADER_LOCATION);
 
         return [
             'status' => $this->StatusCode,
@@ -193,7 +193,7 @@ class Response extends AbstractMessage implements ResponseInterface
             'headers' => $response['headers'],
             'content' => [
                 'size' => $response['bodySize'],
-                'mimeType' => count($mediaType) === 1 ? $mediaType[0] : '',
+                'mimeType' => $contentType,
                 'text' => (string) $this->Body,
             ],
             'redirectURL' => count($location) === 1 ? $location[0] : '',

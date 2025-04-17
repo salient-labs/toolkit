@@ -4,12 +4,12 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
+use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Http\Message\Request;
 use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
-use InvalidArgumentException;
 use Stringable;
 
 /**
@@ -122,7 +122,7 @@ final class HttpUtilTest extends TestCase implements HasMediaType
                 true,
             ],
             [
-                InvalidArgumentException::class . ',Invalid parameter: ',
+                InvalidHeaderException::class . ',Invalid HTTP header parameter: ',
                 '',
                 true,
                 true,
@@ -162,7 +162,7 @@ final class HttpUtilTest extends TestCase implements HasMediaType
                 true,
             ],
             [
-                InvalidArgumentException::class . ',Invalid parameter: "Not a token"',
+                InvalidHeaderException::class . ',Invalid HTTP header parameter: "Not a token"',
                 '"Not a token";Foo=bar;Baz=',
                 true,
                 true,

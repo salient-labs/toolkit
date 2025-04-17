@@ -16,7 +16,6 @@ use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerMiddlewareInterface;
 use Salient\Contract\Curler\CurlerPageRequestInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\Exception\InvalidHeaderException as InvalidHeaderExceptionInterface;
 use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\Message\ResponseInterface;
@@ -307,12 +306,7 @@ class Curler implements CurlerInterface, Buildable
         if (!$headers->hasHeader(self::HEADER_CONTENT_TYPE)) {
             return $this->ExpectJson;
         }
-        try {
-            $contentType = $headers->getOnlyHeaderValue(self::HEADER_CONTENT_TYPE);
-        } catch (InvalidHeaderExceptionInterface $ex) {
-            $this->debug($ex->getMessage());
-            return false;
-        }
+        $contentType = $headers->getLastHeaderValue(self::HEADER_CONTENT_TYPE);
         return HttpUtil::mediaTypeIs($contentType, self::TYPE_JSON);
     }
 
@@ -1139,7 +1133,7 @@ class Curler implements CurlerInterface, Buildable
         }
 
         if ($size === null || $size > 0) {
-            $size ??= Headers::from($request)->getContentLength();
+            $size ??= HttpUtil::getContentLength($request);
             if ($size !== null && $size <= static::MAX_INPUT_LENGTH) {
                 $body = (string) $body;
                 $opt[\CURLOPT_POSTFIELDS] = $body;
@@ -1369,8 +1363,7 @@ class Curler implements CurlerInterface, Buildable
                 $redirects !== false
                 && $code >= 300
                 && $code < 400
-                && count($location = $headersIn->getHeader(self::HEADER_LOCATION)) === 1
-                && ($location = $location[0]) !== ''
+                && ($location = $headersIn->getOnlyHeaderValue(self::HEADER_LOCATION)) !== ''
             ) {
                 if (!$redirects) {
                     throw new TooManyRedirectsException(sprintf(
@@ -1422,7 +1415,7 @@ class Curler implements CurlerInterface, Buildable
                 !$this->RetryAfterTooManyRequests
                 || $retrying
                 || $code !== 429
-                || ($after = $headersIn->getRetryAfter()) === null
+                || ($after = HttpUtil::getRetryAfter($headersIn)) === null
                 || ($this->RetryAfterMaxSeconds !== 0 && $after > $this->RetryAfterMaxSeconds)
             ) {
                 break;

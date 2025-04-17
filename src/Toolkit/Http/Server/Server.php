@@ -425,7 +425,7 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
             /** @todo Handle requests without Content-Length */
             /** @todo Add support for Transfer-Encoding */
             try {
-                $length = $headers->getContentLength();
+                $length = HttpUtil::getContentLength($headers);
             } catch (InvalidHeaderException $ex) {
                 throw new HttpServerException(sprintf(
                     'Invalid %s in request from %s',

@@ -2,14 +2,18 @@
 
 namespace Salient\Http;
 
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\HasFormDataFlag;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
+use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Internal\FormData;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
@@ -17,15 +21,16 @@ use Salient\Utility\Package;
 use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
+use Salient\Utility\Test;
 use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use Generator;
-use InvalidArgumentException;
 use Stringable;
 
 final class HttpUtil extends AbstractUtility implements
     HasFormDataFlag,
+    HasHttpHeader,
     HasMediaType,
     HasRequestMethod
 {
@@ -51,6 +56,112 @@ final class HttpUtil extends AbstractUtility implements
     ];
 
     private const AUTHORITY_FORM = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
+
+    /**
+     * Get the value of a Content-Length header, or null if it is not set
+     *
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $headersOrPayload
+     * @return int<0,max>|null
+     */
+    public static function getContentLength($headersOrPayload): ?int
+    {
+        $headers = Headers::from($headersOrPayload);
+        if (!$headers->hasHeader(self::HEADER_CONTENT_LENGTH)) {
+            return null;
+        }
+        $length = $headers->getOnlyHeaderValue(self::HEADER_CONTENT_LENGTH, true);
+        if (!Test::isInteger($length) || (int) $length < 0) {
+            throw new InvalidHeaderException(sprintf(
+                'Invalid value for HTTP header %s: %s',
+                self::HEADER_CONTENT_LENGTH,
+                $length,
+            ));
+        }
+        return (int) $length;
+    }
+
+    /**
+     * Get the value of a Content-Type header's boundary parameter, or null if
+     * it is not set
+     *
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $headersOrPayload
+     */
+    public static function getMultipartBoundary($headersOrPayload): ?string
+    {
+        $headers = Headers::from($headersOrPayload);
+        if (!$headers->hasHeader(self::HEADER_CONTENT_TYPE)) {
+            return null;
+        }
+        $type = $headers->getLastHeaderValue(self::HEADER_CONTENT_TYPE);
+        return self::getParameters($type, false, false)['boundary'] ?? null;
+    }
+
+    /**
+     * Get preferences applied via one or more Prefer headers as per [RFC7240]
+     *
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $headersOrPayload
+     * @return array<string,array{value:string,parameters:array<string,string>}>
+     */
+    public static function getPreferences($headersOrPayload): array
+    {
+        $headers = Headers::from($headersOrPayload);
+        if (!$headers->hasHeader(self::HEADER_PREFER)) {
+            return [];
+        }
+        foreach ($headers->getHeaderValues(self::HEADER_PREFER) as $pref) {
+            /** @var array<string,string> */
+            $params = self::getParameters($pref, true);
+            if (!$params) {
+                continue;
+            }
+            $value = reset($params);
+            $name = key($params);
+            unset($params[$name]);
+            $prefs[$name] ??= ['value' => $value, 'parameters' => $params];
+        }
+        return $prefs ?? [];
+    }
+
+    /**
+     * Merge preferences into a Prefer header value as per [RFC7240]
+     *
+     * @param array<string,array{value:string,parameters?:array<string,string>}|string> $preferences
+     */
+    public static function mergePreferences(array $preferences): string
+    {
+        foreach ($preferences as $name => $pref) {
+            $lower = Str::lower($name);
+            if (isset($prefs[$lower])) {
+                continue;
+            }
+            $prefs[$lower] = self::mergeParameters(
+                is_string($pref)
+                    ? [$name => $pref]
+                    : [$name => $pref['value']] + ($pref['parameters'] ?? []),
+            );
+        }
+        return implode(', ', $prefs ?? []);
+    }
+
+    /**
+     * Get the value of a Retry-After header in seconds, or null if it has an
+     * invalid value or is not set
+     *
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $headersOrPayload
+     * @return int<0,max>|null
+     */
+    public static function getRetryAfter($headersOrPayload): ?int
+    {
+        $headers = Headers::from($headersOrPayload);
+        $after = $headers->getHeaderLine(self::HEADER_RETRY_AFTER);
+        if (!Test::isInteger($after) || (int) $after < 0) {
+            $after = strtotime($after);
+            return $after === false
+                ? null
+                : max(0, $after - time());
+        }
+        return (int) $after;
+    }
 
     /**
      * Check if a string is a valid HTTP request method
@@ -142,7 +253,7 @@ final class HttpUtil extends AbstractUtility implements
                 continue;
             }
             if ($strict) {
-                throw new InvalidArgumentException(sprintf('Invalid parameter: %s', $param));
+                throw new InvalidHeaderException(sprintf('Invalid HTTP header parameter: %s', $param));
             }
         }
         return $params ?? [];

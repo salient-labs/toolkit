@@ -10,6 +10,7 @@ use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\Headers;
+use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use ArrayIterator;
@@ -18,6 +19,7 @@ use LogicException;
 
 /**
  * @covers \Salient\Http\Headers
+ * @covers \Salient\Http\HttpUtil
  */
 final class HttpHeadersTest extends TestCase implements
     HasHttpHeader,
@@ -166,15 +168,15 @@ final class HttpHeadersTest extends TestCase implements
                 ["long: line1 \r\n", " line2\t\r\n", " line3\r\n"],
             ],
             'invalid line folding' => [
-                [],
+                InvalidHeaderException::class . ',Invalid HTTP header line folding:  line2',
                 [" line2\r\n"],
             ],
             'invalid header' => [
-                [],
+                InvalidHeaderException::class . ',Invalid HTTP header field: nope',
                 ["nope\r\n"],
             ],
             '[strict] no CRLF' => [
-                InvalidArgumentException::class . ',HTTP header field must end with CRLF',
+                InvalidHeaderException::class . ',HTTP header line must end with CRLF',
                 ['A : 1', 'A:2', 'a: 3'],
                 true,
             ],
@@ -184,7 +186,7 @@ final class HttpHeadersTest extends TestCase implements
                 true,
             ],
             '[strict] space before delimiter' => [
-                InvalidArgumentException::class . ',Invalid HTTP header field: A : 1',
+                InvalidHeaderException::class . ',Invalid HTTP header field: A : 1',
                 ["A : 1\r\n", "A:2\r\n", "a: 3\r\n"],
                 true,
             ],
@@ -221,7 +223,7 @@ final class HttpHeadersTest extends TestCase implements
                 true,
             ],
             '[strict] trailing header #4' => [
-                InvalidArgumentException::class . ',HTTP message cannot have empty header after body',
+                InvalidHeaderException::class . ',HTTP message cannot have empty header line after body',
                 ["foo: bar\r\n", "\r\n", "baz: qux\r\n", "\r\n"],
                 true,
                 true,
@@ -247,12 +249,12 @@ final class HttpHeadersTest extends TestCase implements
                 true,
             ],
             '[strict] invalid line folding' => [
-                InvalidArgumentException::class . ',Invalid line folding:  line2',
+                InvalidHeaderException::class . ',Invalid HTTP header line folding:  line2',
                 [" line2\r\n"],
                 true,
             ],
             '[strict] invalid header' => [
-                InvalidArgumentException::class . ',Invalid HTTP header field: nope',
+                InvalidHeaderException::class . ',Invalid HTTP header field: nope',
                 ["nope\r\n"],
                 true,
             ],
@@ -381,7 +383,7 @@ final class HttpHeadersTest extends TestCase implements
         $this->assertSame(['item1, item2', 'item3, item4,item5', 'item6,item7'], $headers->getHeader('Items'));
         $this->assertSame('qux, quux, quuux', $headers->getHeaderLine('Foo'));
         $this->assertSame('', $headers->getHeaderLine('Baz'));
-        $this->assertSame('item1, item2, item3, item4, item5, item6, item7', $headers->getHeaderLine('Items'));
+        $this->assertSame('item1, item2, item3, item4,item5, item6,item7', $headers->getHeaderLine('Items'));
         $this->assertSame('qux', $headers->getFirstHeaderValue('Foo'));
         $this->assertSame('quuux', $headers->getLastHeaderValue('Foo'));
         $this->assertSame('baz', $headers->getOnlyHeaderValue('Bar'));
@@ -409,7 +411,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testGetPreferences(): void
     {
-        $this->assertSame([], (new Headers())->getPreferences());
+        $this->assertSame([], HttpUtil::getPreferences(new Headers()));
 
         $headers = (new Headers())
             ->addValue(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
@@ -423,16 +425,16 @@ final class HttpHeadersTest extends TestCase implements
             'handling' => ['value' => 'lenient', 'parameters' => []],
             'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
             'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
-        ], $headers->getPreferences());
+        ], HttpUtil::getPreferences($headers));
     }
 
     public function testMergePreferences(): void
     {
-        $this->assertSame('', Headers::mergePreferences([]));
+        $this->assertSame('', HttpUtil::mergePreferences([]));
 
         $this->assertSame(
             'respond-async, WAIT=5; foo=bar, handling=lenient, task_priority=2; baz="foo bar", odata.maxpagesize=100',
-            Headers::mergePreferences([
+            HttpUtil::mergePreferences([
                 'respond-async' => '',
                 'WAIT' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
                 'wait' => '10',

@@ -5,6 +5,7 @@ namespace Salient\Contract\Http;
 use Salient\Contract\Collection\DictionaryInterface;
 use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Core\Immutable;
+use Salient\Contract\Http\Exception\InvalidHeaderException;
 use LogicException;
 use Stringable;
 
@@ -37,6 +38,7 @@ interface HeadersInterface extends
      * @return static
      * @throws LogicException if headers have been applied to the instance via
      * another method.
+     * @throws InvalidHeaderException if `$line` is invalid.
      */
     public function addLine(string $line);
 

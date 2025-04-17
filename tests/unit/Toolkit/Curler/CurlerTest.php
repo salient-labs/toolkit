@@ -21,7 +21,6 @@ use Salient\Curler\CurlerFile;
 use Salient\Curler\CurlerPage;
 use Salient\Http\Message\Response;
 use Salient\Http\Message\Stream;
-use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
 use Salient\Tests\HttpTestCase;
 use Salient\Utility\Arr;
@@ -138,7 +137,7 @@ EOF,
         $curler = $this->getCurler('/foo');
         $result = $curler->{$m}($data, self::QUERY);
         $output = $server->getNewOutput();
-        $boundaryParam = Headers::from($output)->getMultipartBoundary();
+        $boundaryParam = HttpUtil::getMultipartBoundary($output);
         $this->assertNotNull($boundaryParam);
         $boundary = HttpUtil::unquoteString($boundaryParam);
         $content = File::getContents($file);

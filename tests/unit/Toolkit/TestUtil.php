@@ -4,6 +4,7 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Http\Headers;
+use Salient\Http\HttpUtil;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
@@ -86,7 +87,7 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
                     $chunked = $encoding === 'chunked';
                     continue;
                 }
-                $contentLength = $headers->getContentLength();
+                $contentLength = HttpUtil::getContentLength($headers);
                 if ($contentLength !== null) {
                     continue;
                 }

@@ -8,7 +8,7 @@ use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
 use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Curler\CurlerPage;
-use Salient\Http\Headers;
+use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 
@@ -41,7 +41,7 @@ final class ODataPager implements CurlerPagerInterface
             return $request;
         }
 
-        $prefs = Headers::from($request)->getPreferences();
+        $prefs = HttpUtil::getPreferences($request);
         if (
             isset($prefs['odata.maxpagesize'])
             && $prefs['odata.maxpagesize']['value'] === (string) $this->MaxPageSize
@@ -53,7 +53,7 @@ final class ODataPager implements CurlerPagerInterface
 
         return $request->withHeader(
             self::HEADER_PREFER,
-            Headers::mergePreferences($prefs),
+            HttpUtil::mergePreferences($prefs),
         );
     }
 
