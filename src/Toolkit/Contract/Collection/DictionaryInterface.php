@@ -15,10 +15,11 @@ use Traversable;
  *
  * @template TKey of array-key
  * @template TValue
+ * @template TArrayValue = TValue
  *
  * @extends ArrayAccess<TKey,TValue>
  * @extends Traversable<TKey,TValue>
- * @extends Arrayable<TKey,TValue|mixed[]>
+ * @extends Arrayable<TKey,TValue|TArrayValue>
  */
 interface DictionaryInterface extends
     ArrayAccess,
@@ -160,7 +161,7 @@ interface DictionaryInterface extends
      *     )
      * ) $callback
      * @param int-mask-of<CollectionInterface::*> $mode
-     * @return static<TKey,TReturn>
+     * @return static<TKey,TReturn,TArrayValue>
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
 

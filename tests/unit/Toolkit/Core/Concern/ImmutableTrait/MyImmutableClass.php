@@ -2,6 +2,7 @@
 
 namespace Salient\Tests\Core\Concern\ImmutableTrait;
 
+use Salient\Collection\ArrayableCollectionTrait;
 use Salient\Collection\CollectionTrait;
 use Salient\Collection\ReadOnlyArrayAccessTrait;
 use Salient\Contract\Collection\CollectionInterface;
@@ -39,14 +40,14 @@ class MyImmutableClass implements Immutable
     public $Arr4;
     /** @var stdClass */
     public $Obj;
-    /** @var MyImmutableCollection */
+    /** @var MyCollection */
     public $Coll;
     public stdClass $TypedObj;
 
     public function __construct()
     {
         $this->Obj = new stdClass();
-        $this->Coll = new MyImmutableCollection();
+        $this->Coll = new MyCollection();
     }
 }
 
@@ -54,7 +55,7 @@ class MyImmutableClass implements Immutable
  * @implements CollectionInterface<array-key,stdClass>
  * @implements IteratorAggregate<array-key,stdClass>
  */
-class MyImmutableCollection implements CollectionInterface, IteratorAggregate, Immutable
+class MyCollection implements CollectionInterface, IteratorAggregate
 {
     /** @use CollectionTrait<array-key,stdClass,static> */
     use CollectionTrait;
@@ -63,4 +64,6 @@ class MyImmutableCollection implements CollectionInterface, IteratorAggregate, I
         ReadOnlyArrayAccessTrait::offsetSet insteadof CollectionTrait;
         ReadOnlyArrayAccessTrait::offsetUnset insteadof CollectionTrait;
     }
+    /** @use ArrayableCollectionTrait<array-key,stdClass> */
+    use ArrayableCollectionTrait;
 }

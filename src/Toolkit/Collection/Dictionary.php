@@ -11,11 +11,13 @@ use IteratorAggregate;
  * @template TKey of array-key
  * @template TValue
  *
- * @implements DictionaryInterface<TKey,TValue>
+ * @implements DictionaryInterface<TKey,TValue,mixed[]>
  * @implements IteratorAggregate<TKey,TValue>
  */
 class Dictionary implements DictionaryInterface, IteratorAggregate
 {
     /** @use DictionaryTrait<TKey,TValue> */
     use DictionaryTrait;
+    /** @use RecursiveArrayableCollectionTrait<TKey,TValue> */
+    use RecursiveArrayableCollectionTrait;
 }

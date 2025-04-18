@@ -3,6 +3,7 @@
 namespace Salient\Http;
 
 use Psr\Http\Message\MessageInterface as PsrMessageInterface;
+use Salient\Collection\ArrayableCollectionTrait;
 use Salient\Collection\ReadOnlyArrayAccessTrait;
 use Salient\Collection\ReadOnlyCollectionTrait;
 use Salient\Contract\Collection\CollectionInterface;
@@ -34,6 +35,8 @@ class Headers implements HeadersInterface, IteratorAggregate
     use ReadOnlyCollectionTrait;
     /** @use ReadOnlyArrayAccessTrait<string,string[]> */
     use ReadOnlyArrayAccessTrait;
+    /** @use ArrayableCollectionTrait<string,string[]> */
+    use ArrayableCollectionTrait;
     use ImmutableTrait;
 
     private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
@@ -640,16 +643,6 @@ REGEX;
             null,
             array_slice($this->Index, $offset, $length, true)
         );
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function toArray(bool $preserveKeys = true): array
-    {
-        return $preserveKeys
-            ? $this->Items
-            : array_values($this->Items);
     }
 
     /**

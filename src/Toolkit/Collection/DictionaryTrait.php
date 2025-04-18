@@ -3,15 +3,12 @@
 namespace Salient\Collection;
 
 use Salient\Contract\Collection\CollectionInterface;
-use Salient\Contract\Collection\DictionaryInterface;
 
 /**
  * @api
  *
  * @template TKey of array-key
  * @template TValue
- *
- * @phpstan-require-implements DictionaryInterface
  */
 trait DictionaryTrait
 {
