@@ -256,14 +256,6 @@ REGEX;
 
     /**
      * @inheritDoc
-     */
-    public function __toString(): string
-    {
-        return implode("\r\n", $this->getLines());
-    }
-
-    /**
-     * @inheritDoc
      *
      * @throws InvalidArgumentException if `$strict` is `true` and `$line` is
      * not \[RFC7230]-compliant.
@@ -332,6 +324,42 @@ REGEX;
         /** @var string $name */
         /** @var string $value */
         return $this->addValue($name, $value)->maybeIndexTrailer()->with('Carry', $carry);
+    }
+
+    /**
+     * @return static
+     */
+    private function extendLast(string $line)
+    {
+        if (!$this->Headers) {
+            return $this;
+        }
+        $headers = $this->Headers;
+        $i = array_key_last($headers);
+        $header = $this->Headers[$i];
+        $value = reset($header);
+        $key = key($header);
+        $headers[$i][$key] = ltrim($value . $line);
+        return $this->maybeReplaceHeaders($headers, $this->Index);
+    }
+
+    /**
+     * @return static
+     */
+    private function maybeIndexTrailer()
+    {
+        if (!$this->Headers) {
+            // @codeCoverageIgnoreStart
+            throw new LogicException('No headers applied');
+            // @codeCoverageIgnoreEnd
+        }
+        if (!$this->Closed) {
+            return $this;
+        }
+        $i = array_key_last($this->Headers);
+        $trailers = $this->Trailers;
+        $trailers[$i] = true;
+        return $this->with('Trailers', $trailers);
     }
 
     /**
@@ -468,25 +496,18 @@ REGEX;
     }
 
     /**
-     * @inheritDoc
+     * @param array<array<string,string>> $headers
+     * @param array<string,int[]> $index
+     * @return array<string,array<array<string,string>>>
      */
-    public function authorize(
-        CredentialInterface $credential,
-        string $headerName = Headers::HEADER_AUTHORIZATION
-    ) {
-        return $this->set($headerName, sprintf(
-            '%s %s',
-            $credential->getAuthenticationScheme(),
-            $credential->getCredential(),
-        ));
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function normalise()
+    protected function getIndexValues(array $headers, array $index): array
     {
-        return $this->maybeReplaceHeaders($this->Headers, $this->Index, true);
+        foreach ($index as $lower => $headerIndex) {
+            foreach ($headerIndex as $i) {
+                $_headers[$lower][] = $headers[$i];
+            }
+        }
+        return $_headers ?? [];
     }
 
     /**
@@ -648,20 +669,6 @@ REGEX;
     /**
      * @inheritDoc
      */
-    public function jsonSerialize(): array
-    {
-        foreach ($this->headers() as $name => $value) {
-            $headers[] = [
-                'name' => $name,
-                'value' => $value,
-            ];
-        }
-        return $headers ?? [];
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function pop(&$last = null)
     {
         if (!$this->Index) {
@@ -692,6 +699,28 @@ REGEX;
     /**
      * @inheritDoc
      */
+    public function authorize(
+        CredentialInterface $credential,
+        string $headerName = Headers::HEADER_AUTHORIZATION
+    ) {
+        return $this->set($headerName, sprintf(
+            '%s %s',
+            $credential->getAuthenticationScheme(),
+            $credential->getCredential(),
+        ));
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function normalise()
+    {
+        return $this->maybeReplaceHeaders($this->Headers, $this->Index, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
     public function trailers()
     {
         return $this->whereIsTrailer();
@@ -703,6 +732,27 @@ REGEX;
     public function withoutTrailers()
     {
         return $this->whereIsTrailer(false);
+    }
+
+    /**
+     * @return static
+     */
+    private function whereIsTrailer(bool $value = true)
+    {
+        $headers = [];
+        $index = [];
+        foreach ($this->Index as $lower => $headerIndex) {
+            foreach ($headerIndex as $i) {
+                $isTrailer = $this->Trailers[$i] ?? false;
+                if ($value xor $isTrailer) {
+                    continue;
+                }
+                $headers[$i] = $this->Headers[$i];
+                $index[$lower][] = $i;
+            }
+        }
+        ksort($headers);
+        return $this->maybeReplaceHeaders($headers, $index);
     }
 
     /**
@@ -731,14 +781,24 @@ REGEX;
     }
 
     /**
-     * @inheritDoc
+     * @return array<string,string[]>
      */
-    public function getHeaderLines(): array
+    protected function doGetHeaders(bool $preserveCase = false): array
     {
-        foreach ($this->Items as $lower => $values) {
-            $lines[$lower] = implode(',', $values);
+        foreach ($this->Index as $lower => $headerIndex) {
+            if ($preserveCase) {
+                unset($key);
+            } else {
+                $key = $lower;
+            }
+            foreach ($headerIndex as $i) {
+                $header = $this->Headers[$i];
+                $value = reset($header);
+                $key ??= key($header);
+                $headers[$key][] = $value;
+            }
         }
-        return $lines ?? [];
+        return $headers ?? [];
     }
 
     /**
@@ -763,6 +823,17 @@ REGEX;
     public function getHeaderLine(string $name): string
     {
         return $this->doGetHeaderValue($name);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getHeaderLines(): array
+    {
+        foreach ($this->Items as $lower => $values) {
+            $lines[$lower] = implode(',', $values);
+        }
+        return $lines ?? [];
     }
 
     /**
@@ -836,41 +907,25 @@ REGEX;
     }
 
     /**
-     * @return iterable<string,string>
+     * @inheritDoc
      */
-    protected function headers(): iterable
+    public function __toString(): string
     {
-        foreach ($this->Headers as $header) {
-            $value = reset($header);
-            $key = key($header);
-            yield $key => $value;
-        }
+        return implode("\r\n", $this->getLines());
     }
 
     /**
-     * @param string[] $a
-     * @param string[] $b
+     * @inheritDoc
      */
-    protected function compareItems($a, $b): int
+    public function jsonSerialize(): array
     {
-        return $a <=> $b;
-    }
-
-    protected function filterName(string $name): string
-    {
-        if (!Regex::match(self::HTTP_HEADER_FIELD_NAME, $name)) {
-            throw new InvalidArgumentException(sprintf('Invalid header name: %s', $name));
+        foreach ($this->headers() as $name => $value) {
+            $headers[] = [
+                'name' => $name,
+                'value' => $value,
+            ];
         }
-        return $name;
-    }
-
-    protected function filterValue(string $value): string
-    {
-        $value = Regex::replace('/\r\n\h+/', ' ', trim($value, " \t"));
-        if (!Regex::match(self::HTTP_HEADER_FIELD_VALUE, $value)) {
-            throw new InvalidArgumentException(sprintf('Invalid header value: %s', $value));
-        }
-        return $value;
+        return $headers ?? [];
     }
 
     /**
@@ -910,27 +965,6 @@ REGEX;
     }
 
     /**
-     * @return array<string,string[]>
-     */
-    protected function doGetHeaders(bool $preserveCase = false): array
-    {
-        foreach ($this->Index as $lower => $headerIndex) {
-            if ($preserveCase) {
-                unset($key);
-            } else {
-                $key = $lower;
-            }
-            foreach ($headerIndex as $i) {
-                $header = $this->Headers[$i];
-                $value = reset($header);
-                $key ??= key($header);
-                $headers[$key][] = $value;
-            }
-        }
-        return $headers ?? [];
-    }
-
-    /**
      * @param array<string,int[]> $index
      * @return array<int,non-empty-array<string,string>>
      */
@@ -942,21 +976,6 @@ REGEX;
             }
         }
         return array_intersect_key($this->Headers, $headers ?? []);
-    }
-
-    /**
-     * @param array<int,non-empty-array<string,string>> $headers
-     * @return array<int,non-empty-array<string,string>>
-     */
-    private function filterHeaders(array $headers): array
-    {
-        $host = [];
-        foreach ($headers as $i => $header) {
-            if (isset(array_change_key_case($header)['host'])) {
-                $host[$i] = $header;
-            }
-        }
-        return $host + $headers;
     }
 
     /**
@@ -976,18 +995,18 @@ REGEX;
     }
 
     /**
-     * @param array<array<string,string>> $headers
-     * @param array<string,int[]> $index
-     * @return array<string,array<array<string,string>>>
+     * @param array<int,non-empty-array<string,string>> $headers
+     * @return array<int,non-empty-array<string,string>>
      */
-    protected function getIndexValues(array $headers, array $index): array
+    private function filterHeaders(array $headers): array
     {
-        foreach ($index as $lower => $headerIndex) {
-            foreach ($headerIndex as $i) {
-                $_headers[$lower][] = $headers[$i];
+        $host = [];
+        foreach ($headers as $i => $header) {
+            if (isset(array_change_key_case($header)['host'])) {
+                $host[$i] = $header;
             }
         }
-        return $_headers ?? [];
+        return $host + $headers;
     }
 
     /**
@@ -1053,60 +1072,41 @@ REGEX;
         }
     }
 
-    /**
-     * @return static
-     */
-    private function extendLast(string $line)
+    protected function filterName(string $name): string
     {
-        if (!$this->Headers) {
-            return $this;
+        if (!Regex::match(self::HTTP_HEADER_FIELD_NAME, $name)) {
+            throw new InvalidArgumentException(sprintf('Invalid header name: %s', $name));
         }
-        $headers = $this->Headers;
-        $i = array_key_last($headers);
-        $header = $this->Headers[$i];
-        $value = reset($header);
-        $key = key($header);
-        $headers[$i][$key] = ltrim($value . $line);
-        return $this->maybeReplaceHeaders($headers, $this->Index);
+        return $name;
+    }
+
+    protected function filterValue(string $value): string
+    {
+        $value = Regex::replace('/\r\n\h+/', ' ', trim($value, " \t"));
+        if (!Regex::match(self::HTTP_HEADER_FIELD_VALUE, $value)) {
+            throw new InvalidArgumentException(sprintf('Invalid header value: %s', $value));
+        }
+        return $value;
     }
 
     /**
-     * @return static
+     * @param string[] $a
+     * @param string[] $b
      */
-    private function maybeIndexTrailer()
+    protected function compareItems($a, $b): int
     {
-        if (!$this->Headers) {
-            // @codeCoverageIgnoreStart
-            throw new LogicException('No headers applied');
-            // @codeCoverageIgnoreEnd
-        }
-        if (!$this->Closed) {
-            return $this;
-        }
-        $i = array_key_last($this->Headers);
-        $trailers = $this->Trailers;
-        $trailers[$i] = true;
-        return $this->with('Trailers', $trailers);
+        return $a <=> $b;
     }
 
     /**
-     * @return static
+     * @return iterable<string,string>
      */
-    private function whereIsTrailer(bool $value = true)
+    protected function headers(): iterable
     {
-        $headers = [];
-        $index = [];
-        foreach ($this->Index as $lower => $headerIndex) {
-            foreach ($headerIndex as $i) {
-                $isTrailer = $this->Trailers[$i] ?? false;
-                if ($value xor $isTrailer) {
-                    continue;
-                }
-                $headers[$i] = $this->Headers[$i];
-                $index[$lower][] = $i;
-            }
+        foreach ($this->Headers as $header) {
+            $value = reset($header);
+            $key = key($header);
+            yield $key => $value;
         }
-        ksort($headers);
-        return $this->maybeReplaceHeaders($headers, $index);
     }
 }
