@@ -2,15 +2,16 @@
 
 namespace Salient\Tests\Http;
 
+use Psr\Http\Message\MessageInterface as PsrMessageInterface;
 use Salient\Collection\Collection;
 use Salient\Contract\Collection\CollectionInterface;
+use Salient\Contract\Core\Arrayable;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Http\OAuth2\AccessToken;
 use Salient\Http\Headers;
-use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
 use ArrayIterator;
@@ -19,9 +20,8 @@ use LogicException;
 
 /**
  * @covers \Salient\Http\Headers
- * @covers \Salient\Http\HttpUtil
  */
-final class HttpHeadersTest extends TestCase implements
+final class HeadersTest extends TestCase implements
     HasHttpHeader,
     HasHttpHeaders,
     HasMediaType
@@ -53,9 +53,9 @@ final class HttpHeadersTest extends TestCase implements
                 ['foo' => 'bar', 'Foo' => 'bar'],
             ],
             [
-                ['host' => ['example.com'], 'qux' => ['quux'], 'foo' => ['bar']],
-                ['qux: quux', 'Foo: bar', 'Host: example.com'],
-                ['qux' => 'quux', 'Foo' => 'bar', 'Host' => 'example.com'],
+                ['host' => ['example.com'], 'qux' => ['quux'], 'foo' => ['bar', 'baz']],
+                ['qux: quux', 'Foo: bar', 'Foo: baz', 'Host: example.com'],
+                ['qux' => 'quux', 'Foo' => ['bar', 'baz'], 'Host' => 'example.com'],
             ],
             [
                 InvalidArgumentException::class . ',Invalid header name: foo bar',
@@ -261,6 +261,28 @@ final class HttpHeadersTest extends TestCase implements
         ];
     }
 
+    /**
+     * @dataProvider addLineWithOtherHeadersProvider
+     */
+    public function testAddLineWithOtherHeaders(Headers $headers): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(Headers::class . '::addLine() cannot be used after headers are applied via another method');
+        $headers->addLine("foo: bar\r\n");
+    }
+
+    /**
+     * @return array<array{Headers}>
+     */
+    public static function addLineWithOtherHeadersProvider(): array
+    {
+        return [
+            [new Headers([])],
+            [new Headers(['foo' => 'bar'])],
+            [(new Headers())->set('foo', ['bar', 'baz'])],
+        ];
+    }
+
     public function testHasEmptyLine(): void
     {
         $headers = new Headers();
@@ -409,42 +431,6 @@ final class HttpHeadersTest extends TestCase implements
         $headers->getOnlyHeaderValue('Qux');
     }
 
-    public function testGetPreferences(): void
-    {
-        $this->assertSame([], HttpUtil::getPreferences(new Headers()));
-
-        $headers = (new Headers())
-            ->addValue(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
-            ->addValue(self::HEADER_PREFER, 'wait=10; baz=qux')
-            ->addValue(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
-            ->addValue(self::HEADER_PREFER, 'odata.maxpagesize=100');
-
-        $this->assertSame([
-            'respond-async' => ['value' => '', 'parameters' => []],
-            'wait' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
-            'handling' => ['value' => 'lenient', 'parameters' => []],
-            'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
-            'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
-        ], HttpUtil::getPreferences($headers));
-    }
-
-    public function testMergePreferences(): void
-    {
-        $this->assertSame('', HttpUtil::mergePreferences([]));
-
-        $this->assertSame(
-            'respond-async, WAIT=5; foo=bar, handling=lenient, task_priority=2; baz="foo bar", odata.maxpagesize=100',
-            HttpUtil::mergePreferences([
-                'respond-async' => '',
-                'WAIT' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
-                'wait' => '10',
-                'handling' => ['value' => 'lenient'],
-                'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
-                'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
-            ]),
-        );
-    }
-
     public function testImmutability(): void
     {
         $a = new Headers();
@@ -488,8 +474,9 @@ final class HttpHeadersTest extends TestCase implements
             'task_priority=2',
             'odata.maxpagesize=100',
         ]], false);
-        $j = $i->unset(self::HEADER_PREFER);
+        $j = $i->merge(new Headers(), true);
         $k = $j->unset(self::HEADER_PREFER);
+        $l = $k->unset(self::HEADER_PREFER);
         $this->assertNotSame($b, $a);
         $this->assertNotSame($c, $b);
         $this->assertSame($d, $c);
@@ -498,10 +485,25 @@ final class HttpHeadersTest extends TestCase implements
         $this->assertSame($g, $e);
         $this->assertSame($h, $g);
         $this->assertNotSame($i, $h);
-        $this->assertNotSame($j, $i);
+        $this->assertSame($j, $i);
+        $this->assertNotSame($k, $j);
         $this->assertCount(1, $g);
-        $this->assertCount(0, $j);
-        $this->assertSame($j, $k);
+        $this->assertCount(0, $k);
+        $this->assertSame($k, $l);
+
+        $a = self::getHeaders();
+        $b = $a->merge([], false);
+        $c = $b->merge([
+            'foo' => 'bar',
+            'Foo' => 'baz',
+        ], false);
+        $d = $c->merge([
+            'Foo' => 'bar',
+            'foo' => 'baz',
+        ], false);
+        $this->assertSame($a, $b);
+        $this->assertSame($b, $c);
+        $this->assertNotSame($c, $d);
     }
 
     public function testEmptyValue(): void
@@ -514,7 +516,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testNormalise(): void
     {
-        $headers1 = $this->getHeaders()->set('host', 'example.com');
+        $headers1 = self::getHeaders()->set('host', 'example.com');
         $headers2 = $headers1->normalise();
         $this->assertNotSame($headers1, $headers2);
         $this->assertSame($headers2, $headers2->normalise());
@@ -547,7 +549,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testSort(): void
     {
-        $headers = $this->getHeaders()->set('host', 'example.com')->sort();
+        $headers = self::getHeaders()->set('host', 'example.com')->sort();
         $this->assertSame([
             'host' => ['example.com'],
             'abc' => ['def'],
@@ -574,7 +576,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testReverse(): void
     {
-        $headers = $this->getHeaders()->set('host', 'example.com')->reverse();
+        $headers = self::getHeaders()->set('host', 'example.com')->reverse();
         $this->assertSame([
             'host' => ['example.com'],
             'qux' => ['quux'],
@@ -601,7 +603,7 @@ final class HttpHeadersTest extends TestCase implements
 
     public function testMap(): void
     {
-        $headers = $this->getHeaders();
+        $headers = self::getHeaders();
         $this->assertSame([], $headers->map(fn() => [])->all());
         $this->assertSame([
             'foo2' => ['*-2'],
@@ -612,17 +614,7 @@ final class HttpHeadersTest extends TestCase implements
             fn($values) =>
                 array_map(fn($value) => $value . '-2', $values)
         )->all());
-    }
-
-    private function getHeaders(): Headers
-    {
-        return new Headers([
-            'Foo2' => '*',
-            'foo' => 'bar',
-            'abc' => 'def',
-            'Foo' => 'baz',
-            'qux' => 'quux',
-        ]);
+        $this->assertSame($headers, $headers->map(fn($values) => $values));
     }
 
     public function testFilter(): void
@@ -761,6 +753,98 @@ final class HttpHeadersTest extends TestCase implements
         ];
     }
 
+    /**
+     * @dataProvider sliceProvider
+     *
+     * @param array<string,string[]> $expected
+     * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $headersOrPayload
+     */
+    public function testSlice(array $expected, $headersOrPayload, int $offset, ?int $length = null): void
+    {
+        $headers = Headers::from($headersOrPayload);
+        $this->assertSame($expected, $headers->slice($offset, $length)->all());
+    }
+
+    /**
+     * @return array<array{array<string,string[]>,Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string,int,3?:int|null}>
+     */
+    public static function sliceProvider(): array
+    {
+        $headers = self::getHeaders();
+        return [
+            [
+                ['qux' => ['quux']],
+                $headers,
+                3,
+            ],
+            [
+                ['foo' => ['bar', 'baz'], 'abc' => ['def']],
+                $headers,
+                1,
+                2,
+            ],
+            [
+                ['abc' => ['def'], 'qux' => ['quux']],
+                $headers,
+                2,
+                10,
+            ],
+            [
+                [],
+                $headers,
+                10,
+            ],
+            [
+                [],
+                $headers,
+                10,
+                2,
+            ],
+        ];
+    }
+
+    public function testPop(): void
+    {
+        $last = null;
+
+        $a = new Headers();
+        $b = $a->pop($last);
+        $this->assertSame($b, $a);
+        $this->assertNull($last);
+        $this->assertSame([], $a->all());
+
+        $a = self::getHeaders();
+        $b = $a->pop($last);
+        $this->assertNotSame($b, $a);
+        $this->assertSame(['quux'], $last);
+        $this->assertSame([
+            'foo2' => ['*'],
+            'foo' => ['bar', 'baz'],
+            'abc' => ['def'],
+        ], $b->all());
+    }
+
+    public function testShift(): void
+    {
+        $first = null;
+
+        $a = new Headers();
+        $b = $a->shift($first);
+        $this->assertSame($b, $a);
+        $this->assertNull($first);
+        $this->assertSame([], $a->all());
+
+        $a = self::getHeaders();
+        $b = $a->shift($first);
+        $this->assertNotSame($b, $a);
+        $this->assertSame(['*'], $first);
+        $this->assertSame([
+            'foo' => ['bar', 'baz'],
+            'abc' => ['def'],
+            'qux' => ['quux'],
+        ], $b->all());
+    }
+
     public function testOffsetSet(): void
     {
         $headers = new Headers();
@@ -773,5 +857,16 @@ final class HttpHeadersTest extends TestCase implements
         $headers = new Headers();
         $this->expectException(LogicException::class);
         unset($headers[self::HEADER_CONTENT_TYPE]);
+    }
+
+    private static function getHeaders(): Headers
+    {
+        return new Headers([
+            'Foo2' => '*',
+            'foo' => 'bar',
+            'abc' => 'def',
+            'Foo' => 'baz',
+            'qux' => 'quux',
+        ]);
     }
 }

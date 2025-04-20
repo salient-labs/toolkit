@@ -5,8 +5,10 @@ namespace Salient\Tests\Http;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Exception\InvalidHeaderException;
+use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Http\Message\Request;
+use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
@@ -15,8 +17,44 @@ use Stringable;
 /**
  * @covers \Salient\Http\HttpUtil
  */
-final class HttpUtilTest extends TestCase implements HasMediaType
+final class HttpUtilTest extends TestCase implements HasHttpHeader, HasMediaType
 {
+    public function testGetPreferences(): void
+    {
+        $this->assertSame([], HttpUtil::getPreferences(new Headers()));
+
+        $headers = (new Headers())
+            ->addValue(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
+            ->addValue(self::HEADER_PREFER, 'wait=10; baz=qux')
+            ->addValue(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
+            ->addValue(self::HEADER_PREFER, 'odata.maxpagesize=100');
+
+        $this->assertSame([
+            'respond-async' => ['value' => '', 'parameters' => []],
+            'wait' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
+            'handling' => ['value' => 'lenient', 'parameters' => []],
+            'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
+            'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
+        ], HttpUtil::getPreferences($headers));
+    }
+
+    public function testMergePreferences(): void
+    {
+        $this->assertSame('', HttpUtil::mergePreferences([]));
+
+        $this->assertSame(
+            'respond-async, WAIT=5; foo=bar, handling=lenient, task_priority=2; baz="foo bar", odata.maxpagesize=100',
+            HttpUtil::mergePreferences([
+                'respond-async' => '',
+                'WAIT' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
+                'wait' => '10',
+                'handling' => ['value' => 'lenient'],
+                'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
+                'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
+            ]),
+        );
+    }
+
     /**
      * @dataProvider isRequestMethodProvider
      */
