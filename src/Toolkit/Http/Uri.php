@@ -15,7 +15,7 @@ use Stringable;
 /**
  * @api
  */
-class Uri implements UriInterface
+class Uri implements UriInterface, HasHttpRegex
 {
     use ImmutableTrait;
 
@@ -49,46 +49,6 @@ class Uri implements UriInterface
         \PHP_URL_FRAGMENT => 'fragment',
     ];
 
-    private const URI = <<<'REGEX'
-` ^
-(?(DEFINE)
-  (?<unreserved> [-a-z0-9._~] )
-  (?<sub_delims> [!$&'()*+,;=] )
-  (?<pct_encoded> % [0-9a-f]{2} )
-  (?<reg_char> (?&unreserved) | (?&pct_encoded) | (?&sub_delims) )
-  (?<pchar> (?&reg_char) | [:@] )
-)
-(?: (?<scheme> [a-z] [-a-z0-9+.]* ) : )?+
-(?:
-  //
-  (?<authority>
-    (?:
-      (?<userinfo>
-        (?<user> (?&reg_char)* )
-        (?: : (?<pass> (?: (?&reg_char) | : )* ) )?
-      )
-      @
-    )?+
-    (?<host> (?&reg_char)*+ | \[ (?<ipv6address> [0-9a-f:]++ ) \] )
-    (?: : (?<port> [0-9]+ ) )?+
-  )
-  # Path after authority must be empty or begin with "/"
-  (?= / | \? | \# | $ ) |
-  # Path cannot begin with "//" except after authority
-  (?= / ) (?! // ) |
-  # Rootless paths can only begin with a ":" segment after scheme
-  (?(<scheme>) (?= (?&pchar) ) | (?= (?&reg_char) | @ ) (?! [^/:]++ : ) ) |
-  (?= \? | \# | $ )
-)
-(?<path> (?: (?&pchar) | / )*+ )
-(?: \? (?<query>    (?: (?&pchar) | [?/] )* ) )?+
-(?: \# (?<fragment> (?: (?&pchar) | [?/] )* ) )?+
-$ `ixD
-REGEX;
-
-    private const SCHEME = '/^[a-z][-a-z0-9+.]*$/iD';
-    private const HOST = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
-
     private ?string $Scheme = null;
     private ?string $User = null;
     private ?string $Password = null;
@@ -112,7 +72,7 @@ REGEX;
             $uri = $this->encode($uri);
         }
 
-        if (!Regex::match(self::URI, $uri, $parts, \PREG_UNMATCHED_AS_NULL)) {
+        if (!Regex::match(self::URI_REGEX, $uri, $parts, \PREG_UNMATCHED_AS_NULL)) {
             throw new InvalidArgumentException(sprintf('Invalid URI: %s', $uri));
         }
 
@@ -512,7 +472,7 @@ REGEX;
             return null;
         }
 
-        if ($validate && !Regex::match(self::SCHEME, $scheme)) {
+        if ($validate && !Regex::match(self::SCHEME_REGEX, $scheme)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid scheme: %s', $scheme)
             );
@@ -538,7 +498,7 @@ REGEX;
 
         if ($validate) {
             $host = $this->encode($host);
-            if (!Regex::match(self::HOST, $host)) {
+            if (!Regex::match(self::HOST_REGEX, $host)) {
                 throw new InvalidArgumentException(
                     sprintf('Invalid host: %s', $host)
                 );

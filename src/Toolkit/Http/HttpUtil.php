@@ -31,6 +31,7 @@ use Stringable;
 final class HttpUtil extends AbstractUtility implements
     HasFormDataFlag,
     HasHttpHeader,
+    HasHttpRegex,
     HasMediaType,
     HasRequestMethod
 {
@@ -54,8 +55,6 @@ final class HttpUtil extends AbstractUtility implements
     private const ALIAS_TYPE = [
         'text/xml' => self::TYPE_XML,
     ];
-
-    private const AUTHORITY_FORM = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
 
     /**
      * Get the value of a Content-Length header, or null if it is not set
@@ -184,7 +183,7 @@ final class HttpUtil extends AbstractUtility implements
      */
     public static function requestTargetIsAuthorityForm(string $target): bool
     {
-        return (bool) Regex::match(self::AUTHORITY_FORM, $target);
+        return (bool) Regex::match(self::AUTHORITY_FORM_REGEX, $target);
     }
 
     /**
@@ -245,7 +244,7 @@ final class HttpUtil extends AbstractUtility implements
                     : $param;
                 continue;
             }
-            if (Regex::match('/^(' . Regex::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D', $param, $matches)) {
+            if (Regex::match('/^(' . self::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D', $param, $matches)) {
                 $param = $matches[2] ?? '';
                 $params[Str::lower($matches[1])] = $unquote
                     ? self::unquoteString($param)
@@ -316,7 +315,7 @@ final class HttpUtil extends AbstractUtility implements
      */
     public static function maybeQuoteString(string $string): string
     {
-        return Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $string)
+        return Regex::match(self::HTTP_TOKEN_REGEX, $string)
             ? $string
             : '"' . self::escapeQuotedString($string) . '"';
     }

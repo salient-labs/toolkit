@@ -25,7 +25,7 @@ use LogicException;
  *
  * @implements IteratorAggregate<string,string[]>
  */
-class Headers implements HeadersInterface, IteratorAggregate
+class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
 {
     /** @use ReadOnlyCollectionTrait<string,string[]> */
     use ReadOnlyCollectionTrait;
@@ -34,24 +34,6 @@ class Headers implements HeadersInterface, IteratorAggregate
     /** @use ArrayableCollectionTrait<string,string[]> */
     use ArrayableCollectionTrait;
     use ImmutableTrait;
-
-    private const HTTP_HEADER_FIELD_NAME = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
-    private const HTTP_HEADER_FIELD_VALUE = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
-
-    private const HTTP_HEADER_FIELD = <<<'REGEX'
-/ ^
-(?(DEFINE)
-  (?<token> [-0-9a-z!#$%&'*+.^_`|~]++ )
-  (?<field_vchar> [\x21-\x7e\x80-\xff]++ )
-  (?<field_content> (?&field_vchar) (?: \h++ (?&field_vchar) )*+ )
-)
-(?:
-  (?<name> (?&token) ) (?<bad_whitespace> \h++ )?+ : \h*+ (?<value> (?&field_content)? ) |
-  \h++ (?<extended> (?&field_content)? )
-)
-(?<carry> \h++ )?
-$ /xiD
-REGEX;
 
     /**
      * [ key => [ name, value ], ... ]
@@ -172,7 +154,7 @@ REGEX;
         if ($strict) {
             $line = substr($line, 0, -2);
             if (
-                !Regex::match(self::HTTP_HEADER_FIELD, $line, $matches, \PREG_UNMATCHED_AS_NULL)
+                !Regex::match(self::HTTP_HEADER_FIELD_REGEX, $line, $matches, \PREG_UNMATCHED_AS_NULL)
                 || $matches['bad_whitespace'] !== null
             ) {
                 throw new InvalidHeaderException(
@@ -937,7 +919,7 @@ REGEX;
 
     private function filterName(string $name): string
     {
-        if (!Regex::match(self::HTTP_HEADER_FIELD_NAME, $name)) {
+        if (!Regex::match(self::HTTP_HEADER_FIELD_NAME_REGEX, $name)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid header name: %s', $name),
             );
@@ -948,7 +930,7 @@ REGEX;
     private function filterValue(string $value): string
     {
         $value = Regex::replace('/\r\n\h++/', ' ', trim($value, " \t"));
-        if (!Regex::match(self::HTTP_HEADER_FIELD_VALUE, $value)) {
+        if (!Regex::match(self::HTTP_HEADER_FIELD_VALUE_REGEX, $value)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid header value: %s', $value),
             );

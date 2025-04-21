@@ -6,6 +6,7 @@ use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Http\Message\RequestInterface;
 use Salient\Core\Concern\ImmutableTrait;
+use Salient\Http\HasHttpRegex;
 use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
 use Salient\Utility\Regex;
@@ -21,7 +22,9 @@ use Stringable;
  * @extends AbstractMessage<TPsr7>
  * @implements RequestInterface<TPsr7>
  */
-abstract class AbstractRequest extends AbstractMessage implements RequestInterface
+abstract class AbstractRequest extends AbstractMessage implements
+    RequestInterface,
+    HasHttpRegex
 {
     use ImmutableTrait;
 
@@ -151,7 +154,7 @@ abstract class AbstractRequest extends AbstractMessage implements RequestInterfa
 
     private function filterMethod(string $method): string
     {
-        if (!Regex::match('/^' . Regex::HTTP_TOKEN . '$/D', $method)) {
+        if (!Regex::match(self::HTTP_TOKEN_REGEX, $method)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid HTTP method: %s', $method),
             );
