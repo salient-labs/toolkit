@@ -158,6 +158,65 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
+     * Get semicolon-delimited parameters from the value of a header
+     *
+     * @return string[]
+     */
+    public static function getParameters(
+        string $value,
+        bool $firstIsParameter = false,
+        bool $unquote = true,
+        bool $strict = false
+    ): array {
+        foreach (Str::splitDelimited(';', $value, false) as $i => $param) {
+            if ($i === 0 && !$firstIsParameter) {
+                $params[] = $unquote
+                    ? self::unquoteString($param)
+                    : $param;
+            } elseif (Regex::match(
+                '/^(' . self::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D',
+                $param,
+                $matches,
+            )) {
+                $param = $matches[2] ?? '';
+                $params[Str::lower($matches[1])] = $unquote
+                    ? self::unquoteString($param)
+                    : $param;
+            } elseif ($strict) {
+                throw new InvalidHeaderException(
+                    sprintf('Invalid HTTP header parameter: %s', $param),
+                );
+            }
+        }
+        return $params ?? [];
+    }
+
+    /**
+     * Merge parameters into a semicolon-delimited header value
+     *
+     * @param string[] $parameters
+     */
+    public static function mergeParameters(array $parameters): string
+    {
+        if (!$parameters) {
+            return '';
+        }
+
+        foreach ($parameters as $key => $param) {
+            $value = is_int($key) ? [] : [$key];
+            if ($param !== '') {
+                $value[] = self::maybeQuoteString($param);
+            }
+            $merged[] = $last = implode('=', $value);
+        }
+        $merged = implode('; ', $merged);
+        // @phpstan-ignore notIdentical.alwaysTrue (`$merged` may be empty)
+        return $last === '' && $merged !== ''
+            ? substr($merged, 0, -1)
+            : $merged;
+    }
+
+    /**
      * Check if a string is a recognised HTTP request method
      *
      * @phpstan-assert-if-true HttpUtil::METHOD_* $method
@@ -216,65 +275,6 @@ final class HttpUtil extends AbstractUtility implements
         return Date::immutable($date)
             ->setTimezone(new DateTimeZone('UTC'))
             ->format(DateTimeInterface::RFC7231);
-    }
-
-    /**
-     * Get semicolon-delimited parameters from the value of a header
-     *
-     * @return string[]
-     */
-    public static function getParameters(
-        string $value,
-        bool $firstIsParameter = false,
-        bool $unquote = true,
-        bool $strict = false
-    ): array {
-        foreach (Str::splitDelimited(';', $value, false) as $i => $param) {
-            if ($i === 0 && !$firstIsParameter) {
-                $params[] = $unquote
-                    ? self::unquoteString($param)
-                    : $param;
-            } elseif (Regex::match(
-                '/^(' . self::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D',
-                $param,
-                $matches,
-            )) {
-                $param = $matches[2] ?? '';
-                $params[Str::lower($matches[1])] = $unquote
-                    ? self::unquoteString($param)
-                    : $param;
-            } elseif ($strict) {
-                throw new InvalidHeaderException(
-                    sprintf('Invalid HTTP header parameter: %s', $param),
-                );
-            }
-        }
-        return $params ?? [];
-    }
-
-    /**
-     * Merge parameters into a semicolon-delimited header value
-     *
-     * @param string[] $parameters
-     */
-    public static function mergeParameters(array $parameters): string
-    {
-        if (!$parameters) {
-            return '';
-        }
-
-        foreach ($parameters as $key => $param) {
-            $value = is_int($key) ? [] : [$key];
-            if ($param !== '') {
-                $value[] = self::maybeQuoteString($param);
-            }
-            $merged[] = $last = implode('=', $value);
-        }
-        $merged = implode('; ', $merged);
-        // @phpstan-ignore notIdentical.alwaysTrue (`$merged` may be empty)
-        return $last === '' && $merged !== ''
-            ? substr($merged, 0, -1)
-            : $merged;
     }
 
     /**
@@ -384,19 +384,6 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Iterate over name-value pairs in arrays with "name" and "value" keys
-     *
-     * @param iterable<array{name:string,value:string}> $items
-     * @return iterable<string,string>
-     */
-    public static function getNameValuePairs(iterable $items): iterable
-    {
-        foreach ($items as $item) {
-            yield $item['name'] => $item['value'];
-        }
-    }
-
-    /**
      * Get the contents of a stream
      */
     public static function getStreamContents(PsrStreamInterface $from): string
@@ -428,6 +415,19 @@ final class HttpUtil extends AbstractUtility implements
         }
         while ($buffer !== '') {
             $buffer = substr($buffer, $to->write($buffer));
+        }
+    }
+
+    /**
+     * Iterate over name-value pairs in arrays with "name" and "value" keys
+     *
+     * @param iterable<array{name:string,value:string}> $items
+     * @return iterable<string,string>
+     */
+    public static function getNameValuePairs(iterable $items): iterable
+    {
+        foreach ($items as $item) {
+            yield $item['name'] => $item['value'];
         }
     }
 }
