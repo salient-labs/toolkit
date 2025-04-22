@@ -85,15 +85,15 @@ final class HttpUtilTest extends TestCase implements HasHttpHeader, HasMediaType
         ];
     }
 
-    public function testRequestTargetIsAuthorityForm(): void
+    public function testIsAuthorityForm(): void
     {
-        $this->assertTrue(HttpUtil::requestTargetIsAuthorityForm('example.com:80'));
-        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('example.com'));
-        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('example.com:80/path'));
-        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('example.com:80?query'));
-        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('http://example.com:80'));
-        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('http://example.com:80/path'));
-        $this->assertFalse(HttpUtil::requestTargetIsAuthorityForm('http://example.com:80?query'));
+        $this->assertTrue(HttpUtil::isAuthorityForm('example.com:80'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('example.com'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('example.com:80/path'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('example.com:80?query'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('http://example.com:80'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('http://example.com:80/path'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('http://example.com:80?query'));
     }
 
     /**

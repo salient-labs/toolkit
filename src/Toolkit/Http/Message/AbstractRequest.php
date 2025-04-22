@@ -136,7 +136,7 @@ abstract class AbstractRequest extends AbstractMessage implements
             // "asterisk-form"
             $requestTarget === '*'
             // "authority-form"
-            || HttpUtil::requestTargetIsAuthorityForm($requestTarget)
+            || HttpUtil::isAuthorityForm($requestTarget)
             || (($parts = Uri::parse($requestTarget)) !== false && (
                 // "absolute-form"
                 isset($parts['scheme'])

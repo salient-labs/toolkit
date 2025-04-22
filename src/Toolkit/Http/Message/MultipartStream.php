@@ -55,14 +55,15 @@ class MultipartStream implements MultipartStreamInterface
             $asciiFilename = $part->getAsciiFilename();
             $mediaType = $part->getMediaType();
 
-            $disposition = [
-                'form-data',
-                sprintf('name="%s"', HttpUtil::escapeQuotedString($name)),
-            ];
+            $disposition = ['form-data'];
+            $disposition[] = sprintf(
+                'name=%s',
+                HttpUtil::quoteString($name),
+            );
             if ($asciiFilename !== null) {
                 $disposition[] = sprintf(
-                    'filename="%s"',
-                    HttpUtil::escapeQuotedString($asciiFilename),
+                    'filename=%s',
+                    HttpUtil::quoteString($asciiFilename),
                 );
             }
             if ($filename !== null && $filename !== $asciiFilename) {

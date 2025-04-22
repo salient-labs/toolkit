@@ -22,12 +22,13 @@ use Salient\Utility\Reflect;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use Salient\Utility\Test;
-use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
-use Generator;
 use Stringable;
 
+/**
+ * @api
+ */
 final class HttpUtil extends AbstractUtility implements
     HasFormDataFlag,
     HasHttpHeader,
@@ -37,8 +38,6 @@ final class HttpUtil extends AbstractUtility implements
 {
     /**
      * @link https://www.iana.org/assignments/media-type-structured-suffix/media-type-structured-suffix.xhtml
-     *
-     * @var array<string,string>
      */
     private const SUFFIX_TYPE = [
         'gzip' => self::TYPE_GZIP,
@@ -49,9 +48,6 @@ final class HttpUtil extends AbstractUtility implements
         'zip' => self::TYPE_ZIP,
     ];
 
-    /**
-     * @var array<string,string>
-     */
     private const ALIAS_TYPE = [
         'text/xml' => self::TYPE_XML,
     ];
@@ -130,10 +126,7 @@ final class HttpUtil extends AbstractUtility implements
     {
         foreach ($preferences as $name => $pref) {
             $lower = Str::lower($name);
-            if (isset($prefs[$lower])) {
-                continue;
-            }
-            $prefs[$lower] = self::mergeParameters(
+            $prefs[$lower] ??= self::mergeParameters(
                 is_string($pref)
                     ? [$name => $pref]
                     : [$name => $pref['value']] + ($pref['parameters'] ?? []),
@@ -143,8 +136,8 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Get the value of a Retry-After header in seconds, or null if it has an
-     * invalid value or is not set
+     * Get the value of a Retry-After header in seconds from the current time,
+     * or null if it has an invalid value or is not set
      *
      * @param Arrayable<string,string[]|string>|iterable<string,string[]|string>|PsrMessageInterface|string $headersOrPayload
      * @return int<0,max>|null
@@ -153,17 +146,19 @@ final class HttpUtil extends AbstractUtility implements
     {
         $headers = Headers::from($headersOrPayload);
         $after = $headers->getHeaderLine(self::HEADER_RETRY_AFTER);
-        if (!Test::isInteger($after) || (int) $after < 0) {
+        if (!Test::isInteger($after)) {
             $after = strtotime($after);
             return $after === false
                 ? null
                 : max(0, $after - time());
         }
-        return (int) $after;
+        return (int) $after < 0
+            ? null
+            : (int) $after;
     }
 
     /**
-     * Check if a string is a valid HTTP request method
+     * Check if a string is a recognised HTTP request method
      *
      * @phpstan-assert-if-true HttpUtil::METHOD_* $method
      */
@@ -173,15 +168,15 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Check if an HTTP request target consists only of a host and port number,
-     * separated by a colon
+     * Check if a string contains only a host and port number, separated by a
+     * colon
      *
-     * \[RFC7230] Section 5.3.3: "When making a CONNECT request to establish a
-     * tunnel through one or more proxies, a client MUST send only the target
-     * URI's authority component (excluding any userinfo and its "@" delimiter)
-     * as the request-target."
+     * \[RFC7230] Section 5.3.3 (authority-form): "When making a CONNECT request
+     * to establish a tunnel through one or more proxies, a client MUST send
+     * only the target URI's authority component (excluding any userinfo and its
+     * "@" delimiter) as the request-target."
      */
-    public static function requestTargetIsAuthorityForm(string $target): bool
+    public static function isAuthorityForm(string $target): bool
     {
         return (bool) Regex::match(self::AUTHORITY_FORM_REGEX, $target);
     }
@@ -196,38 +191,35 @@ final class HttpUtil extends AbstractUtility implements
     public static function mediaTypeIs(string $type, string $mimeType): bool
     {
         // Extract and normalise the type and subtype
-        [$type] = explode(';', $type);
+        [$type] = explode(';', $type, 2);
         $type = Str::lower(rtrim($type));
-
         if ((self::ALIAS_TYPE[$type] ?? $type) === $mimeType) {
             return true;
         }
 
         // Check for a structured syntax suffix
         $pos = strrpos($type, '+');
-        if ($pos === false) {
-            return false;
+        if ($pos !== false) {
+            $suffix = substr($type, $pos + 1);
+            $type = substr($type, 0, $pos);
+            return (self::ALIAS_TYPE[$type] ?? $type) === $mimeType
+                || (self::SUFFIX_TYPE[$suffix] ?? null) === $mimeType;
         }
-
-        $suffix = substr($type, $pos + 1);
-        $type = substr($type, 0, $pos);
-
-        return (self::ALIAS_TYPE[$type] ?? $type) === $mimeType
-            || (self::SUFFIX_TYPE[$suffix] ?? null) === $mimeType;
+        return false;
     }
 
     /**
-     * Get an HTTP date value as per [RFC7231] Section 7.1.1.1
+     * Get an HTTP date as per [RFC7231] Section 7.1.1.1
      */
     public static function getDate(?DateTimeInterface $date = null): string
     {
-        return ($date ? Date::immutable($date) : new DateTimeImmutable())
+        return Date::immutable($date)
             ->setTimezone(new DateTimeZone('UTC'))
             ->format(DateTimeInterface::RFC7231);
     }
 
     /**
-     * Get semicolon-delimited parameters from the value of an HTTP header
+     * Get semicolon-delimited parameters from the value of a header
      *
      * @return string[]
      */
@@ -242,24 +234,26 @@ final class HttpUtil extends AbstractUtility implements
                 $params[] = $unquote
                     ? self::unquoteString($param)
                     : $param;
-                continue;
-            }
-            if (Regex::match('/^(' . self::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D', $param, $matches)) {
+            } elseif (Regex::match(
+                '/^(' . self::HTTP_TOKEN . ')(?:\h*+=\h*+(.*))?$/D',
+                $param,
+                $matches,
+            )) {
                 $param = $matches[2] ?? '';
                 $params[Str::lower($matches[1])] = $unquote
                     ? self::unquoteString($param)
                     : $param;
-                continue;
-            }
-            if ($strict) {
-                throw new InvalidHeaderException(sprintf('Invalid HTTP header parameter: %s', $param));
+            } elseif ($strict) {
+                throw new InvalidHeaderException(
+                    sprintf('Invalid HTTP header parameter: %s', $param),
+                );
             }
         }
         return $params ?? [];
     }
 
     /**
-     * Merge parameters into a semicolon-delimited HTTP header value
+     * Merge parameters into a semicolon-delimited header value
      *
      * @param string[] $parameters
      */
@@ -277,7 +271,7 @@ final class HttpUtil extends AbstractUtility implements
             $merged[] = $last = implode('=', $value);
         }
         $merged = implode('; ', $merged);
-        // @phpstan-ignore notIdentical.alwaysTrue ($merged could be empty)
+        // @phpstan-ignore notIdentical.alwaysTrue (`$merged` may be empty)
         return $last === '' && $merged !== ''
             ? substr($merged, 0, -1)
             : $merged;
@@ -310,23 +304,22 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Escape and quote a string unless it is a valid HTTP token, as per
+     * Escape and double-quote a string unless it is a valid HTTP token, as per
      * [RFC7230] Section 3.2.6
      */
     public static function maybeQuoteString(string $string): string
     {
         return Regex::match(self::HTTP_TOKEN_REGEX, $string)
             ? $string
-            : '"' . self::escapeQuotedString($string) . '"';
+            : self::quoteString($string);
     }
 
     /**
-     * Escape backslashes and double-quote marks in a string as per [RFC7230]
-     * Section 3.2.6
+     * Escape and double-quote a string as per [RFC7230] Section 3.2.6
      */
-    public static function escapeQuotedString(string $string): string
+    public static function quoteString(string $string): string
     {
-        return str_replace(['\\', '"'], ['\\\\', '\"'], $string);
+        return '"' . str_replace(['\\', '"'], ['\\\\', '\"'], $string) . '"';
     }
 
     /**
@@ -356,23 +349,14 @@ final class HttpUtil extends AbstractUtility implements
         int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
-        if ($value instanceof PsrRequestInterface) {
-            $uri = $value->getUri();
-            $return = $value;
-        } elseif ($value instanceof PsrUriInterface) {
-            $return = $uri = $value;
-        } else {
-            $return = $uri = new Uri((string) $value);
-        }
-
         /** @todo Replace with `parse_str()` alternative */
-        parse_str($uri->getQuery(), $query);
-        $query = (new FormData(array_replace_recursive($query, $data)))
-            ->getQuery($flags, $dateFormatter);
-
-        return $return instanceof PsrRequestInterface
-            ? $return->withUri($uri->withQuery($query))
-            : $return->withQuery($query);
+        parse_str(($value instanceof PsrRequestInterface
+            ? $value->getUri()
+            : ($value instanceof PsrUriInterface
+                ? $value
+                : new Uri((string) $value)))->getQuery(), $query);
+        $data = array_replace_recursive($query, $data);
+        return self::replaceQuery($value, $data, $flags, $dateFormatter);
     }
 
     /**
@@ -392,22 +376,20 @@ final class HttpUtil extends AbstractUtility implements
         ?DateFormatterInterface $dateFormatter = null
     ) {
         $query = (new FormData($data))->getQuery($flags, $dateFormatter);
-        if ($value instanceof PsrRequestInterface) {
-            return $value->withUri($value->getUri()->withQuery($query));
-        }
-        if (!$value instanceof PsrUriInterface) {
-            $value = new Uri((string) $value);
-        }
-        return $value->withQuery($query);
+        return $value instanceof PsrRequestInterface
+            ? $value->withUri($value->getUri()->withQuery($query))
+            : ($value instanceof PsrUriInterface
+                ? $value
+                : new Uri((string) $value))->withQuery($query);
     }
 
     /**
-     * Get key-value pairs from a list of arrays with "name" and "value" keys
+     * Iterate over name-value pairs in arrays with "name" and "value" keys
      *
      * @param iterable<array{name:string,value:string}> $items
-     * @return Generator<string,string>
+     * @return iterable<string,string>
      */
-    public static function getNameValueGenerator(iterable $items): Generator
+    public static function getNameValuePairs(iterable $items): iterable
     {
         foreach ($items as $item) {
             yield $item['name'] => $item['value'];

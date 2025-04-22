@@ -1266,7 +1266,7 @@ class Curler implements CurlerInterface, Buildable
                 $bodyIn = Stream::fromString($last['body'] ?? $last[3] ?? '');
                 $lastHeaders = $last['headers'] ?? $last[2] ?? null;
                 if (is_array($lastHeaders)) {
-                    $lastHeaders = HttpUtil::getNameValueGenerator($lastHeaders);
+                    $lastHeaders = HttpUtil::getNameValuePairs($lastHeaders);
                 }
                 $headersIn = Headers::from($lastHeaders ?? []);
                 $reason = $last['reason'] ?? $last[1] ?? null;
