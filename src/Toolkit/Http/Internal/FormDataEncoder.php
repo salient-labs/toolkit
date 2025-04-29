@@ -22,20 +22,20 @@ use Traversable;
  *
  * @template T of mixed[]|object|string|null
  */
-final class FormData implements HasFormDataFlag
+final class FormDataEncoder implements HasFormDataFlag
 {
-    /** @var int-mask-of<FormData::*> */
+    /** @var int-mask-of<FormDataEncoder::*> */
     private int $Flags;
     private DateFormatterInterface $DateFormatter;
     /** @var (Closure(object): (T|false))|null */
     private ?Closure $Callback;
 
     /**
-     * @param int-mask-of<FormData::*> $flags
+     * @param int-mask-of<FormDataEncoder::*> $flags
      * @param (Closure(object): (T|false))|null $callback
      */
     public function __construct(
-        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
+        int $flags = FormDataEncoder::DATA_PRESERVE_NUMERIC_KEYS | FormDataEncoder::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null,
         ?Closure $callback = null
     ) {
@@ -84,8 +84,8 @@ final class FormData implements HasFormDataFlag
     /**
      * Get form data as a URL-encoded query string
      *
-     * Equivalent to calling {@see FormData::getValues()} and converting the
-     * result to a query string.
+     * Equivalent to calling {@see FormDataEncoder::getValues()} and converting
+     * the result to a query string.
      *
      * @param mixed[]|object $data
      */
@@ -108,8 +108,8 @@ final class FormData implements HasFormDataFlag
     /**
      * Get form data as nested arrays of scalar values
      *
-     * Similar to {@see FormData::getValues()}, but scalar types are preserved
-     * and data structures are not flattened.
+     * Similar to {@see FormDataEncoder::getValues()}, but scalar types are
+     * preserved and data structures are not flattened.
      *
      * @param mixed[]|object $data
      * @return mixed[]

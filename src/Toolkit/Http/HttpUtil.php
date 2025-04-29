@@ -14,7 +14,7 @@ use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Http\Exception\InvalidHeaderException;
-use Salient\Http\Internal\FormData;
+use Salient\Http\Internal\FormDataEncoder;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
 use Salient\Utility\Package;
@@ -375,7 +375,7 @@ final class HttpUtil extends AbstractUtility implements
         int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
-        $query = (new FormData($flags, $dateFormatter))->getQuery($data);
+        $query = (new FormDataEncoder($flags, $dateFormatter))->getQuery($data);
         return $value instanceof PsrRequestInterface
             ? $value->withUri($value->getUri()->withQuery($query))
             : ($value instanceof PsrUriInterface

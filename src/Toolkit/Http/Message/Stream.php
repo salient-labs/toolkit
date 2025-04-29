@@ -9,7 +9,7 @@ use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Http\Exception\StreamDetachedException;
 use Salient\Http\Exception\StreamEncapsulationException;
 use Salient\Http\Exception\StreamInvalidRequestException;
-use Salient\Http\Internal\FormData;
+use Salient\Http\Internal\FormDataEncoder;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
 use Salient\Utility\Json;
@@ -89,7 +89,7 @@ class Stream implements StreamInterface, HasFormDataFlag
                 }
                 return false;
             };
-            $data = (new FormData($flags, $dateFormatter, $callback))->getData($data);
+            $data = (new FormDataEncoder($flags, $dateFormatter, $callback))->getData($data);
             return static::fromString(Json::encode($data));
         }
 
@@ -101,7 +101,7 @@ class Stream implements StreamInterface, HasFormDataFlag
             }
             return false;
         };
-        $data = (new FormData($flags, $dateFormatter, $callback))->getValues($data);
+        $data = (new FormDataEncoder($flags, $dateFormatter, $callback))->getValues($data);
 
         if (!$multipart) {
             /** @var string $content */
