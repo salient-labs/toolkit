@@ -375,7 +375,7 @@ final class HttpUtil extends AbstractUtility implements
         int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ) {
-        $query = (new FormData($data))->getQuery($flags, $dateFormatter);
+        $query = (new FormData($flags, $dateFormatter))->getQuery($data);
         return $value instanceof PsrRequestInterface
             ? $value->withUri($value->getUri()->withQuery($query))
             : ($value instanceof PsrUriInterface

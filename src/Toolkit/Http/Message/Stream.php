@@ -80,7 +80,6 @@ class Stream implements StreamInterface, HasFormDataFlag
         bool $asJson = false,
         ?string $boundary = null
     ) {
-        $formData = new FormData($data);
         if ($asJson) {
             $callback = static function ($value) {
                 if ($value instanceof StreamPartInterface) {
@@ -90,7 +89,7 @@ class Stream implements StreamInterface, HasFormDataFlag
                 }
                 return false;
             };
-            $data = $formData->getData($flags, $dateFormatter, $callback);
+            $data = (new FormData($flags, $dateFormatter, $callback))->getData($data);
             return static::fromString(Json::encode($data));
         }
 
@@ -102,7 +101,7 @@ class Stream implements StreamInterface, HasFormDataFlag
             }
             return false;
         };
-        $data = $formData->getValues($flags, $dateFormatter, $callback);
+        $data = (new FormData($flags, $dateFormatter, $callback))->getValues($data);
 
         if (!$multipart) {
             /** @var string $content */

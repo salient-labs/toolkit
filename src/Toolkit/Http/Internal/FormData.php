@@ -11,22 +11,37 @@ use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Json;
 use Salient\Utility\Test;
+use Closure;
 use DateTimeInterface;
 use InvalidArgumentException;
 use JsonSerializable;
 use Traversable;
 
+/**
+ * @internal
+ *
+ * @template T of mixed[]|object|string|null
+ */
 final class FormData implements HasFormDataFlag
 {
-    /** @var mixed[]|object */
-    private $Data;
+    /** @var int-mask-of<FormData::*> */
+    private int $Flags;
+    private DateFormatterInterface $DateFormatter;
+    /** @var (Closure(object): (T|false))|null */
+    private ?Closure $Callback;
 
     /**
-     * @param mixed[]|object $data
+     * @param int-mask-of<FormData::*> $flags
+     * @param (Closure(object): (T|false))|null $callback
      */
-    public function __construct($data)
-    {
-        $this->Data = $data;
+    public function __construct(
+        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
+        ?DateFormatterInterface $dateFormatter = null,
+        ?Closure $callback = null
+    ) {
+        $this->Flags = $flags;
+        $this->DateFormatter = $dateFormatter ?? new DateFormatter();
+        $this->Callback = $callback;
     }
 
     /**
@@ -57,20 +72,13 @@ final class FormData implements HasFormDataFlag
      *   maps public property names to values
      * - {@see Stringable}: cast to `string`
      *
-     * @template T of object|mixed[]|string|null
-     *
-     * @param int-mask-of<FormData::*> $flags
-     * @param (callable(object): (T|false))|null $callback
+     * @param mixed[]|object $data
      * @return list<array{string,(T&object)|string}>
      */
-    public function getValues(
-        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
-        ?DateFormatterInterface $dateFormatter = null,
-        ?callable $callback = null
-    ): array {
-        $dateFormatter ??= new DateFormatter();
-        /** @var list<array{string,(T&object)|string}> */
-        return $this->doGetData($this->Data, $flags, $dateFormatter, $callback);
+    public function getValues($data): array
+    {
+        // @phpstan-ignore return.type
+        return $this->doGetData($data);
     }
 
     /**
@@ -79,18 +87,11 @@ final class FormData implements HasFormDataFlag
      * Equivalent to calling {@see FormData::getValues()} and converting the
      * result to a query string.
      *
-     * @template T of object|mixed[]|string|null
-     *
-     * @param int-mask-of<FormData::*> $flags
-     * @param (callable(object): (T|false))|null $callback
+     * @param mixed[]|object $data
      */
-    public function getQuery(
-        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
-        ?DateFormatterInterface $dateFormatter = null,
-        ?callable $callback = null
-    ): string {
-        $dateFormatter ??= new DateFormatter();
-        $data = $this->doGetData($this->Data, $flags, $dateFormatter, $callback);
+    public function getQuery($data): string
+    {
+        $data = $this->doGetData($data);
         foreach ($data as [$key, $value]) {
             if (!is_string($value)) {
                 throw new InvalidArgumentException(sprintf(
@@ -110,27 +111,16 @@ final class FormData implements HasFormDataFlag
      * Similar to {@see FormData::getValues()}, but scalar types are preserved
      * and data structures are not flattened.
      *
-     * @template T of object|mixed[]|string|null
-     *
-     * @param int-mask-of<FormData::*> $flags
-     * @param (callable(object): (T|false))|null $callback
+     * @param mixed[]|object $data
      * @return mixed[]
      */
-    public function getData(
-        int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
-        ?DateFormatterInterface $dateFormatter = null,
-        ?callable $callback = null
-    ): array {
-        $dateFormatter ??= new DateFormatter();
-        return $this->doGetData($this->Data, $flags, $dateFormatter, $callback, false);
+    public function getData($data): array
+    {
+        return $this->doGetData($data, false);
     }
 
     /**
-     * @template T of object|mixed[]|string|null
-     *
      * @param mixed[]|object|int|float|string|bool|null $data
-     * @param int-mask-of<FormData::*> $flags
-     * @param (callable(object): (T|false))|null $cb
      * @param mixed[]|null $query
      * @phpstan-param ($flatten is true ? list<array{string,(T&object)|string}> : ($name is null ? mixed[] : mixed[]|null)) $query
      * @param-out ($flatten is true ? list<array{string,(T&object)|string}> : ($name is null ? mixed[] : mixed[]|(T&object)|int|float|string|bool|null)) $query
@@ -138,9 +128,6 @@ final class FormData implements HasFormDataFlag
      */
     private function doGetData(
         $data,
-        int $flags,
-        DateFormatterInterface $df,
-        ?callable $cb,
         bool $flatten = true,
         bool $fromCallback = false,
         &$query = [],
@@ -148,8 +135,8 @@ final class FormData implements HasFormDataFlag
     ) {
         if ($name === null) {
             $data = $flatten
-                ? $this->flattenValue($data, $df, $cb)
-                : $this->resolveValue($data, $df, $cb, $fromCallback);
+                ? $this->flattenValue($data)
+                : $this->resolveValue($data, $fromCallback);
         }
 
         /** @var mixed[]|(T&object)|int|float|string|bool|null $data */
@@ -164,7 +151,7 @@ final class FormData implements HasFormDataFlag
             $hasArray = false;
             if ($flatten) {
                 foreach ($data as $key => &$value) {
-                    $value = $this->flattenValue($value, $df, $cb);
+                    $value = $this->flattenValue($value);
                     if (!$hasArray) {
                         $hasArray = is_array($value);
                     }
@@ -173,17 +160,17 @@ final class FormData implements HasFormDataFlag
                 /** @var array<array-key,bool> */
                 $fromCallback = [];
                 foreach ($data as $key => &$value) {
-                    $value = $this->resolveValue($value, $df, $cb, $fromCallback[$key]);
+                    $value = $this->resolveValue($value, $fromCallback[$key]);
                 }
             }
             unset($value);
 
             $preserveKeys = $name === null || $hasArray || (
                 Arr::isList($data)
-                    ? $flags & self::DATA_PRESERVE_LIST_KEYS
+                    ? $this->Flags & self::DATA_PRESERVE_LIST_KEYS
                     : (Arr::hasNumericKeys($data)
-                        ? $flags & self::DATA_PRESERVE_NUMERIC_KEYS
-                        : $flags & self::DATA_PRESERVE_STRING_KEYS)
+                        ? $this->Flags & self::DATA_PRESERVE_NUMERIC_KEYS
+                        : $this->Flags & self::DATA_PRESERVE_STRING_KEYS)
             );
 
             $format = $preserveKeys
@@ -191,13 +178,13 @@ final class FormData implements HasFormDataFlag
                 : ($flatten ? '[]' : '');
 
             if ($flatten) {
-                /** @var object|mixed[]|string|null $value */
+                /** @var mixed[]|object|string|null $value */
                 foreach ($data as $key => $value) {
                     $_key = sprintf($format, $key);
-                    $this->doGetData($value, $flags, $df, $cb, true, false, $query, $name . $_key);
+                    $this->doGetData($value, true, false, $query, $name . $_key);
                 }
             } else {
-                /** @var object|mixed[]|string|null $value */
+                /** @var mixed[]|object|string|null $value */
                 foreach ($data as $key => $value) {
                     $_key = sprintf($format, $key);
                     if ($_key === '') {
@@ -205,7 +192,7 @@ final class FormData implements HasFormDataFlag
                         $_key = array_key_last($query);
                     }
                     // @phpstan-ignore offsetAccess.nonOffsetAccessible
-                    $this->doGetData($value, $flags, $df, $cb, false, $fromCallback[$key], $query[$_key], '');
+                    $this->doGetData($value, false, $fromCallback[$key], $query[$_key], '');
                 }
             }
 
@@ -226,17 +213,11 @@ final class FormData implements HasFormDataFlag
     }
 
     /**
-     * @template T of object|mixed[]|string|null
-     *
      * @param mixed $value
-     * @param (callable(object): (T|false))|null $cb
      * @return mixed[]|(T&object)|string|null
      */
-    private function flattenValue(
-        $value,
-        DateFormatterInterface $df,
-        ?callable $cb
-    ) {
+    private function flattenValue($value)
+    {
         if (is_bool($value)) {
             return (string) (int) $value;
         }
@@ -250,7 +231,7 @@ final class FormData implements HasFormDataFlag
         }
 
         if (is_object($value)) {
-            $value = $this->convertObject($value, $df, $cb, $fromCallback);
+            $value = $this->convertObject($value, $fromCallback);
             if (!$fromCallback && ($value === null || is_scalar($value))) {
                 // @phpstan-ignore cast.string
                 return (string) $value;
@@ -266,19 +247,12 @@ final class FormData implements HasFormDataFlag
     }
 
     /**
-     * @template T of object|mixed[]|string|null
-     *
      * @param mixed $value
-     * @param (callable(object): (T|false))|null $cb
      * @param-out bool $fromCallback
      * @return T|mixed[]|int|float|string|bool|null
      */
-    private function resolveValue(
-        $value,
-        DateFormatterInterface $df,
-        ?callable $cb,
-        ?bool &$fromCallback
-    ) {
+    private function resolveValue($value, ?bool &$fromCallback)
+    {
         $fromCallback = false;
 
         if ($value === null || is_scalar($value) || is_array($value)) {
@@ -286,7 +260,7 @@ final class FormData implements HasFormDataFlag
         }
 
         if (is_object($value)) {
-            return $this->convertObject($value, $df, $cb, $fromCallback);
+            return $this->convertObject($value, $fromCallback);
         }
 
         throw new InvalidArgumentException(sprintf(
@@ -296,28 +270,21 @@ final class FormData implements HasFormDataFlag
     }
 
     /**
-     * @template T of object|mixed[]|string|null
-     *
-     * @param (callable(object): (T|false))|null $cb
      * @param-out bool $fromCallback
      * @return T|mixed[]|int|float|string|bool|null
      */
-    private function convertObject(
-        object $value,
-        DateFormatterInterface $df,
-        ?callable $cb,
-        ?bool &$fromCallback
-    ) {
+    private function convertObject(object $value, ?bool &$fromCallback)
+    {
         $fromCallback = false;
 
         if ($value instanceof DateTimeInterface) {
-            return $df->format($value);
+            return $this->DateFormatter->format($value);
         }
 
-        if ($cb !== null) {
-            $result = $cb($value);
+        if ($this->Callback !== null) {
+            $result = ($this->Callback)($value);
             if ($result instanceof DateTimeInterface) {
-                return $df->format($result);
+                return $this->DateFormatter->format($result);
             }
             if ($result !== false) {
                 $fromCallback = true;

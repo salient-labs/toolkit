@@ -9,6 +9,7 @@ use Salient\Http\Internal\FormData;
 use Salient\Tests\TestCase;
 use Salient\Utility\Json;
 use ArrayIterator;
+use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
 use InvalidArgumentException;
@@ -25,7 +26,7 @@ final class FormDataTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid value at 'field1': stdClass");
-        (new FormData(['field1' => new stdClass()]))->getQuery(0, null, fn($value) => $value);
+        (new FormData(0, null, fn($value) => $value))->getQuery(['field1' => new stdClass()]);
     }
 
     public function testGetData(): void
@@ -43,18 +44,18 @@ final class FormDataTest extends TestCase
             'Stringable' => ['foo', 'bar'],
             'Generic' => ['Foo' => 'bar'],
             'Iterator' => ['foo' => 'bar', 'baz' => 1],
-        ], (new FormData(self::getDataObjects()))->getData());
+        ], (new FormData())->getData(self::getDataObjects()));
     }
 
     /**
      * @dataProvider formDataProvider
      *
-     * @template T of object|mixed[]|string|null
+     * @template T of mixed[]|object|string|null
      *
      * @param list<array{string,string|object}> $expected
      * @param mixed[] $data
      * @param int-mask-of<FormData::*> $flags
-     * @param (callable(object): (T|false))|null $callback
+     * @param (Closure(object): (T|false))|null $callback
      */
     public function testGetValues(
         array $expected,
@@ -62,13 +63,13 @@ final class FormDataTest extends TestCase
         array $data,
         int $flags = FormData::DATA_PRESERVE_NUMERIC_KEYS | FormData::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
-        ?callable $callback = null,
+        ?Closure $callback = null,
         bool $parse = true
     ): void {
-        $formData = new FormData($data);
-        $this->assertSame($expected, $formData->getValues($flags, $dateFormatter, $callback));
+        $formData = new FormData($flags, $dateFormatter, $callback);
+        $this->assertSame($expected, $formData->getValues($data));
 
-        $query = $formData->getQuery($flags, $dateFormatter, $callback);
+        $query = $formData->getQuery($data);
         $this->assertSame($expectedQuery, $query);
 
         if (!$parse) {
@@ -94,7 +95,7 @@ final class FormDataTest extends TestCase
     }
 
     /**
-     * @return array<array{list<array{string,string|object}>,string,mixed[],3?:int-mask-of<FormData::*>,4?:DateFormatter|null,5?:callable|null,6?:bool}>
+     * @return array<array{list<array{string,string|object}>,string,mixed[],3?:int-mask-of<FormData::*>,4?:DateFormatter|null,5?:Closure|null,6?:bool}>
      */
     public static function formDataProvider(): array
     {
