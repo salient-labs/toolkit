@@ -13,8 +13,8 @@ use ArrayIterator;
 use Closure;
 use DateTimeImmutable;
 use DateTimeInterface;
-use InvalidArgumentException;
 use JsonSerializable;
+use LogicException;
 use stdClass;
 use Stringable;
 
@@ -25,8 +25,8 @@ final class FormDataEncoderTest extends TestCase implements HasFormDataFlag
 {
     public function testGetQueryWithInvalidValue(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid value at 'field1': stdClass");
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Value must be of type string, stdClass given: field1');
         (new FormDataEncoder(0, null, fn($value) => $value))->getQuery(['field1' => new stdClass()]);
     }
 
