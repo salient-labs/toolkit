@@ -4,8 +4,8 @@ namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Exception\StreamEncapsulationException;
 use Salient\Core\Date\DateFormatter;
-use Salient\Http\Exception\StreamDetachedException;
-use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Http\Exception\InvalidStreamRequestException;
+use Salient\Http\Exception\StreamClosedException;
 use Salient\Http\Message\Stream;
 use Salient\Http\Message\StreamPart;
 use Salient\Http\HttpUtil;
@@ -299,7 +299,7 @@ final class HttpStreamTest extends TestCase
         ] as $method => $callback) {
             $this->assertCallbackThrowsException(
                 $callback,
-                StreamDetachedException::class,
+                StreamClosedException::class,
                 'Stream is closed or detached',
                 sprintf('%s::%s() should throw an exception after stream is detached', Stream::class, $method)
             );
@@ -431,7 +431,7 @@ final class HttpStreamTest extends TestCase
         $stream = new Stream($handle);
         $stream->write('foo');
         $stream->seek(0);
-        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectException(InvalidStreamRequestException::class);
         $this->expectExceptionMessage('Stream is not readable');
         try {
             $stream->getContents();
@@ -448,7 +448,7 @@ final class HttpStreamTest extends TestCase
         touch($file);
         $handle = File::open($file, 'r');
         $stream = new Stream($handle);
-        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectException(InvalidStreamRequestException::class);
         $this->expectExceptionMessage('Stream is not writable');
         try {
             $stream->write('foo');
@@ -461,7 +461,7 @@ final class HttpStreamTest extends TestCase
     public function testUnseekableStream(): void
     {
         $stream = $this->getForwardOnlyStream();
-        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectException(InvalidStreamRequestException::class);
         $this->expectExceptionMessage('Stream is not seekable');
         try {
             $stream->seek(0);

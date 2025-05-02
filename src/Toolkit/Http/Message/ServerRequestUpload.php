@@ -4,7 +4,7 @@ namespace Salient\Http\Message;
 
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
-use Salient\Http\Exception\UploadedFileException;
+use Salient\Http\Exception\UploadFailedException;
 use Salient\Http\HttpUtil;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
@@ -94,7 +94,7 @@ class ServerRequestUpload implements PsrUploadedFileInterface
                 : @move_uploaded_file($this->File, $targetPath);
             if ($result === false) {
                 $error = error_get_last();
-                throw new UploadedFileException($error['message'] ?? sprintf(
+                throw new UploadFailedException($error['message'] ?? sprintf(
                     'Error moving %s to %s',
                     $this->File,
                     $targetPath,
@@ -143,7 +143,7 @@ class ServerRequestUpload implements PsrUploadedFileInterface
     private function assertIsValid(): void
     {
         if ($this->Error !== \UPLOAD_ERR_OK) {
-            throw new UploadedFileException(sprintf(
+            throw new UploadFailedException(sprintf(
                 'Upload failed (%d: %s)',
                 $this->Error,
                 static::ERROR_MESSAGE[$this->Error] ?? '',
@@ -151,7 +151,7 @@ class ServerRequestUpload implements PsrUploadedFileInterface
         }
 
         if ($this->IsMoved) {
-            throw new UploadedFileException('Upload already moved');
+            throw new UploadFailedException('Upload already moved');
         }
     }
 }

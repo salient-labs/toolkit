@@ -5,8 +5,8 @@ namespace Salient\Tests\Http;
 use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
-use Salient\Http\Exception\StreamDetachedException;
-use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Http\Exception\InvalidStreamRequestException;
+use Salient\Http\Exception\StreamClosedException;
 use Salient\Http\Message\MultipartStream;
 use Salient\Http\Message\Request;
 use Salient\Http\Message\Stream;
@@ -101,7 +101,7 @@ final class HttpMultipartStreamTest extends TestCase implements HasHttpHeader, H
     public function testWrite(): void
     {
         $stream = $this->getStream();
-        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectException(InvalidStreamRequestException::class);
         $this->expectExceptionMessage('Stream is not writable');
         $stream->write('foo');
     }
@@ -111,7 +111,7 @@ final class HttpMultipartStreamTest extends TestCase implements HasHttpHeader, H
         $stream = $this->getStream();
         $this->assertNull($stream->detach());
         $this->assertIsResource($this->LastHandle, 'Underlying PHP stream should not be closed');
-        $this->expectException(StreamDetachedException::class);
+        $this->expectException(StreamClosedException::class);
         $this->expectExceptionMessage('Stream is closed or detached');
         (string) $stream;
     }
@@ -122,7 +122,7 @@ final class HttpMultipartStreamTest extends TestCase implements HasHttpHeader, H
         $this->assertIsResource($this->LastHandle);
         $stream->close();
         $this->assertFalse(is_resource($this->LastHandle));
-        $this->expectException(StreamDetachedException::class);
+        $this->expectException(StreamClosedException::class);
         $this->expectExceptionMessage('Stream is closed or detached');
         (string) $stream;
     }
@@ -172,7 +172,7 @@ final class HttpMultipartStreamTest extends TestCase implements HasHttpHeader, H
             . "\r\n"
             . "data\r\n"
         ), (string) $stream);
-        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectException(InvalidStreamRequestException::class);
         $this->expectExceptionMessage('Stream is not seekable');
         $stream->seek(0);
     }

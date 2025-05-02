@@ -5,8 +5,8 @@ namespace Salient\Http\Message;
 use Psr\Http\Message\StreamInterface as PsrStreamInterface;
 use Salient\Contract\Http\Message\MultipartStreamInterface;
 use Salient\Contract\Http\Message\StreamPartInterface;
-use Salient\Http\Exception\StreamDetachedException;
-use Salient\Http\Exception\StreamInvalidRequestException;
+use Salient\Http\Exception\InvalidStreamRequestException;
+use Salient\Http\Exception\StreamClosedException;
 use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
 use Salient\Utility\Regex;
@@ -276,7 +276,7 @@ class MultipartStream implements MultipartStreamInterface
     {
         $this->assertIsOpen();
 
-        throw new StreamInvalidRequestException('Stream is not writable');
+        throw new InvalidStreamRequestException('Stream is not writable');
     }
 
     /**
@@ -287,7 +287,7 @@ class MultipartStream implements MultipartStreamInterface
         $this->assertIsOpen();
 
         if (!$this->IsSeekable) {
-            throw new StreamInvalidRequestException('Stream is not seekable');
+            throw new InvalidStreamRequestException('Stream is not seekable');
         }
 
         switch ($whence) {
@@ -380,7 +380,7 @@ class MultipartStream implements MultipartStreamInterface
     private function assertIsOpen(): void
     {
         if (!$this->IsOpen) {
-            throw new StreamDetachedException('Stream is closed or detached');
+            throw new StreamClosedException('Stream is closed or detached');
         }
     }
 }

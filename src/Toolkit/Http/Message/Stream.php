@@ -6,9 +6,9 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Http\Message\StreamInterface;
 use Salient\Contract\Http\Message\StreamPartInterface;
 use Salient\Contract\Http\HasFormDataFlag;
-use Salient\Http\Exception\StreamDetachedException;
+use Salient\Http\Exception\InvalidStreamRequestException;
+use Salient\Http\Exception\StreamClosedException;
 use Salient\Http\Exception\StreamEncapsulationException;
-use Salient\Http\Exception\StreamInvalidRequestException;
 use Salient\Http\Internal\FormDataEncoder;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 use Salient\Utility\File;
@@ -245,7 +245,7 @@ class Stream implements StreamInterface, HasFormDataFlag
         $this->assertHasStream();
 
         if (!$this->IsWritable) {
-            throw new StreamInvalidRequestException('Stream is not writable');
+            throw new InvalidStreamRequestException('Stream is not writable');
         }
 
         return File::write($this->Stream, $string, null, $this->Uri);
@@ -304,7 +304,7 @@ class Stream implements StreamInterface, HasFormDataFlag
         $this->assertHasStream();
 
         if (!$this->IsSeekable) {
-            throw new StreamInvalidRequestException('Stream is not seekable');
+            throw new InvalidStreamRequestException('Stream is not seekable');
         }
     }
 
@@ -316,7 +316,7 @@ class Stream implements StreamInterface, HasFormDataFlag
         $this->assertHasStream();
 
         if (!$this->IsReadable) {
-            throw new StreamInvalidRequestException('Stream is not readable');
+            throw new InvalidStreamRequestException('Stream is not readable');
         }
     }
 
@@ -326,7 +326,7 @@ class Stream implements StreamInterface, HasFormDataFlag
     private function assertHasStream(): void
     {
         if (!$this->Stream) {
-            throw new StreamDetachedException('Stream is closed or detached');
+            throw new StreamClosedException('Stream is closed or detached');
         }
     }
 }
