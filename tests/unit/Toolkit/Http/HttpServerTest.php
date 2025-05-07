@@ -2,15 +2,14 @@
 
 namespace Salient\Tests\Http;
 
-use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Facade\Console;
 use Salient\Core\Process;
-use Salient\Http\Message\Response;
 use Salient\Http\Server\Server;
+use Salient\Http\Server\ServerResponse;
 use Salient\Tests\TestCase;
 use Salient\Utility\Str;
 
@@ -35,8 +34,7 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
         $this->assertSame(8080, $server->getPort());
         $this->assertSame(300, $server->getTimeout());
         $this->assertFalse($server->hasProxy());
-        $this->assertSame('http://localhost:8080', $server->getBaseUri());
-        $this->assertSame('http', $server->getScheme());
+        $this->assertSame('http://localhost:8080', (string) $server->getUri());
         $this->assertFalse($server->isRunning());
         $this->assertSame($server, $server->withoutProxy());
 
@@ -48,45 +46,43 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
         $this->assertTrue($proxied->hasProxy());
         $this->assertSame('example.com', $proxied->getProxyHost());
         $this->assertSame(443, $proxied->getProxyPort());
-        $this->assertTrue($proxied->getProxyTls());
-        $this->assertSame('', $proxied->getProxyBasePath());
-        $this->assertSame('https://example.com', $proxied->getBaseUri());
-        $this->assertSame('https', $proxied->getScheme());
+        $this->assertTrue($proxied->proxyHasTls());
+        $this->assertSame('', $proxied->getProxyPath());
+        $this->assertSame('https://example.com', (string) $proxied->getUri());
         $this->assertSame($proxied, $proxied->withProxy('example.com', 443));
 
         $notProxied = $proxied->withoutProxy();
         $this->assertNotSame($proxied, $notProxied);
         $this->assertNotSame($server, $notProxied);
         $this->assertFalse($notProxied->hasProxy());
-        $this->assertSame('http://localhost:8080', $notProxied->getBaseUri());
-        $this->assertSame('http', $notProxied->getScheme());
+        $this->assertSame('http://localhost:8080', (string) $notProxied->getUri());
 
         $proxied = $server->withProxy('example.com', 8443, true);
         $this->assertSame(8443, $proxied->getProxyPort());
-        $this->assertTrue($proxied->getProxyTls());
-        $this->assertSame('https://example.com:8443', $proxied->getBaseUri());
+        $this->assertTrue($proxied->proxyHasTls());
+        $this->assertSame('https://example.com:8443', (string) $proxied->getUri());
 
         $proxied = $server->withProxy('example.com', 8080);
         $this->assertSame(8080, $proxied->getProxyPort());
-        $this->assertFalse($proxied->getProxyTls());
-        $this->assertSame('http://example.com:8080', $proxied->getBaseUri());
+        $this->assertFalse($proxied->proxyHasTls());
+        $this->assertSame('http://example.com:8080', (string) $proxied->getUri());
 
         $proxied = $server->withProxy('example.com', 80, false, '/api');
-        $this->assertSame('/api', $proxied->getProxyBasePath());
-        $this->assertSame('http://example.com/api', $proxied->getBaseUri());
+        $this->assertSame('/api', $proxied->getProxyPath());
+        $this->assertSame('http://example.com/api', (string) $proxied->getUri());
 
         $proxied = $server->withProxy('example.com', 80, true, 'api');
-        $this->assertSame('/api', $proxied->getProxyBasePath());
-        $this->assertSame('https://example.com:80/api', $proxied->getBaseUri());
+        $this->assertSame('/api', $proxied->getProxyPath());
+        $this->assertSame('https://example.com:80/api', (string) $proxied->getUri());
 
         $proxied = $server->withProxy('example.com', 443, false, '/api/');
-        $this->assertSame('/api', $proxied->getProxyBasePath());
-        $this->assertSame('http://example.com:443/api', $proxied->getBaseUri());
+        $this->assertSame('/api', $proxied->getProxyPath());
+        $this->assertSame('http://example.com:443/api', (string) $proxied->getUri());
 
         $server = new Server('localhost', 80);
         $this->assertSame(80, $server->getPort());
         $this->assertSame(-1, $server->getTimeout());
-        $this->assertSame('http://localhost', $server->getBaseUri());
+        $this->assertSame('http://localhost', (string) $server->getUri());
     }
 
     public function testListen(): void
@@ -96,13 +92,12 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
 
         /** @var ServerRequestInterface */
         $request = $server->listen(
-            function (ServerRequestInterface $request, bool &$continue, &$return): ResponseInterface {
-                $return = $request;
-                return new Response(
+            function (ServerRequestInterface $request): ServerResponse {
+                return (new ServerResponse(
                     200,
                     'Hello, world!',
                     [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT],
-                );
+                ))->withReturnValue($request);
             },
         );
         $this->assertSame(0, $client->wait());

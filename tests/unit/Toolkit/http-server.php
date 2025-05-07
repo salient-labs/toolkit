@@ -58,7 +58,7 @@ fprintf(\STDERR, '==> Server started at http://%s:%d' . \PHP_EOL, $host, $port);
 $i = 0;
 do {
     fprintf(\STDERR, ' -> Waiting for client' . \PHP_EOL);
-    $stream = @stream_socket_accept($server, $timeout, $peer);
+    $stream = @stream_socket_accept($server, $timeout, $client);
     if ($stream === false) {
         $error = error_get_last();
         throw new RuntimeException($error['message'] ?? sprintf(
@@ -67,11 +67,11 @@ do {
         ));
     }
 
-    if ($peer === null) {
+    if ($client === null) {
         throw new RuntimeException('No client address');
     }
 
-    Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
+    Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]++))?$/D', $client, $matches);
 
     /** @var array{addr:string,port?:string} $matches */
     $remoteHost = $matches['addr'];

@@ -12,6 +12,7 @@ use Salient\Core\Facade\Console;
 use Salient\Curler\Curler;
 use Salient\Http\Message\Response;
 use Salient\Http\Server\Server;
+use Salient\Http\Server\ServerResponse;
 use Salient\Utility\Arr;
 use Salient\Utility\Get;
 use Salient\Utility\Json;
@@ -150,7 +151,7 @@ abstract class OAuth2Client
     final protected function getRedirectUri(): ?string
     {
         return $this->Listener
-            ? sprintf('%s/oauth2/callback', $this->Listener->getBaseUri())
+            ? sprintf('%s/oauth2/callback', $this->Listener->getUri())
             : null;
     }
 
@@ -314,8 +315,8 @@ abstract class OAuth2Client
             Console::log('Follow the link to authorize access:', "\n$url");
             Console::info('Waiting for authorization');
             $code = $this->Listener->listen(
-                fn(ServerRequestInterface $request, bool &$continue, &$return): Response =>
-                    $this->receiveAuthorizationCode($request, $continue, $return)
+                fn(ServerRequestInterface $request): ServerResponse =>
+                    $this->receiveAuthorizationCode($request)
             );
         } finally {
             $this->Listener->stop();
@@ -333,16 +334,16 @@ abstract class OAuth2Client
     }
 
     /**
-     * @param mixed $return
+     * @return ServerResponse<string|null>
      */
-    private function receiveAuthorizationCode(ServerRequestInterface $request, bool &$continue, &$return): Response
+    private function receiveAuthorizationCode(ServerRequestInterface $request): ServerResponse
     {
         if (
             Str::upper($request->getMethod()) !== ServerRequestInterface::METHOD_GET
             || $request->getUri()->getPath() !== '/oauth2/callback'
         ) {
-            $continue = true;
-            return new Response(400, 'Invalid request.');
+            /** @var ServerResponse<string|null> */
+            return new ServerResponse(400, 'Invalid request.');
         }
 
         $state = Cache::getString("{$this->TokenKey}:state");
@@ -350,18 +351,21 @@ abstract class OAuth2Client
         parse_str($request->getUri()->getQuery(), $fields);
         $code = $fields['code'] ?? null;
 
+        $return = null;
         if (
             $state !== null
             && $state === ($fields['state'] ?? null)
             && $code !== null
         ) {
             Console::debug('Authorization code received and verified');
+            $response = new ServerResponse(200, 'Authorization received. You may now close this window.');
+            /** @var string */
             $return = $code;
-            return new Response(200, 'Authorization received. You may now close this window.');
+        } else {
+            Console::debug('Request did not provide a valid authorization code');
+            $response = new ServerResponse(400, 'Invalid request. Please try again.');
         }
-
-        Console::debug('Request did not provide a valid authorization code');
-        return new Response(400, 'Invalid request. Please try again.');
+        return $response->withReturnValue($return);
     }
 
     /**

@@ -2,48 +2,59 @@
 
 namespace Salient\Http\Server;
 
-use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Http\Exception\InvalidHeaderException;
-use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\Exception\InvalidHeaderException as InvalidHeaderExceptionInterface;
 use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Core\Facade\Console;
 use Salient\Http\Exception\HttpServerException;
+use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Message\Response;
 use Salient\Http\Message\ServerRequest;
 use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
-use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\File;
 use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use InvalidArgumentException;
+use LogicException;
+use Throwable;
 
 /**
- * A simple HTTP server
+ * A simple in-process HTTP/1.1 server
+ *
+ * @todo Add support for chunked transfers
+ *
+ * @api
  */
 class Server implements Immutable, HasHttpHeader, HasRequestMethod
 {
     use ImmutableTrait;
 
-    protected string $Host;
-    protected int $Port;
-    protected int $Timeout;
+    private string $Host;
+    private int $Port;
+    private int $Timeout;
     private string $ProxyHost;
     private int $ProxyPort;
-    private bool $ProxyTls;
-    private string $ProxyBasePath;
-    private string $Socket;
+    private bool $ProxyHasTls;
+    private string $ProxyPath;
+
+    // --
+
+    private string $Address;
     /** @var resource|null */
-    private $Server;
+    private $Server = null;
+    private string $LocalIpAddress;
+    private int $LocalPort;
 
     /**
-     * @param int $timeout The default number of seconds to wait for a request
-     * before timing out. Use a negative value to wait indefinitely.
+     * @api
+     *
+     * @param int $timeout The number of seconds to wait for a request, or an
+     * integer less than `0` to wait indefinitely. May be overridden via
+     * {@see listen()}.
      */
     public function __construct(string $host, int $port, int $timeout = -1)
     {
@@ -55,14 +66,16 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
     /**
      * @internal
      */
-    public function __clone()
+    protected function __clone()
     {
-        unset($this->Socket);
+        unset($this->Address);
         $this->Server = null;
+        unset($this->LocalIpAddress);
+        unset($this->LocalPort);
     }
 
     /**
-     * Get the server's hostname or IP address
+     * Get the hostname or IP address of the server
      */
     public function getHost(): string
     {
@@ -70,7 +83,7 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
     }
 
     /**
-     * Get the server's TCP port
+     * Get the TCP port of the server
      */
     public function getPort(): int
     {
@@ -78,7 +91,10 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
     }
 
     /**
-     * Get the default number of seconds to wait for a request before timing out
+     * Get the number of seconds the server will wait for a request
+     *
+     * If an integer less than `0` is returned, the server will wait
+     * indefinitely.
      */
     public function getTimeout(): int
     {
@@ -95,34 +111,50 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
 
     /**
      * Get the hostname or IP address of the proxy server
+     *
+     * @throws LogicException if the server is not configured to run behind a
+     * proxy server.
      */
     public function getProxyHost(): string
     {
+        $this->assertHasProxy();
         return $this->ProxyHost;
     }
 
     /**
      * Get the TCP port of the proxy server
+     *
+     * @throws LogicException if the server is not configured to run behind a
+     * proxy server.
      */
     public function getProxyPort(): int
     {
+        $this->assertHasProxy();
         return $this->ProxyPort;
     }
 
     /**
-     * Check if connections to the proxy server are encrypted
+     * Check if the proxy server uses TLS
+     *
+     * @throws LogicException if the server is not configured to run behind a
+     * proxy server.
      */
-    public function getProxyTls(): bool
+    public function proxyHasTls(): bool
     {
-        return $this->ProxyTls;
+        $this->assertHasProxy();
+        return $this->ProxyHasTls;
     }
 
     /**
-     * Get the base path at which the server can be reached via the proxy server
+     * Get the path at which the server can be reached via the proxy server
+     *
+     * @throws LogicException if the server is not configured to run behind a
+     * proxy server.
      */
-    public function getProxyBasePath(): string
+    public function getProxyPath(): string
     {
-        return $this->ProxyBasePath;
+        $this->assertHasProxy();
+        return $this->ProxyPath;
     }
 
     /**
@@ -132,7 +164,7 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
      * itself in client-facing URIs as:
      *
      * ```
-     * http[s]://<proxy_host>[:<proxy_port>][<proxy_base_path>]
+     * http[s]://<proxy_host>[:<proxy_port>][<proxy_path>]
      * ```
      *
      * @return static
@@ -140,76 +172,53 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
     public function withProxy(
         string $host,
         int $port,
-        ?bool $tls = null,
-        string $basePath = ''
+        ?bool $hasTls = null,
+        string $path = ''
     ): self {
-        $basePath = trim($basePath, '/');
-        if ($basePath !== '') {
-            $basePath = '/' . $basePath;
+        $hasTls ??= $port === 443;
+        $path = trim($path, '/');
+        if ($path !== '') {
+            $path = '/' . $path;
         }
 
         return $this
             ->with('ProxyHost', $host)
             ->with('ProxyPort', $port)
-            ->with('ProxyTls', $tls ?? ($port === 443))
-            ->with('ProxyBasePath', $basePath);
+            ->with('ProxyHasTls', $hasTls)
+            ->with('ProxyPath', $path);
     }
 
     /**
-     * Get an instance that is not configured to run behind a proxy server
+     * Get an instance configured to run without a proxy server
      *
      * @return static
      */
     public function withoutProxy(): self
     {
-        if (!isset($this->ProxyHost)) {
-            return $this;
-        }
-
-        $clone = clone $this;
-        unset($clone->ProxyHost);
-        unset($clone->ProxyPort);
-        unset($clone->ProxyTls);
-        unset($clone->ProxyBasePath);
-        return $clone;
+        return $this
+            ->without('ProxyHost')
+            ->without('ProxyPort')
+            ->without('ProxyHasTls')
+            ->without('ProxyPath');
     }
 
     /**
-     * Get the server's client-facing base URI with no trailing slash
+     * Get the client-facing URI of the server, with no trailing slash
+     *
+     * Call this method after {@see start()} if using dynamic port allocation.
      */
-    public function getBaseUri(): string
-    {
-        if (!isset($this->ProxyHost)) {
-            return $this->Port === 80
-                ? sprintf('http://%s', $this->Host)
-                : sprintf('http://%s:%d', $this->Host, $this->Port);
-        }
-
-        return ($this->ProxyTls && $this->ProxyPort === 443)
-            || (!$this->ProxyTls && $this->ProxyPort === 80)
-                ? sprintf(
-                    '%s://%s%s',
-                    $this->ProxyTls ? 'https' : 'http',
-                    $this->ProxyHost,
-                    $this->ProxyBasePath,
-                )
-                : sprintf(
-                    '%s://%s:%d%s',
-                    $this->ProxyTls ? 'https' : 'http',
-                    $this->ProxyHost,
-                    $this->ProxyPort,
-                    $this->ProxyBasePath,
-                );
-    }
-
-    /**
-     * Get the server's client-facing URI scheme
-     */
-    public function getScheme(): string
+    public function getUri(): Uri
     {
         return isset($this->ProxyHost)
-            ? ($this->ProxyTls ? 'https' : 'http')
-            : 'http';
+            ? (new Uri())
+                ->withScheme($this->ProxyHasTls ? 'https' : 'http')
+                ->withHost($this->ProxyHost)
+                ->withPort($this->ProxyPort)
+                ->withPath($this->ProxyPath)
+            : (new Uri())
+                ->withScheme('http')
+                ->withHost($this->Host)
+                ->withPort($this->LocalPort ?? $this->Port);
     }
 
     /**
@@ -217,270 +226,319 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
      */
     public function isRunning(): bool
     {
-        return $this->Server !== null;
+        return (bool) $this->Server;
+    }
+
+    /**
+     * Get the IP address to which the server is bound
+     *
+     * @throws LogicException if the server is not running.
+     */
+    public function getLocalIpAddress(): string
+    {
+        $this->assertIsRunning();
+        return $this->LocalIpAddress;
+    }
+
+    /**
+     * Get the TCP port on which the server is listening
+     *
+     * @throws LogicException if the server is not running.
+     */
+    public function getLocalPort(): int
+    {
+        $this->assertIsRunning();
+        return $this->LocalPort;
     }
 
     /**
      * Start the server
      *
      * @return $this
+     * @throws LogicException if the server is already running.
      */
     public function start(): self
     {
         $this->assertIsNotRunning();
 
-        $this->Socket ??= sprintf('tcp://%s:%d', $this->Host, $this->Port);
+        $address = $this->Address ??= sprintf(
+            'tcp://%s:%d',
+            $this->Host,
+            $this->Port,
+        );
 
         $errorCode = null;
         $errorMessage = null;
-        $server = @stream_socket_server($this->Socket, $errorCode, $errorMessage);
+        $server = @stream_socket_server($address, $errorCode, $errorMessage);
 
         if ($server === false) {
             throw new HttpServerException(sprintf(
                 'Error starting server at %s (%d: %s)',
-                $this->Socket,
+                $address,
                 $errorCode,
                 $errorMessage,
             ));
         }
 
+        $address = @stream_socket_get_name($server, false);
+
+        if ($address === false || ($pos = strrpos($address, ':')) === false) {
+            throw new HttpServerException('Error getting server address');
+        }
+
         $this->Server = $server;
+        $this->LocalIpAddress = substr($address, 0, $pos);
+        $this->LocalPort = (int) substr($address, $pos + 1);
 
         return $this;
     }
 
     /**
-     * Stop the server
+     * Stop the server if it is running
      *
      * @return $this
      */
     public function stop(): self
     {
-        $this->assertIsRunning();
-
-        File::close($this->Server);
-
-        $this->Server = null;
+        if ($this->Server) {
+            File::close($this->Server, $this->Address);
+            $this->Server = null;
+            unset($this->LocalIpAddress);
+            unset($this->LocalPort);
+        }
 
         return $this;
     }
 
     /**
-     * Wait for a request and return a response
+     * Wait for a request and provide the response returned by a listener
      *
-     * @template T
+     * If the listener returns a response with a return value, the server stops
+     * listening for requests, ignoring `$limit` if given, and returns the value
+     * to the caller.
      *
-     * @param callable(ServerRequestInterface $request, bool &$continue, T|null &$return): PsrResponseInterface $callback Receives
-     * an {@see ServerRequestInterface} and returns a
-     * {@see PsrResponseInterface}. May also set `$continue = true` to make
-     * {@see Server::listen()} wait for another request, or pass a value back to
-     * the caller by assigning it to `$return`.
-     * @return T|null
+     * @template TReturn
+     *
+     * @param callable(ServerRequestInterface $request): ServerResponse<TReturn> $listener
+     * @param int<-1,max> $limit If `-1` (the default), listen for requests
+     * indefinitely. Otherwise, listen until `$limit` requests have been
+     * received before returning `null`.
+     * @param bool $catchBadRequests If `false`, throw the underlying exception
+     * when an invalid request is rejected.
+     * @param int|null $timeout The number of seconds to wait for a request, an
+     * integer less than `0` to wait indefinitely, or `null` (the default) to
+     * use the server's default timeout.
+     * @param bool $strict If `true`, strict \[RFC9112] compliance is enforced.
+     * @return TReturn|null
+     * @throws LogicException if the server is not running.
      */
-    public function listen(callable $callback, ?int $timeout = null)
+    public function listen(
+        callable $listener,
+        int $limit = -1,
+        bool $catchBadRequests = true,
+        ?int $timeout = null,
+        bool $strict = false
+    ) {
+        $this->assertIsRunning();
+
+        while ($limit) {
+            $stream = null;
+            $response = null;
+            try {
+                $request = $this->getRequest($stream, $timeout, $strict);
+                $response = $listener($request);
+                if ($response->hasReturnValue()) {
+                    return $response->getReturnValue();
+                }
+            } catch (InvalidHeaderExceptionInterface $ex) {
+                $response = new Response(400, $ex->getMessage());
+                if (!$catchBadRequests) {
+                    throw $ex;
+                }
+            } catch (LogicException|HttpServerException $ex) {
+                throw $ex;
+            } catch (Throwable $ex) {
+                throw new HttpServerException($ex->getMessage(), $ex);
+            } finally {
+                if ($stream) {
+                    if ($response) {
+                        File::writeAll($stream, (string) $response);
+                    }
+                    File::close($stream);
+                }
+            }
+            $limit--;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param resource|null $stream
+     * @param-out resource $stream
+     */
+    private function getRequest(&$stream, ?int $timeout, bool $strict): ServerRequest
     {
         $this->assertIsRunning();
 
-        $timeout ??= $this->Timeout;
-        do {
-            $socket = @stream_socket_accept($this->Server, $timeout, $peer);
-            $this->maybeThrow(
-                $socket,
+        $handle = @stream_socket_accept(
+            $this->Server,
+            $timeout ?? $this->Timeout,
+            $client,
+        );
+
+        if ($handle === false) {
+            $error = error_get_last();
+            throw new HttpServerException($error['message'] ?? sprintf(
                 'Error accepting connection at %s',
-                $this->Socket,
+                $this->Address,
+            ));
+        }
+
+        if ($client === null) {
+            throw new HttpServerException('No client address');
+        }
+
+        Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]++))?$/D', $client, $matches);
+
+        /** @var array{addr:string,port?:string} $matches */
+        $client = $matches['addr'];
+        $serverParams = [
+            'REMOTE_ADDR' => $matches['addr'],
+            'REMOTE_PORT' => $matches['port'] ?? '',
+        ];
+
+        // Get request line
+        $stream = $handle;
+        $line = File::readLine($stream);
+
+        if ($strict && substr($line, -2) !== "\r\n") {
+            throw new InvalidHeaderException(
+                'HTTP request line must end with CRLF',
             );
+        }
 
-            if ($peer === null) {
-                throw new HttpServerException('No client address');
-            }
+        $line = $strict
+            ? substr($line, 0, -2)
+            : rtrim($line, "\r\n");
+        $startLine = $strict
+            ? explode(' ', $line, 4)
+            : Regex::split('/\s++/', trim($line), 3);
 
-            Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]+))?$/', $peer, $matches);
+        if (
+            count($startLine) !== 3
+            || !HttpUtil::isRequestMethod($startLine[0])
+            || !Regex::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
+        ) {
+            throw new InvalidHeaderException(sprintf(
+                'Invalid HTTP request line: %s',
+                $line,
+            ));
+        }
 
-            /** @var array{addr:string,port?:string} $matches */
-            $peer = $matches['addr'];
-            $serverParams = [
-                'REMOTE_ADDR' => $matches['addr'],
-                'REMOTE_PORT' => $matches['port'] ?? '',
-            ];
+        $method = $startLine[0];
+        $requestTarget = $startLine[1];
+        $version = $matches[1];
+        $requestTargetUri = null;
 
-            $method = null;
-            $target = '';
-            $targetUri = null;
-            $version = '';
-            $headers = new Headers();
-            $body = null;
-            do {
-                $line = @fgets($socket);
-                if ($line === false) {
-                    try {
-                        File::checkEof($socket);
-                    } catch (FilesystemErrorException $ex) {
-                        // @codeCoverageIgnoreStart
-                        throw new HttpServerException(sprintf(
-                            'Error reading request from %s',
-                            $peer,
-                        ), $ex);
-                        // @codeCoverageIgnoreEnd
-                    }
-                    throw new HttpServerException(sprintf(
-                        'Incomplete request from %s',
-                        $peer,
-                    ));
-                }
-
-                if ($method === null) {
-                    if (substr($line, -2) !== "\r\n") {
-                        // @codeCoverageIgnoreStart
-                        throw new HttpServerException(sprintf(
-                            'Request line from %s does not end with CRLF',
-                            $peer,
-                        ));
-                        // @codeCoverageIgnoreEnd
-                    }
-
-                    $startLine = explode(' ', substr($line, 0, -2));
-
-                    if (
-                        count($startLine) !== 3
-                        || !HttpUtil::isRequestMethod($startLine[0])
-                        || !Regex::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
-                    ) {
-                        throw new HttpServerException(sprintf(
-                            'Invalid request line from %s: %s',
-                            $peer,
-                            $line,
-                        ));
-                    }
-
-                    $method = $startLine[0];
-                    $target = $startLine[1];
-                    $version = $matches[1];
-
-                    if ($target === '*') {
-                        if ($method !== self::METHOD_OPTIONS) {
-                            throw new HttpServerException(sprintf(
-                                'Invalid request from %s for target %s: %s',
-                                $peer,
-                                $target,
-                                $method,
-                            ));
-                        }
-                        continue;
-                    }
-
-                    if ($method === self::METHOD_CONNECT) {
-                        if (!HttpUtil::isAuthorityForm($target)) {
-                            throw new HttpServerException(sprintf(
-                                'Invalid request target for %s from %s: %s',
-                                $method,
-                                $peer,
-                                $target,
-                            ));
-                        }
-                        $targetUri = new Uri('//' . $target, true);
-                        continue;
-                    }
-
-                    try {
-                        $targetUri = new Uri($target, true);
-                    } catch (InvalidArgumentException $ex) {
-                        throw new HttpServerException(sprintf(
-                            'Invalid request target for %s from %s: %s',
-                            $method,
-                            $peer,
-                            $target,
-                        ), $ex);
-                    }
-                    continue;
-                }
-
-                $headers = $headers->addLine($line, true);
-                if ($headers->hasEmptyLine()) {
-                    break;
-                }
-            } while (true);
-
-            // As per [RFC9112] Section 3.3 ("Reconstructing the Target URI")
-            $uri = implode('', [
-                $this->getScheme(),
-                '://',
-                Str::coalesce($headers->getOnlyHeaderValue(self::HEADER_HOST), $this->ProxyHost ?? $this->Host),
-            ]);
-            if (!Regex::match('/:[0-9]++$/', $uri)) {
-                $uri .= ':' . ($this->ProxyPort ?? $this->Port);
-            }
-            try {
-                $uri = new Uri($uri, true);
-            } catch (InvalidArgumentException $ex) {
-                throw new HttpServerException(sprintf(
-                    'Invalid request URI from %s: %s',
-                    $peer,
-                    $uri,
-                ), $ex);
-            }
-            if ($targetUri !== null) {
-                $uri = $uri->follow($targetUri);
-            }
-
-            /** @todo Handle requests without Content-Length */
-            /** @todo Add support for Transfer-Encoding */
-            try {
-                $length = HttpUtil::getContentLength($headers);
-            } catch (InvalidHeaderException $ex) {
-                throw new HttpServerException(sprintf(
-                    'Invalid %s in request from %s',
-                    self::HEADER_CONTENT_LENGTH,
-                    $peer,
-                ), $ex);
-            }
-            if ($length === 0) {
-                $body = '';
-            } elseif ($length !== null) {
-                $body = @fread($socket, $length);
-                if ($body === false) {
-                    throw new HttpServerException(sprintf(
-                        'Error reading request body from %s',
-                        $peer,
-                    ));
-                }
-                if (strlen($body) < $length) {
-                    throw new HttpServerException(sprintf(
-                        'Incomplete request body from %s',
-                        $peer,
-                    ));
-                }
-            }
-
-            $request = new ServerRequest(
+        // Check request target as per [RFC9112] Section 3.2 ("Request Target")
+        if ((
+            ($isAsteriskForm = $requestTarget === '*')
+            && $method !== self::METHOD_OPTIONS
+        ) || (
+            ($isAuthorityForm = HttpUtil::isAuthorityForm($requestTarget))
+            && $method !== self::METHOD_CONNECT
+        )) {
+            throw new InvalidHeaderException(sprintf(
+                "Invalid HTTP method for request target '%s': %s",
+                $requestTarget,
                 $method,
-                $uri,
-                $serverParams,
-                $body,
-                $headers,
-                $target,
-                $version,
-            );
-
-            Console::debug(sprintf('%s %s received from %s', $method, (string) $uri, $peer));
-
-            $continue = false;
-            $return = null;
-            $response = null;
-
+            ));
+        } elseif (
+            $method === self::METHOD_CONNECT
+            && !$isAuthorityForm
+        ) {
+            throw new InvalidHeaderException(sprintf(
+                "Invalid request target for HTTP method '%s': %s",
+                $method,
+                $requestTarget,
+            ));
+        } elseif ($isAuthorityForm) {
+            $requestTargetUri = new Uri('//' . $requestTarget);
+        } elseif (!$isAsteriskForm) {
             try {
-                $response = $callback($request, $continue, $return);
-            } finally {
-                $response = $response instanceof PsrResponseInterface
-                    ? ($response instanceof ResponseInterface
-                        ? $response
-                        : Response::fromPsr7($response))
-                    : new Response(500, 'Internal server error');
-                File::write($socket, (string) $response);
-                File::close($socket);
+                $requestTargetUri = new Uri($requestTarget, $strict);
+            } catch (InvalidArgumentException $ex) {
+                throw new InvalidHeaderException(sprintf(
+                    'Invalid HTTP request target: %s',
+                    $requestTarget,
+                ), $ex);
             }
-        } while ($continue);
+            $isAbsoluteForm = !$requestTargetUri->isRelativeReference();
+            $isOriginForm = !$isAbsoluteForm
+                && $requestTargetUri->getPath() !== ''
+                && !array_diff_key(
+                    $requestTargetUri->getComponents(),
+                    ['path' => null, 'query' => null],
+                );
+            if (!$isAbsoluteForm && !$isOriginForm) {
+                throw new InvalidHeaderException(sprintf(
+                    'Invalid HTTP request target: %s',
+                    $requestTarget,
+                ));
+            }
+        }
 
-        return $return;
+        // Get header field lines
+        $headers = new Headers();
+        do {
+            $line = File::readLine($stream);
+            if ($line === '') {
+                throw new InvalidHeaderException('Invalid HTTP field lines');
+            }
+            $headers = $headers->addLine($line, $strict);
+        } while (!$headers->hasEmptyLine());
+
+        // As per [RFC9112] Section 3.3 ("Reconstructing the Target URI")
+        $host = $headers->getOnlyHeaderValue(self::HEADER_HOST);
+        $uri = implode('', [
+            $this->getUri()->getScheme(),
+            '://',
+            Str::coalesce($host, $this->ProxyHost ?? $this->Host),
+        ]);
+        if (!Regex::match('/:[0-9]++$/', $uri)) {
+            $uri .= ':' . ($this->ProxyPort ?? $this->LocalPort);
+        }
+        try {
+            $uri = new Uri($uri, $strict);
+        } catch (InvalidArgumentException $ex) {
+            throw new InvalidHeaderException(sprintf(
+                'Invalid HTTP request target: %s',
+                $uri,
+            ), $ex);
+        }
+        if ($requestTargetUri) {
+            $uri = $uri->follow($requestTargetUri);
+        }
+
+        $length = HttpUtil::getContentLength($headers);
+        if ($length === 0) {
+            $body = '';
+        } elseif ($length !== null) {
+            $body = File::readAll($stream, $length);
+        } else {
+            $body = null;
+        }
+
+        return new ServerRequest(
+            $method,
+            $uri,
+            $serverParams,
+            $body,
+            $headers,
+            $requestTarget,
+            $version,
+        );
     }
 
     /**
@@ -488,8 +546,8 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
      */
     private function assertIsNotRunning(): void
     {
-        if ($this->Server !== null) {
-            throw new HttpServerException('Server is running');
+        if ($this->Server) {
+            throw new LogicException('Server is running');
         }
     }
 
@@ -498,29 +556,15 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
      */
     private function assertIsRunning(): void
     {
-        if ($this->Server === null) {
-            throw new HttpServerException('Server is not running');
+        if (!$this->Server) {
+            throw new LogicException('Server is not running');
         }
     }
 
-    /**
-     * @template T
-     *
-     * @param T $result
-     * @param string|int|float ...$args
-     * @return (T is false ? never : T)
-     * @phpstan-param T|false $result
-     * @phpstan-return ($result is false ? never : T)
-     */
-    private function maybeThrow($result, string $message, ...$args)
+    private function assertHasProxy(): void
     {
-        if ($result === false) {
-            $error = error_get_last();
-            if ($error) {
-                throw new HttpServerException($error['message']);
-            }
-            throw new HttpServerException(sprintf($message, ...$args));
+        if (!isset($this->ProxyHost)) {
+            throw new LogicException('Server is not configured to run behind a proxy server');
         }
-        return $result;
     }
 }
