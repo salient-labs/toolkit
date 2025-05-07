@@ -66,7 +66,7 @@ abstract class AbstractRequest extends AbstractMessage implements
             return $this->RequestTarget;
         }
 
-        // As per [RFC7230] Section 5.3.1 ("origin-form")
+        // As per [RFC9112] Section 3.2.1 ("origin-form")
         $query = $this->Uri->getComponents()['query'] ?? null;
         return Str::coalesce($this->Uri->getPath(), '/')
             . ($query === null ? '' : '?' . $query);
@@ -130,7 +130,7 @@ abstract class AbstractRequest extends AbstractMessage implements
             return null;
         }
 
-        // As per [RFC7230] Section 5.3 ("Request Target")
+        // As per [RFC9112] Section 3.2 ("Request Target")
         /** @disregard P1006 */
         if (
             // "asterisk-form"
@@ -141,7 +141,10 @@ abstract class AbstractRequest extends AbstractMessage implements
                 // "absolute-form"
                 isset($parts['scheme'])
                 // "origin-form"
-                || !array_diff_key($parts, ['path' => null, 'query' => null])
+                || (
+                    isset($parts['path'])
+                    && !array_diff_key($parts, ['path' => null, 'query' => null])
+                )
             ))
         ) {
             return $requestTarget;

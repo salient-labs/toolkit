@@ -58,6 +58,8 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
 
     private bool $IsParser;
     private bool $HasEmptyLine = false;
+    private bool $HasBadWhitespace = false;
+    private bool $HasObsoleteLineFolding = false;
 
     /**
      * Trailing whitespace carried over from the previous line
@@ -101,7 +103,7 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
                 "\r\n",
                 explode("\r\n\r\n", $headersOrPayload, 2)[0] . "\r\n",
             ));
-            // Parse header lines
+            // Parse field lines
             $instance = new static();
             foreach ($lines as $line) {
                 $instance = $instance->addLine("$line\r\n");
@@ -114,7 +116,7 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
     /**
      * @inheritDoc
      *
-     * @param bool $strict If `true`, strict \[RFC7230] compliance is enforced.
+     * @param bool $strict If `true`, strict \[RFC9112] compliance is enforced.
      */
     public function addLine(string $line, bool $strict = false)
     {
@@ -138,14 +140,14 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
     {
         if ($strict && substr($line, -2) !== "\r\n") {
             throw new InvalidHeaderException(
-                'HTTP header line must end with CRLF',
+                'HTTP field line must end with CRLF',
             );
         }
 
         if ($line === "\r\n" || (!$strict && trim($line) === '')) {
             if ($strict && $this->HasEmptyLine) {
                 throw new InvalidHeaderException(
-                    'HTTP message cannot have empty header line after body',
+                    'HTTP message cannot have empty field line after body',
                 );
             }
             return $this->with('Carry', null)->with('HasEmptyLine', true);
@@ -153,26 +155,33 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
 
         if ($strict) {
             $line = substr($line, 0, -2);
-            if (
-                !Regex::match(self::HTTP_HEADER_FIELD_REGEX, $line, $matches, \PREG_UNMATCHED_AS_NULL)
-                || $matches['bad_whitespace'] !== null
-            ) {
+            if (!Regex::match(self::HTTP_FIELD_LINE_REGEX, $line, $matches, \PREG_UNMATCHED_AS_NULL)) {
                 throw new InvalidHeaderException(
-                    sprintf('Invalid HTTP header field: %s', $line),
+                    sprintf('Invalid HTTP field line: %s', $line),
                 );
             }
 
-            // As per [RFC7230] Section 3.2.4, "replace each received obs-fold
-            // with one or more SP octets prior to interpreting the field value"
+            // As per [RFC9112] Section 5.2 ("Obsolete Line Folding"), "replace
+            // each received obs-fold with one or more SP octets"
             $instance = $this->with('Carry', (string) $matches['carry']);
             if ($matches['extended'] !== null) {
                 if ($this->Carry === null) {
                     throw new InvalidHeaderException(
-                        sprintf('Invalid HTTP header line folding: %s', $line),
+                        sprintf('Invalid HTTP field line folding: %s', $line),
                     );
                 }
                 $line = $this->Carry . ' ' . $matches['extended'];
                 return $instance->extendPreviousLine($line);
+            }
+
+            // [RFC9112] Section 5.1 ("Field Line Parsing"):
+            // - "No whitespace is allowed between the field name and colon"
+            // - "A server MUST reject ... any received request message that
+            //   contains whitespace between a header field name and colon"
+            // - "A proxy MUST remove any such whitespace from a response
+            //   message before forwarding the message downstream"
+            if ($matches['bad_whitespace'] !== null) {
+                $instance = $instance->with('HasBadWhitespace', true);
             }
 
             /** @var string */
@@ -190,7 +199,7 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
         if (strpos(" \t", $line[0]) !== false) {
             if ($this->Carry === null) {
                 throw new InvalidHeaderException(
-                    sprintf('Invalid HTTP header line folding: %s', $line),
+                    sprintf('Invalid HTTP field line folding: %s', $line),
                 );
             }
             $line = $this->Carry . ' ' . trim($line);
@@ -200,16 +209,15 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
         $split = explode(':', $line, 2);
         if (count($split) !== 2) {
             throw new InvalidHeaderException(
-                sprintf('Invalid HTTP header field: %s', $line),
+                sprintf('Invalid HTTP field line: %s', $line),
             );
         }
 
-        // [RFC7230] Section 3.2.4:
-        // - "No whitespace is allowed between the header field-name and colon."
-        // - "A proxy MUST remove any such whitespace from a response message
-        //   before forwarding the message downstream."
         $name = rtrim($split[0]);
         $value = trim($split[1]);
+        if ($name !== $split[0]) {
+            $instance = $instance->with('HasBadWhitespace', true);
+        }
         return $instance->addValue($name, $value)->maybeIndexLastHeader();
     }
 
@@ -223,7 +231,9 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
         $k = array_key_last($headers);
         [, $value] = $this->Headers[$k];
         $headers[$k][1] = ltrim($value . $line);
-        return $this->maybeReplaceHeaders($headers, $this->Index);
+        return $this
+            ->with('HasObsoleteLineFolding', true)
+            ->maybeReplaceHeaders($headers, $this->Index);
     }
 
     /**
@@ -247,6 +257,22 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
     public function hasEmptyLine(): bool
     {
         return $this->HasEmptyLine;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasBadWhitespace(): bool
+    {
+        return $this->HasBadWhitespace;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function hasObsoleteLineFolding(): bool
+    {
+        return $this->HasObsoleteLineFolding;
     }
 
     /**
@@ -698,7 +724,7 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
         $line = $this->getHeaderLine($name);
         return $line === ''
             ? []
-            // [RFC7230] Section 7: "a recipient MUST parse and ignore a
+            // [RFC9110] Section 5.6.1.2: "A recipient MUST parse and ignore a
             // reasonable number of empty list elements"
             : Str::splitDelimited(',', $line);
     }
@@ -831,8 +857,8 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
      */
     private function filterIndex(array $index): array
     {
-        // [RFC7230] Section 5.4: "a user agent SHOULD generate Host as the
-        // first header field following the request-line"
+        // [RFC9110] Section 7.2: "A user agent that sends Host SHOULD send it
+        // as the first field in the header section of a request"
         return isset($index['host'])
             ? ['host' => $index['host']] + $index
             : $index;
@@ -919,7 +945,7 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
 
     private function filterName(string $name): string
     {
-        if (!Regex::match(self::HTTP_HEADER_FIELD_NAME_REGEX, $name)) {
+        if (!Regex::match(self::HTTP_FIELD_NAME_REGEX, $name)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid header name: %s', $name),
             );
@@ -930,7 +956,7 @@ class Headers implements HeadersInterface, IteratorAggregate, HasHttpRegex
     private function filterValue(string $value): string
     {
         $value = Regex::replace('/\r\n\h++/', ' ', trim($value, " \t"));
-        if (!Regex::match(self::HTTP_HEADER_FIELD_VALUE_REGEX, $value)) {
+        if (!Regex::match(self::HTTP_FIELD_VALUE_REGEX, $value)) {
             throw new InvalidArgumentException(
                 sprintf('Invalid header value: %s', $value),
             );

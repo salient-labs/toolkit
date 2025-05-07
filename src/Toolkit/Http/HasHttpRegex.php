@@ -7,10 +7,15 @@ namespace Salient\Http;
  */
 interface HasHttpRegex
 {
-    public const HTTP_TOKEN = '(?:(?i)[-0-9a-z!#$%&\'*+.^_`|~]++)';
+    public const AUTHORITY_FORM_REGEX = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
+    public const HOST_REGEX = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
+    public const HTTP_FIELD_NAME_REGEX = self::HTTP_TOKEN_REGEX;
+    public const HTTP_FIELD_VALUE_REGEX = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
     public const HTTP_TOKEN_REGEX = '/^[-0-9a-z!#$%&\'*+.^_`|~]++$/iD';
+    public const HTTP_TOKEN = '(?:(?i)[-0-9a-z!#$%&\'*+.^_`|~]++)';
+    public const SCHEME_REGEX = '/^[a-z][-a-z0-9+.]*$/iD';
 
-    public const HTTP_HEADER_FIELD_REGEX = <<<'REGEX'
+    public const HTTP_FIELD_LINE_REGEX = <<<'REGEX'
 / ^
 (?(DEFINE)
   (?<token> [-0-9a-z!#$%&'*+.^_`|~]++ )
@@ -24,9 +29,6 @@ interface HasHttpRegex
 (?<carry> \h++ )?
 $ /ixD
 REGEX;
-
-    public const HTTP_HEADER_FIELD_NAME_REGEX = self::HTTP_TOKEN_REGEX;
-    public const HTTP_HEADER_FIELD_VALUE_REGEX = '/^([\x21-\x7e\x80-\xff]++(?:\h++[\x21-\x7e\x80-\xff]++)*+)?$/D';
 
     public const URI_REGEX = <<<'REGEX'
 ` ^
@@ -64,8 +66,4 @@ REGEX;
 (?: \# (?<fragment> (?: (?&pchar) | [?/] )* ) )?+
 $ `ixD
 REGEX;
-
-    public const SCHEME_REGEX = '/^[a-z][-a-z0-9+.]*$/iD';
-    public const HOST_REGEX = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\])$/iD';
-    public const AUTHORITY_FORM_REGEX = '/^(([-a-z0-9!$&\'()*+,.;=_~]|%[0-9a-f]{2})++|\[[0-9a-f:]++\]):[0-9]++$/iD';
 }

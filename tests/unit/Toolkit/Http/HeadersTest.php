@@ -81,8 +81,14 @@ final class HeadersTest extends TestCase implements
      * @param array<string,string[]>|string $expected
      * @param string[] $lines
      */
-    public function testAddLine($expected, array $lines, bool $strict = false, ?bool $trailers = null): void
-    {
+    public function testAddLine(
+        $expected,
+        array $lines,
+        bool $strict = false,
+        ?bool $trailers = null,
+        bool $badWhitespace = false,
+        bool $obsoleteLineFolding = false
+    ): void {
         $this->maybeExpectException($expected);
         $headers = new Headers();
         foreach ($lines as $line) {
@@ -97,10 +103,12 @@ final class HeadersTest extends TestCase implements
                     ? $headers->trailers()->getHeaders()
                     : $headers->withoutTrailers()->getHeaders())
         );
+        $this->assertSame($badWhitespace, $headers->hasBadWhitespace());
+        $this->assertSame($obsoleteLineFolding, $headers->hasObsoleteLineFolding());
     }
 
     /**
-     * @return array<string,array{array<string,string[]>|string,string[],2?:bool,3?:bool|null}>
+     * @return array<string,array{array<string,string[]>|string,string[],2?:bool,3?:bool|null,4?:bool,5?:bool}>
      */
     public static function addLineProvider(): array
     {
@@ -108,6 +116,9 @@ final class HeadersTest extends TestCase implements
             'no CRLF' => [
                 ['A' => ['1', '2', '3']],
                 ['A : 1', 'A:2', 'a: 3'],
+                false,
+                null,
+                true,
             ],
             'space after delimiter' => [
                 ['A' => ['1', '2', '3']],
@@ -116,6 +127,9 @@ final class HeadersTest extends TestCase implements
             'space before delimiter' => [
                 ['A' => ['1', '2', '3']],
                 ["A : 1\r\n", "A:2\r\n", "a: 3\r\n"],
+                false,
+                null,
+                true,
             ],
             'preserve case of first with same name' => [
                 ['a' => ['1', '2', '3']],
@@ -154,29 +168,45 @@ final class HeadersTest extends TestCase implements
             'folded line (SP)' => [
                 ['long' => ['line1 line2']],
                 ["long: line1\r\n", " line2\r\n"],
+                false,
+                null,
+                false,
+                true,
             ],
             'folded line (HTAB)' => [
                 ['long' => ['line1 line2']],
                 ["long: line1\r\n", "\tline2\r\n"],
+                false,
+                null,
+                false,
+                true,
             ],
             'folded line + multiple spaces' => [
                 ['long' => ['line1 line2']],
                 ["long: line1\r\n", "    line2\r\n"],
+                false,
+                null,
+                false,
+                true,
             ],
             'folded line + carried whitespace' => [
                 ['long' => ["line1  line2\t line3"]],
                 ["long: line1 \r\n", " line2\t\r\n", " line3\r\n"],
+                false,
+                null,
+                false,
+                true,
             ],
             'invalid line folding' => [
-                InvalidHeaderException::class . ',Invalid HTTP header line folding:  line2',
+                InvalidHeaderException::class . ',Invalid HTTP field line folding:  line2',
                 [" line2\r\n"],
             ],
             'invalid header' => [
-                InvalidHeaderException::class . ',Invalid HTTP header field: nope',
+                InvalidHeaderException::class . ',Invalid HTTP field line: nope',
                 ["nope\r\n"],
             ],
             '[strict] no CRLF' => [
-                InvalidHeaderException::class . ',HTTP header line must end with CRLF',
+                InvalidHeaderException::class . ',HTTP field line must end with CRLF',
                 ['A : 1', 'A:2', 'a: 3'],
                 true,
             ],
@@ -186,8 +216,10 @@ final class HeadersTest extends TestCase implements
                 true,
             ],
             '[strict] space before delimiter' => [
-                InvalidHeaderException::class . ',Invalid HTTP header field: A : 1',
+                ['A' => ['1', '2', '3']],
                 ["A : 1\r\n", "A:2\r\n", "a: 3\r\n"],
+                true,
+                null,
                 true,
             ],
             '[strict] preserve case of first with same name' => [
@@ -223,7 +255,7 @@ final class HeadersTest extends TestCase implements
                 true,
             ],
             '[strict] trailing header #4' => [
-                InvalidHeaderException::class . ',HTTP message cannot have empty header line after body',
+                InvalidHeaderException::class . ',HTTP message cannot have empty field line after body',
                 ["foo: bar\r\n", "\r\n", "baz: qux\r\n", "\r\n"],
                 true,
                 true,
@@ -232,29 +264,41 @@ final class HeadersTest extends TestCase implements
                 ['long' => ['line1 line2']],
                 ["long: line1\r\n", " line2\r\n"],
                 true,
+                null,
+                false,
+                true,
             ],
             '[strict] folded line (HTAB)' => [
                 ['long' => ['line1 line2']],
                 ["long: line1\r\n", "\tline2\r\n"],
+                true,
+                null,
+                false,
                 true,
             ],
             '[strict] folded line + multiple spaces' => [
                 ['long' => ['line1 line2']],
                 ["long: line1\r\n", "    line2\r\n"],
                 true,
+                null,
+                false,
+                true,
             ],
             '[strict] folded line + carried whitespace' => [
                 ['long' => ["line1  line2\t line3"]],
                 ["long: line1 \r\n", " line2\t\r\n", " line3\r\n"],
                 true,
+                null,
+                false,
+                true,
             ],
             '[strict] invalid line folding' => [
-                InvalidHeaderException::class . ',Invalid HTTP header line folding:  line2',
+                InvalidHeaderException::class . ',Invalid HTTP field line folding:  line2',
                 [" line2\r\n"],
                 true,
             ],
             '[strict] invalid header' => [
-                InvalidHeaderException::class . ',Invalid HTTP header field: nope',
+                InvalidHeaderException::class . ',Invalid HTTP field line: nope',
                 ["nope\r\n"],
                 true,
             ],

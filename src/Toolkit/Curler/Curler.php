@@ -1156,12 +1156,12 @@ class Curler implements CurlerInterface, Buildable
                 }
             }
         } elseif (self::REQUEST_METHOD_HAS_BODY[$method] ?? false) {
-            // [RFC7230], Section 3.3.2: "A user agent SHOULD send a
-            // Content-Length in a request message when no Transfer-Encoding is
-            // sent and the request method defines a meaning for an enclosed
-            // payload body. For example, a Content-Length header field is
-            // normally sent in a POST request even when the value is 0
-            // (indicating an empty payload body)."
+            // [RFC9110], Section 8.6 ("Content-Length"): "A user agent SHOULD
+            // send Content-Length in a request when the method defines a
+            // meaning for enclosed content and it is not sending
+            // Transfer-Encoding. For example, a user agent normally sends
+            // Content-Length in a POST request even when the value is 0
+            // (indicating empty content)"
             $request = $request->withHeader(self::HEADER_CONTENT_LENGTH, '0');
         }
 

@@ -230,10 +230,10 @@ final class HttpUtil extends AbstractUtility implements
      * Check if a string contains only a host and port number, separated by a
      * colon
      *
-     * \[RFC7230] Section 5.3.3 (authority-form): "When making a CONNECT request
-     * to establish a tunnel through one or more proxies, a client MUST send
-     * only the target URI's authority component (excluding any userinfo and its
-     * "@" delimiter) as the request-target."
+     * \[RFC9112] Section 3.2.3 ("authority-form"): "When making a CONNECT
+     * request to establish a tunnel through one or more proxies, a client MUST
+     * send only the host and port of the tunnel destination as the
+     * request-target."
      */
     public static function isAuthorityForm(string $target): bool
     {
@@ -268,7 +268,7 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Get an HTTP date as per [RFC7231] Section 7.1.1.1
+     * Get an HTTP date as per [RFC9110] Section 5.6.7 ("Date/Time Formats")
      */
     public static function getDate(?DateTimeInterface $date = null): string
     {
@@ -279,7 +279,7 @@ final class HttpUtil extends AbstractUtility implements
 
     /**
      * Get a product identifier suitable for User-Agent and Server headers as
-     * per [RFC7231] Section 5.5.3
+     * per [RFC9110] Section 10.1.5 ("User-Agent")
      */
     public static function getProduct(): string
     {
@@ -305,7 +305,7 @@ final class HttpUtil extends AbstractUtility implements
 
     /**
      * Escape and double-quote a string unless it is a valid HTTP token, as per
-     * [RFC7230] Section 3.2.6
+     * [RFC9110] Section 5.6.4 ("Quoted Strings")
      */
     public static function maybeQuoteString(string $string): string
     {
@@ -315,7 +315,8 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Escape and double-quote a string as per [RFC7230] Section 3.2.6
+     * Escape and double-quote a string as per [RFC9110] Section 5.6.4 ("Quoted
+     * Strings")
      */
     public static function quoteString(string $string): string
     {
@@ -323,7 +324,8 @@ final class HttpUtil extends AbstractUtility implements
     }
 
     /**
-     * Unescape and remove quotes from a string as per [RFC7230] Section 3.2.6
+     * Unescape and remove quotes from a string as per [RFC9110] Section 5.6.4
+     * ("Quoted Strings")
      */
     public static function unquoteString(string $string): string
     {

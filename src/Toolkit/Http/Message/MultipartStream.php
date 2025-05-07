@@ -69,9 +69,11 @@ class MultipartStream implements MultipartStreamInterface
             if ($filename !== null && $filename !== $asciiFilename) {
                 $disposition[] = sprintf(
                     "filename*=UTF-8''%s",
-                    // Percent-encode as per [RFC5987] Section 3.2 ("Parameter
-                    // Value Character Set and Language Information")
+                    // Percent-encode as per [RFC8187] Section 3.2 ("Parameter
+                    // Value Character Encoding and Language Information")
                     Regex::replaceCallback(
+                        // HTTP token characters except "*", "'", "%" and those
+                        // left alone by `rawurlencode()`
                         '/[^!#$&+^`|]++/',
                         fn($matches) => rawurlencode($matches[0]),
                         $filename,

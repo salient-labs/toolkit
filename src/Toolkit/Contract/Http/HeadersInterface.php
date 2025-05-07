@@ -27,10 +27,10 @@ interface HeadersInterface extends
     public function __construct($items = []);
 
     /**
-     * Parse and apply a header line or continuation thereof
+     * Parse and apply a header field line or continuation thereof
      *
      * To initialise an instance from an HTTP stream or message, call this
-     * method once per header line after the request or status line, including
+     * method once per field line after the request or status line, including
      * the CRLF sequence at the end of each line. After receiving an empty line
      * (`"\r\n"`), {@see hasEmptyLine()} returns `true`, and any headers
      * received via {@see addLine()} are applied as trailers.
@@ -43,9 +43,19 @@ interface HeadersInterface extends
     public function addLine(string $line);
 
     /**
-     * Check if an empty header line has been received via addLine()
+     * Check if an empty line has been received via addLine()
      */
     public function hasEmptyLine(): bool;
+
+    /**
+     * Check if a line with bad whitespace has been received via addLine()
+     */
+    public function hasBadWhitespace(): bool;
+
+    /**
+     * Check if obsolete line folding has been received via addLine()
+     */
+    public function hasObsoleteLineFolding(): bool;
 
     /**
      * Apply a value to a header, preserving any existing values
@@ -108,8 +118,8 @@ interface HeadersInterface extends
     public function withoutTrailers();
 
     /**
-     * Get header names and values in their original order as a list of header
-     * fields, preserving the original case of each header
+     * Get header names and values in their original order as a list of field
+     * lines, preserving the original case of each header
      *
      * If `$emptyFormat` is given, it is used for headers with an empty value.
      *
