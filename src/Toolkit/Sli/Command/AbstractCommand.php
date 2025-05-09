@@ -4,18 +4,13 @@ namespace Salient\Sli\Command;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
+use Salient\Cli\CliUtil;
 use Salient\Sli\EnvVar;
-use Salient\Utility\Exception\FilesystemErrorException;
 use Salient\Utility\Env;
 use Salient\Utility\File;
 use Salient\Utility\Get;
-use Salient\Utility\Json;
 use Salient\Utility\Test;
-use JsonException;
 
-/**
- * Base class for sli commands
- */
 abstract class AbstractCommand extends CliCommand
 {
     /**
@@ -34,6 +29,8 @@ abstract class AbstractCommand extends CliCommand
         ?string &$namespace = null
     ): string {
         if ($value === '') {
+            $class = '';
+            $namespace = '';
             return '';
         }
 
@@ -50,16 +47,13 @@ abstract class AbstractCommand extends CliCommand
         }
 
         if (!Test::isFqcn($fqcn)) {
-            throw new CliInvalidArgumentsException(sprintf(
-                'invalid %s: %s',
-                $valueName,
-                $value,
-            ));
+            throw new CliInvalidArgumentsException(
+                sprintf('invalid %s: %s', $valueName, $value),
+            );
         }
 
         $class = Get::basename($fqcn);
         $namespace = Get::namespace($fqcn);
-
         return $fqcn;
     }
 
@@ -80,7 +74,9 @@ abstract class AbstractCommand extends CliCommand
     ): string {
         $fqcn = $this->getFqcnOptionValue($valueName, $value, $namespaceEnvVar, $class, $namespace);
         if ($fqcn === '') {
-            throw new CliInvalidArgumentsException(sprintf('invalid %s: %s', $valueName, $value));
+            throw new CliInvalidArgumentsException(
+                sprintf('invalid %s: %s', $valueName, $value),
+            );
         }
         return $fqcn;
     }
@@ -96,11 +92,10 @@ abstract class AbstractCommand extends CliCommand
         array $values,
         ?string $namespaceEnvVar = null
     ): array {
-        $fqcn = [];
         foreach ($values as $value) {
             $fqcn[] = $this->requireFqcnOptionValue($valueName, $value, $namespaceEnvVar);
         }
-        return $fqcn;
+        return $fqcn ?? [];
     }
 
     /**
@@ -123,50 +118,31 @@ abstract class AbstractCommand extends CliCommand
             return $this->App->get($value);
         }
         throw new CliInvalidArgumentsException(
-            class_exists($value) ? sprintf(
-                'class does not inherit %s: %s',
-                $class,
-                $value,
-            ) : sprintf(
-                'class does not exist: %s',
-                $value,
-            )
+            class_exists($value)
+                ? sprintf('class does not inherit %s: %s', $class, $value)
+                : sprintf('class does not exist: %s', $value),
         );
     }
 
     /**
-     * Get data from a user-supplied JSON file, optionally assigning the file's
-     * "friendly pathname" to a variable passed by reference
+     * Get data from a user-supplied JSON file, optionally assigning its
+     * relative path to a variable passed by reference
      *
-     * @return mixed
+     * If `$filename` is `"-"`, JSON is read from `STDIN` and `$path` is not
+     * modified.
+     *
+     * @param string|null $path Receives `$filename` relative to the
+     * application's base path if possible, otherwise `$filename` itself.
+     * @return mixed[]|object
      */
-    protected function getJson(string $file, ?string &$path = null, bool $associative = true)
-    {
-        if ($file === '-') {
-            $file = 'php://stdin';
-        } else {
-            try {
-                $path = File::getRelativePath($file, $this->App->getBasePath(), $file);
-            } catch (FilesystemErrorException $ex) {
-                throw new CliInvalidArgumentsException(sprintf(
-                    'file not found: %s',
-                    $file,
-                ));
-            }
+    protected function getJsonOptionData(
+        string $filename,
+        ?string &$path = null,
+        bool $associative = true
+    ) {
+        if ($filename !== '-') {
+            $path = File::getRelativePath($filename, $this->App->getBasePath(), $filename);
         }
-
-        $json = File::getContents($file);
-
-        try {
-            return $associative
-                ? Json::objectAsArray($json)
-                : Json::parse($json);
-        } catch (JsonException $ex) {
-            throw new CliInvalidArgumentsException(sprintf(
-                "invalid JSON in '%s': %s",
-                $file,
-                $ex->getMessage(),
-            ));
-        }
+        return CliUtil::getJson($filename, $associative);
     }
 }

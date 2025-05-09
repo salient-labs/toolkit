@@ -17,8 +17,8 @@ final class AccessTokenTest extends TestCase
     public function testInterfaceMethods(): void
     {
         $token = new AccessToken(self::TOKEN, 'Bearer', null);
-        $this->assertSame(self::TOKEN, $token->getToken());
-        $this->assertSame('Bearer', $token->getTokenType());
+        $this->assertSame(self::TOKEN, $token->getCredential());
+        $this->assertSame('Bearer', $token->getAuthenticationScheme());
     }
 
     public function testToken(): void

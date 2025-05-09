@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use OutOfRangeException;
 
 /**
@@ -28,7 +28,7 @@ interface CurlerPageInterface
      * Return a {@see CurlerPageRequestInterface} to propagate query changes to
      * the next {@see CurlerPagerInterface::getPage()} call in array form.
      *
-     * @return CurlerPageRequestInterface|RequestInterface
+     * @return CurlerPageRequestInterface|PsrRequestInterface
      * @throws OutOfRangeException if no more data can be requested.
      */
     public function getNextRequest();

@@ -3,19 +3,19 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\UploadedFileIntegrationTest;
-use Salient\Http\HttpServerRequestUpload;
-use Salient\Http\HttpStream;
+use Salient\Http\Message\ServerRequestUpload;
+use Salient\Http\Message\Stream;
 
 /**
- * @covers \Salient\Http\HttpServerRequestUpload
+ * @covers \Salient\Http\Message\ServerRequestUpload
  */
 class UploadedFileTest extends UploadedFileIntegrationTest
 {
     public function createSubject()
     {
-        $stream = HttpStream::fromString('foobar');
+        $stream = Stream::fromString('foobar');
 
-        return new HttpServerRequestUpload(
+        return new ServerRequestUpload(
             $stream,
             $stream->getSize(),
             \UPLOAD_ERR_OK,

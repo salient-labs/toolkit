@@ -52,14 +52,14 @@ final class Regex extends AbstractUtility
     public const INTEGER_STRING = '(?:[+-]?[0-9]+)';
 
     /**
-     * A token in an [RFC7230]-compliant HTTP message
+     * An [RFC9562]-compliant UUID
      */
-    public const HTTP_TOKEN = '(?:(?i)[-0-9a-z!#$%&\'*+.^_`|~]+)';
+    public const UUID = '(?:(?i)[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})';
 
     /**
-     * An [RFC4122]-compliant version 4 UUID
+     * An [RFC9562]-compliant UUIDv4
      */
-    public const UUID = '(?:(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})';
+    public const UUID_V4 = '(?:(?i)[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})';
 
     /**
      * A 12-byte MongoDB ObjectId

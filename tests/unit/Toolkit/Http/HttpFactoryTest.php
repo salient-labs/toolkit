@@ -2,27 +2,27 @@
 
 namespace Salient\Tests\Http;
 
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\StreamInterface;
-use Psr\Http\Message\UploadedFileInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
+use Psr\Http\Message\ServerRequestInterface as PsrServerRequestInterface;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
+use Psr\Http\Message\UploadedFileInterface as PsrUploadedFileInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
-use Salient\Http\HttpFactory;
+use Salient\Http\Message\MessageFactory;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 
 /**
- * @covers \Salient\Http\HttpFactory
+ * @covers \Salient\Http\Message\MessageFactory
  */
 final class HttpFactoryTest extends TestCase
 {
-    private HttpFactory $Factory;
+    private MessageFactory $Factory;
 
     public function testCreateRequest(): void
     {
         $request = $this->Factory->createRequest('GET', 'http://example.com');
-        $this->assertInstanceOf(RequestInterface::class, $request);
+        $this->assertInstanceOf(PsrRequestInterface::class, $request);
         $this->assertSame('GET', $request->getMethod());
         $this->assertSame('http://example.com', (string) $request->getUri());
     }
@@ -30,7 +30,7 @@ final class HttpFactoryTest extends TestCase
     public function testCreateResponse(): void
     {
         $response = $this->Factory->createResponse(200, 'OK');
-        $this->assertInstanceOf(ResponseInterface::class, $response);
+        $this->assertInstanceOf(PsrResponseInterface::class, $response);
         $this->assertSame(200, $response->getStatusCode());
         $this->assertSame('OK', $response->getReasonPhrase());
     }
@@ -38,7 +38,7 @@ final class HttpFactoryTest extends TestCase
     public function testCreateServerRequest(): void
     {
         $request = $this->Factory->createServerRequest('GET', 'http://example.com', ['FOO' => 'bar']);
-        $this->assertInstanceOf(ServerRequestInterface::class, $request);
+        $this->assertInstanceOf(PsrServerRequestInterface::class, $request);
         $this->assertSame('GET', $request->getMethod());
         $this->assertSame('http://example.com', (string) $request->getUri());
         $this->assertSame(['FOO' => 'bar'], $request->getServerParams());
@@ -47,14 +47,14 @@ final class HttpFactoryTest extends TestCase
     public function testCreateStream(): void
     {
         $stream = $this->Factory->createStream('content');
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(PsrStreamInterface::class, $stream);
         $this->assertSame('content', (string) $stream);
     }
 
     public function testCreateStreamFromFile(): void
     {
         $stream = $this->Factory->createStreamFromFile(__FILE__);
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(PsrStreamInterface::class, $stream);
         $this->assertSame(File::getContents(__FILE__), (string) $stream);
     }
 
@@ -63,7 +63,7 @@ final class HttpFactoryTest extends TestCase
         $resource = File::open('php://memory', 'r+');
         File::write($resource, 'content');
         $stream = $this->Factory->createStreamFromResource($resource);
-        $this->assertInstanceOf(StreamInterface::class, $stream);
+        $this->assertInstanceOf(PsrStreamInterface::class, $stream);
         $this->assertSame('content', (string) $stream);
     }
 
@@ -76,7 +76,7 @@ final class HttpFactoryTest extends TestCase
             $clientFilename = 'filename.txt',
             $clientMediaType = 'text/plain',
         );
-        $this->assertInstanceOf(UploadedFileInterface::class, $file);
+        $this->assertInstanceOf(PsrUploadedFileInterface::class, $file);
         $this->assertSame($stream, $file->getStream());
         $this->assertSame($size, $file->getSize());
         $this->assertSame($error, $file->getError());
@@ -93,6 +93,6 @@ final class HttpFactoryTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->Factory = new HttpFactory();
+        $this->Factory = new MessageFactory();
     }
 }

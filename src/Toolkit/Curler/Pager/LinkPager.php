@@ -2,12 +2,11 @@
 
 namespace Salient\Curler\Pager;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Curler\CurlerPage;
 use Salient\Curler\CurlerPageRequest;
 use Salient\Http\HttpUtil;
@@ -52,7 +51,7 @@ final class LinkPager implements CurlerPagerInterface
      * @inheritDoc
      */
     public function getFirstRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
     ) {
@@ -72,15 +71,15 @@ final class LinkPager implements CurlerPagerInterface
      */
     public function getPage(
         $data,
-        RequestInterface $request,
-        HttpResponseInterface $response,
+        PsrRequestInterface $request,
+        ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
         ?array $query = null
     ): CurlerPageInterface {
         $data = ($this->EntitySelector)($data);
 
-        foreach ($response->getHeaderValues(HttpHeader::LINK) as $link) {
+        foreach ($response->getHeaderValues(self::HEADER_LINK) as $link) {
             /** @var array{string,rel?:string} */
             $link = HttpUtil::getParameters($link);
             if (($link['rel'] ?? null) === 'next') {

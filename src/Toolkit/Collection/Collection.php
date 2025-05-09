@@ -11,11 +11,13 @@ use IteratorAggregate;
  * @template TKey of array-key
  * @template TValue
  *
- * @implements CollectionInterface<TKey,TValue>
+ * @implements CollectionInterface<TKey,TValue,mixed[]>
  * @implements IteratorAggregate<TKey,TValue>
  */
 class Collection implements CollectionInterface, IteratorAggregate
 {
     /** @use CollectionTrait<TKey,TValue,static<TKey|int,TValue>> */
     use CollectionTrait;
+    /** @use RecursiveArrayableCollectionTrait<TKey,TValue> */
+    use RecursiveArrayableCollectionTrait;
 }

@@ -2,46 +2,55 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\HttpHeader;
-use Salient\Http\HttpHeaders;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Http\Headers;
+use Salient\Http\HttpUtil;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
+use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use RuntimeException;
 
-final class TestUtil extends AbstractUtility
+final class TestUtil extends AbstractUtility implements HasHttpHeader
 {
     /**
      * Read an HTTP message from a stream and write it to STDOUT
      *
      * @param resource $stream
-     * @param-out HttpHeaders $headers
+     * @param-out Headers $headers
      * @param-out string $body
      */
     public static function dumpHttpMessage(
         $stream,
+        bool $addNewlines = false,
         bool $isRequest = false,
         ?string &$startLine = null,
-        ?HttpHeaders &$headers = null,
+        ?Headers &$headers = null,
         ?string &$body = null
     ): void {
         $startLine = null;
-        $headers = new HttpHeaders();
+        $headers = new Headers();
         $body = '';
         $contentLength = null;
         $chunked = null;
         $bodyReceived = false;
+        $trailing = '';
         while (!@feof($stream)) {
             if ($contentLength !== null) {
-                echo $body .= File::readAll($stream, $contentLength);
+                $data = File::readAll($stream, $contentLength);
+                $body .= $data;
+                self::dump($data, $trailing, $addNewlines);
+                self::terminate($trailing, $addNewlines);
                 return;
             }
 
             if ($chunked === true) {
-                echo $line = File::readLine($stream);
+                $line = File::readLine($stream);
+                self::dump($line, $trailing, $addNewlines);
                 if ($bodyReceived) {
                     if (rtrim($line, "\r\n") === '') {
+                        self::terminate($trailing, $addNewlines);
                         return;
                     }
                     $headers = $headers->addLine($line);
@@ -57,8 +66,11 @@ final class TestUtil extends AbstractUtility
                     $bodyReceived = true;
                     continue;
                 }
-                echo $body .= File::readAll($stream, $chunkSize);
-                echo $line = File::readLine($stream);
+                $data = File::readAll($stream, $chunkSize);
+                $body .= $data;
+                self::dump($data, $trailing, $addNewlines);
+                $line = File::readLine($stream);
+                self::dump($line, $trailing, $addNewlines);
                 $line = rtrim($line, "\r\n");
                 if ($line !== '') {
                     throw new RuntimeException('Invalid chunk');
@@ -67,33 +79,65 @@ final class TestUtil extends AbstractUtility
             }
 
             if ($chunked === false) {
-                echo $body .= File::getContents($stream);
+                $data = File::getContents($stream);
+                $body .= $data;
+                self::dump($data, $trailing, $addNewlines);
                 continue;
             }
 
-            echo $line = File::readLine($stream);
+            $line = File::readLine($stream);
+            self::dump($line, $trailing, $addNewlines);
             if ($startLine === null) {
                 $startLine = $line;
                 continue;
             }
             $headers = $headers->addLine($line);
-            if ($headers->hasLastLine()) {
-                if ($headers->hasHeader(HttpHeader::TRANSFER_ENCODING)) {
+            if ($headers->hasEmptyLine()) {
+                if ($headers->hasHeader(self::HEADER_TRANSFER_ENCODING)) {
                     $encoding = Arr::last(Str::split(
                         ',',
-                        $headers->getHeaderLine(HttpHeader::TRANSFER_ENCODING)
+                        $headers->getHeaderLine(self::HEADER_TRANSFER_ENCODING)
                     ));
                     $chunked = $encoding === 'chunked';
                     continue;
                 }
-                $contentLength = $headers->getContentLength();
+                $contentLength = HttpUtil::getContentLength($headers);
                 if ($contentLength !== null) {
                     continue;
                 }
                 if ($isRequest) {
+                    self::terminate($trailing, $addNewlines);
                     return;
                 }
                 $chunked = false;
+            }
+        }
+
+        self::terminate($trailing, $addNewlines);
+    }
+
+    private static function dump(string $data, string &$trailing, bool $addNewlines): void
+    {
+        echo $data;
+
+        if ($addNewlines) {
+            $trimmed = rtrim($data);
+            if ($trimmed === '') {
+                $trailing .= $data;
+            } elseif ($trimmed !== $data) {
+                $trailing = (string) substr($data, strlen($trimmed));
+            } else {
+                $trailing = '';
+            }
+        }
+    }
+
+    private static function terminate(string $trailing, bool $addNewlines): void
+    {
+        if ($addNewlines) {
+            $count = Regex::matchAll('/(?:\r\n|\n|\r)/', $trailing);
+            if ($count < 2) {
+                echo str_repeat("\r\n", 2 - $count);
             }
         }
     }

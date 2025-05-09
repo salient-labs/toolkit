@@ -7,7 +7,7 @@ use Salient\Cli\CliOption;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
 use Salient\Contract\Core\Entity\Treeable;
-use Salient\Contract\Http\HttpRequestMethod;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Concern\TreeableTrait;
 use Salient\Core\Date\DateFormatter;
 use Salient\Core\Date\DateParser;
@@ -28,7 +28,7 @@ use DateTimeInterface;
 /**
  * Generates sync entities
  */
-class GenerateSyncEntity extends AbstractGenerateCommand
+class GenerateSyncEntity extends AbstractGenerateCommand implements HasRequestMethod
 {
     /** @var mixed[]|null */
     public ?array $Entity;
@@ -146,10 +146,10 @@ EOF)
                 ->description('The HTTP method to use when requesting a reference entity')
                 ->optionType(CliOptionType::ONE_OF)
                 ->allowedValues([
-                    HttpRequestMethod::GET,
-                    HttpRequestMethod::POST,
+                    self::METHOD_GET,
+                    self::METHOD_POST,
                 ])
-                ->defaultValue(HttpRequestMethod::GET)
+                ->defaultValue(self::METHOD_GET)
                 ->bindTo($this->HttpMethod),
             CliOption::build()
                 ->long('query')
@@ -240,7 +240,7 @@ EOF)
         $dataUri = null;
 
         if ($json !== null) {
-            $entity = $this->getJson($json, $entityUri);
+            $entity = $this->getJsonOptionData($json, $entityUri);
             if (!is_array($entity)) {
                 throw new CliInvalidArgumentsException(sprintf(
                     'not a reference entity: %s',
@@ -252,15 +252,9 @@ EOF)
             $query = Get::filter($this->HttpQuery) ?: null;
             $data = $this->HttpDataFile === null
                 ? null
-                : $this->getJson($this->HttpDataFile, $dataUri, false);
-            if ($data !== null && !is_array($data) && !is_object($data)) {
-                throw new CliInvalidArgumentsException(sprintf(
-                    'not an array or object: %s',
-                    $this->HttpDataFile,
-                ));
-            }
+                : $this->getJsonOptionData($this->HttpDataFile, $dataUri, false);
             $method = $data !== null && $endpoint !== null
-                ? HttpRequestMethod::POST
+                ? self::METHOD_POST
                 : $this->HttpMethod;
             $endpoint ??= '/' . Str::kebab($class);
 
@@ -268,11 +262,11 @@ EOF)
             $entityUri = $provider->getEndpointUrl($endpoint);
 
             switch ($method) {
-                case HttpRequestMethod::GET:
+                case self::METHOD_GET:
                     $entity = $curler->get($query);
                     break;
 
-                case HttpRequestMethod::POST:
+                case self::METHOD_POST:
                     $entity = $curler->post($data, $query);
                     break;
             }

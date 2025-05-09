@@ -2,7 +2,7 @@
 
 namespace Salient\Curler;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use OutOfRangeException;
 
@@ -33,7 +33,7 @@ class CurlerPage implements CurlerPageInterface
      */
     public function __construct(
         array $entities,
-        ?RequestInterface $nextRequest = null,
+        ?PsrRequestInterface $nextRequest = null,
         ?array $nextQuery = null,
         ?int $current = null,
         ?int $total = null

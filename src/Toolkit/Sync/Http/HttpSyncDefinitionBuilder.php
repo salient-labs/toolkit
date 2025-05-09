@@ -6,8 +6,7 @@ use Salient\Contract\Core\Pipeline\ArrayMapperInterface;
 use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\HttpRequestMethod;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
@@ -22,14 +21,14 @@ use Closure;
  * @method $this operations(array<OP::*> $value) Supported sync operations
  * @method $this path(string[]|string|null $value) Path or paths to the endpoint servicing the entity, e.g. "/v1/user" (see {@see HttpSyncDefinition::$Path})
  * @method $this query(mixed[]|null $value) Query parameters applied to the sync operation URL (see {@see HttpSyncDefinition::$Query})
- * @method $this headers(?HttpHeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
+ * @method $this headers(?HeadersInterface $value) HTTP headers applied to the sync operation request (see {@see HttpSyncDefinition::$Headers})
  * @method $this pager(?CurlerPagerInterface $value) Pagination handler for the endpoint servicing the entity (see {@see HttpSyncDefinition::$Pager})
  * @method $this alwaysPaginate(bool $value = true) Use the pager to process requests even if no pagination is required (default: false)
  * @method $this callback((callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $value) Callback applied to the definition before each sync operation (see {@see HttpSyncDefinition::$Callback})
  * @method $this conformity(HttpSyncDefinition::CONFORMITY_* $value) Conformity level of data returned by the provider for this entity (see {@see AbstractSyncDefinition::$Conformity})
  * @method $this filterPolicy(FilterPolicy::*|null $value) Action to take when filters are not claimed by the provider (see {@see AbstractSyncDefinition::$FilterPolicy})
  * @method $this expiry(int<-1,max>|null $value) Seconds before cached responses expire (see {@see HttpSyncDefinition::$Expiry})
- * @method $this methodMap(array<OP::*,HttpRequestMethod::*> $value) Array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
+ * @method $this methodMap(array<OP::*,HttpSyncDefinition::METHOD_*> $value) Array that maps sync operations to HTTP request methods (see {@see HttpSyncDefinition::$MethodMap})
  * @method $this curlerCallback((callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $value) Callback applied to the Curler instance created to perform each sync operation (see {@see HttpSyncDefinition::$CurlerCallback})
  * @method $this syncOneEntityPerRequest(bool $value = true) Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request (default: false)
  * @method $this overrides(array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $value) Array that maps sync operations to closures that override other implementations (see {@see AbstractSyncDefinition::$Overrides})

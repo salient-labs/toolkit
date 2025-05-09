@@ -5,7 +5,7 @@ namespace Salient\Container;
 use Dice\Dice;
 use Dice\DiceException;
 use Psr\Container\ContainerInterface as PsrContainerInterface;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Salient\Cache\CacheStore;
 use Salient\Console\Console;
 use Salient\Console\ConsoleLogger;
@@ -58,7 +58,7 @@ class Container implements ContainerInterface, FacadeAwareInterface
         CacheInterface::class => [CacheStore::class, self::LIFETIME_SINGLETON],
         EventDispatcherInterface::class => [EventDispatcher::class, self::LIFETIME_SINGLETON],
         ConsoleInterface::class => [Console::class, self::LIFETIME_SINGLETON],
-        LoggerInterface::class => [ConsoleLogger::class, self::LIFETIME_INHERIT],
+        PsrLoggerInterface::class => [ConsoleLogger::class, self::LIFETIME_INHERIT],
         SyncStoreInterface::class => [SyncStore::class, self::LIFETIME_SINGLETON],
     ];
 

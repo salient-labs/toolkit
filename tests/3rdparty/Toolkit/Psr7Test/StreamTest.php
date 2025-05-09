@@ -3,22 +3,22 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\StreamIntegrationTest;
-use Psr\Http\Message\StreamInterface;
-use Salient\Http\HttpStream;
+use Psr\Http\Message\StreamInterface as PsrStreamInterface;
+use Salient\Http\Message\Stream;
 
 /**
- * @covers \Salient\Http\HttpStream
+ * @covers \Salient\Http\Message\Stream
  */
 class StreamTest extends StreamIntegrationTest
 {
     public function createStream($data)
     {
-        if ($data instanceof StreamInterface) {
+        if ($data instanceof PsrStreamInterface) {
             return $data;
         }
         if (is_string($data)) {
-            return HttpStream::fromString($data);
+            return Stream::fromString($data);
         }
-        return new HttpStream($data);
+        return new Stream($data);
     }
 }

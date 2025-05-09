@@ -2,4 +2,13 @@
 
 namespace Salient\Contract\Http\Exception;
 
-interface InvalidHeaderException extends HttpException {}
+/**
+ * @api
+ */
+interface InvalidHeaderException extends HttpException
+{
+    /**
+     * Get the status code to return if a response is derived from the exception
+     */
+    public function getStatusCode(): ?int;
+}

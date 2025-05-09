@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Closure;
 
 /**
@@ -15,7 +15,7 @@ interface CurlerMiddlewareInterface
      * Act on a request and generate a response, optionally forwarding the
      * request to the next handler and acting on its response
      *
-     * @param Closure(RequestInterface): HttpResponseInterface $next
+     * @param Closure(PsrRequestInterface): ResponseInterface $next
      */
-    public function __invoke(RequestInterface $request, Closure $next, CurlerInterface $curler): HttpResponseInterface;
+    public function __invoke(PsrRequestInterface $request, Closure $next, CurlerInterface $curler): ResponseInterface;
 }

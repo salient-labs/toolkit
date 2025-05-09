@@ -2,7 +2,8 @@
 
 namespace Salient\Sync\Support;
 
-use Salient\Collection\Collection;
+use Salient\Collection\ArrayableCollectionTrait;
+use Salient\Collection\ListCollectionTrait;
 use Salient\Contract\Console\ConsoleInterface;
 use Salient\Contract\Sync\ErrorType;
 use Salient\Contract\Sync\SyncErrorCollectionInterface;
@@ -12,12 +13,18 @@ use Salient\Core\Facade\Console;
 use Salient\Utility\Arr;
 use Salient\Utility\Inflect;
 use Salient\Utility\Reflect;
+use IteratorAggregate;
 
 /**
- * @extends Collection<int,SyncErrorInterface>
+ * @implements IteratorAggregate<int,SyncErrorInterface>
  */
-final class SyncErrorCollection extends Collection implements SyncErrorCollectionInterface
+final class SyncErrorCollection implements SyncErrorCollectionInterface, IteratorAggregate
 {
+    /** @use ListCollectionTrait<int,SyncErrorInterface,static> */
+    use ListCollectionTrait;
+    /** @use ArrayableCollectionTrait<int,SyncErrorInterface> */
+    use ArrayableCollectionTrait;
+
     private int $ErrorCount = 0;
     private int $WarningCount = 0;
 
@@ -155,6 +162,21 @@ final class SyncErrorCollection extends Collection implements SyncErrorCollectio
     public function jsonSerialize(): array
     {
         return $this->getSummary();
+    }
+
+    /**
+     * @param SyncErrorInterface $a
+     * @param SyncErrorInterface $b
+     */
+    protected function compareItems($a, $b): int
+    {
+        if ($b instanceof $a) {
+            return $a->compare($a, $b);
+        }
+        if ($a instanceof $b) {
+            return $b->compare($a, $b);
+        }
+        return $a <=> $b;
     }
 
     /**

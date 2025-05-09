@@ -6,6 +6,6 @@ use Salient\Contract\Http\Exception\HttpException as HttpExceptionInterface;
 use Salient\Core\Exception\Exception;
 
 /**
- * Base class for HTTP exceptions
+ * @internal
  */
 class HttpException extends Exception implements HttpExceptionInterface {}

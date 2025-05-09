@@ -5,7 +5,7 @@ namespace Salient\Tests\Sync\Provider;
 use Salient\Contract\Container\ContainerInterface;
 use Salient\Contract\Container\SingletonInterface;
 use Salient\Contract\Curler\CurlerInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Sync\SyncContextInterface;
 use Salient\Contract\Sync\SyncOperation as OP;
 use Salient\Core\Facade\Console;
@@ -126,7 +126,7 @@ class JsonPlaceholderApi extends HttpSyncProvider implements
         return Env::get('JSON_PLACEHOLDER_BASE_URL', 'http://localhost:3001');
     }
 
-    protected function getHeaders(string $path): ?HttpHeadersInterface
+    protected function getHeaders(string $path): ?HeadersInterface
     {
         return null;
     }

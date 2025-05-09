@@ -2,10 +2,10 @@
 
 namespace Salient\Contract\Container\Exception;
 
-use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerExceptionInterface as PsrContainerExceptionInterface;
 use Throwable;
 
 /**
  * @api
  */
-interface ContainerException extends ContainerExceptionInterface, Throwable {}
+interface ContainerException extends PsrContainerExceptionInterface, Throwable {}

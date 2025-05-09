@@ -2,7 +2,7 @@
 
 namespace Salient\Contract\Console;
 
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Salient\Contract\Console\Target\StreamTargetInterface;
 use Salient\Contract\Console\Target\TargetInterface;
 use Salient\Contract\Core\Instantiable;
@@ -24,7 +24,7 @@ interface ConsoleInterface extends
     /**
      * Get a PSR-3 logger backed by the console
      */
-    public function logger(): LoggerInterface;
+    public function logger(): PsrLoggerInterface;
 
     /**
      * Register a target to receive output with each of the given message levels

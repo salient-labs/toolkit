@@ -2,7 +2,6 @@
 
 namespace Salient\Collection;
 
-use Salient\Contract\Collection\CollectionInterface;
 use Salient\Contract\Core\Arrayable;
 
 /**
@@ -11,14 +10,12 @@ use Salient\Contract\Core\Arrayable;
  * @template TKey of int
  * @template TValue
  * @template TKeyless
- *
- * @phpstan-require-implements CollectionInterface
  */
 trait ListCollectionTrait
 {
     /** @use CollectionTrait<int,TValue,TKeyless> */
     use CollectionTrait {
-        getItems as private doGetItems;
+        getItems as doGetItems;
         replaceItems as private doReplaceItems;
     }
 
@@ -50,17 +47,6 @@ trait ListCollectionTrait
     }
 
     /**
-     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
-     * @return iterable<TValue>
-     */
-    protected function getItems($items): iterable
-    {
-        foreach ($this->doGetItems($items) as $value) {
-            yield $value;
-        }
-    }
-
-    /**
      * @param array<int,TValue> $items
      * @return static
      */
@@ -70,5 +56,16 @@ trait ListCollectionTrait
             $items = array_values($items);
         }
         return $this->doReplaceItems($items, $trustKeys, $getClone);
+    }
+
+    /**
+     * @param Arrayable<array-key,TValue>|iterable<array-key,TValue> $items
+     * @return iterable<TValue>
+     */
+    private function getItems($items): iterable
+    {
+        foreach ($this->doGetItems($items) as $value) {
+            yield $value;
+        }
     }
 }

@@ -2,20 +2,22 @@
 
 namespace Salient\Contract\Curler;
 
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\RequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Client\ClientInterface as PsrClientInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Psr\Http\Message\ResponseInterface as PsrResponseInterface;
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Cache\CacheInterface;
 use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Http\AccessTokenInterface;
-use Salient\Contract\Http\FormDataFlag;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpHeaderGroup;
-use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\HttpRequestHandlerInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\CredentialInterface;
+use Salient\Contract\Http\HasFormDataFlag;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Contract\Http\HasHttpHeaders;
+use Salient\Contract\Http\HasInnerHeaders;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Contract\Http\HasRequestMethod;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Http\UriInterface;
 use Closure;
 use InvalidArgumentException;
@@ -26,7 +28,15 @@ use Stringable;
 /**
  * @api
  */
-interface CurlerInterface extends ClientInterface, Immutable
+interface CurlerInterface extends
+    PsrClientInterface,
+    HasInnerHeaders,
+    Immutable,
+    HasFormDataFlag,
+    HasHttpHeader,
+    HasHttpHeaders,
+    HasMediaType,
+    HasRequestMethod
 {
     /**
      * Get the endpoint URI applied to the instance
@@ -47,18 +57,18 @@ interface CurlerInterface extends ClientInterface, Immutable
      *
      * @return static
      */
-    public function withRequest(RequestInterface $request);
+    public function withRequest(PsrRequestInterface $request);
 
     /**
      * Get the last request sent to the endpoint or passed to middleware
      */
-    public function getLastRequest(): ?RequestInterface;
+    public function getLastRequest(): ?PsrRequestInterface;
 
     /**
      * Get the last response received from the endpoint or returned by
      * middleware
      */
-    public function getLastResponse(): ?HttpResponseInterface;
+    public function getLastResponse(): ?ResponseInterface;
 
     /**
      * Check if the last response contains JSON-encoded data
@@ -75,7 +85,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      *
      * @param mixed[]|null $query
      */
-    public function head(?array $query = null): HttpHeadersInterface;
+    public function head(?array $query = null): HeadersInterface;
 
     /**
      * Send a GET request to the endpoint and return the body of the response
@@ -226,11 +236,11 @@ interface CurlerInterface extends ClientInterface, Immutable
      * Use the form data flags and date formatter applied to the instance to
      * replace the query string of a request or URI
      *
-     * @template T of RequestInterface|PsrUriInterface|Stringable|string
+     * @template T of PsrRequestInterface|PsrUriInterface|Stringable|string
      *
      * @param T $value
      * @param mixed[] $query
-     * @return (T is RequestInterface|PsrUriInterface ? T : UriInterface)
+     * @return (T is PsrRequestInterface|PsrUriInterface ? T : UriInterface)
      */
     public function replaceQuery($value, array $query);
 
@@ -239,12 +249,12 @@ interface CurlerInterface extends ClientInterface, Immutable
     /**
      * Get request headers
      */
-    public function getHttpHeaders(): HttpHeadersInterface;
+    public function getInnerHeaders(): HeadersInterface;
 
     /**
      * Get request headers that are not considered sensitive
      */
-    public function getPublicHttpHeaders(): HttpHeadersInterface;
+    public function getPublicHeaders(): HeadersInterface;
 
     /**
      * Get an array that maps request header names to values
@@ -269,6 +279,14 @@ interface CurlerInterface extends ClientInterface, Immutable
      * Get the value of a request header as a string of comma-delimited values
      */
     public function getHeaderLine(string $name): string;
+
+    /**
+     * Get an array that maps lowercase request header names to comma-separated
+     * values
+     *
+     * @return array<string,string>
+     */
+    public function getHeaderLines(): array;
 
     /**
      * Get the value of a request header as a list of values, splitting any
@@ -324,18 +342,18 @@ interface CurlerInterface extends ClientInterface, Immutable
     public function withoutHeader(string $name);
 
     /**
-     * Check if the instance has an access token
+     * Check if the instance has a credential
      */
-    public function hasAccessToken(): bool;
+    public function hasCredential(): bool;
 
     /**
-     * Get an instance that applies an access token to request headers
+     * Get an instance that applies a credential to request headers
      *
      * @return static
      */
-    public function withAccessToken(
-        ?AccessTokenInterface $token,
-        string $headerName = HttpHeader::AUTHORIZATION
+    public function withCredential(
+        ?CredentialInterface $credential,
+        string $headerName = CurlerInterface::HEADER_AUTHORIZATION
     );
 
     /**
@@ -346,8 +364,8 @@ interface CurlerInterface extends ClientInterface, Immutable
     /**
      * Get an instance that treats a header as sensitive
      *
-     * Headers in {@see HttpHeaderGroup::SENSITIVE} are considered sensitive by
-     * default.
+     * Headers in {@see CurlerInterface::HEADERS_SENSITIVE} are considered
+     * sensitive by default.
      *
      * @return static
      */
@@ -442,7 +460,7 @@ interface CurlerInterface extends ClientInterface, Immutable
     /**
      * Get form data flags applied to the instance
      *
-     * @return int-mask-of<FormDataFlag::*>
+     * @return int-mask-of<CurlerInterface::DATA_*>
      */
     public function getFormDataFlags(): int;
 
@@ -452,10 +470,10 @@ interface CurlerInterface extends ClientInterface, Immutable
      * Form data flags are used to encode data for query strings and message
      * bodies.
      *
-     * {@see FormDataFlag::PRESERVE_NUMERIC_KEYS} and
-     * {@see FormDataFlag::PRESERVE_STRING_KEYS} are applied by default.
+     * {@see CurlerInterface::DATA_PRESERVE_NUMERIC_KEYS} and
+     * {@see CurlerInterface::DATA_PRESERVE_STRING_KEYS} are applied by default.
      *
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<CurlerInterface::DATA_*> $flags
      * @return static
      */
     public function withFormDataFlags(int $flags);
@@ -475,7 +493,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      * Get an instance with the given middleware applied to the request handler
      * stack
      *
-     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure(RequestInterface $request, Closure(RequestInterface): HttpResponseInterface $next, CurlerInterface $curler): ResponseInterface $middleware
+     * @param CurlerMiddlewareInterface|Closure(PsrRequestInterface $request, Closure(PsrRequestInterface): ResponseInterface $next, CurlerInterface $curler): PsrResponseInterface $middleware
      * @return static
      */
     public function withMiddleware($middleware, ?string $name = null);
@@ -483,7 +501,7 @@ interface CurlerInterface extends ClientInterface, Immutable
     /**
      * Get an instance where the given middleware is not applied to requests
      *
-     * @param CurlerMiddlewareInterface|HttpRequestHandlerInterface|Closure|string $middleware
+     * @param CurlerMiddlewareInterface|Closure|string $middleware
      * @return static
      */
     public function withoutMiddleware($middleware);
@@ -576,7 +594,7 @@ interface CurlerInterface extends ClientInterface, Immutable
      * The callback's return value is hashed and combined with request method
      * and URI to create a response cache key.
      *
-     * @param (callable(RequestInterface $request, CurlerInterface $curler): (string[]|string))|null $callback
+     * @param (callable(PsrRequestInterface $request, CurlerInterface $curler): (string[]|string))|null $callback
      * @return static
      */
     public function withCacheKeyCallback(?callable $callback);

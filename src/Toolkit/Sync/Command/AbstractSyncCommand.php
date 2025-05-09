@@ -2,7 +2,6 @@
 
 namespace Salient\Sync\Command;
 
-use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliCommand;
 use Salient\Cli\CliOption;
 use Salient\Cli\CliOptionBuilder;
@@ -14,11 +13,8 @@ use Salient\Core\Facade\Console;
 use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Sync\Reflection\SyncProviderReflection;
 use Salient\Utility\Arr;
-use Salient\Utility\File;
 use Salient\Utility\Get;
-use Salient\Utility\Json;
 use Salient\Utility\Str;
-use JsonException;
 
 /**
  * @internal
@@ -159,36 +155,5 @@ abstract class AbstractSyncCommand extends CliCommand
         if ($this->RecordHar) {
             $this->App->recordHar();
         }
-    }
-
-    /**
-     * @return mixed[]|object
-     */
-    protected function getJson(string $filename, bool $associative = true)
-    {
-        $json = File::getContents($filename === '-' ? 'php://stdin' : $filename);
-
-        try {
-            $json = $associative
-                ? Json::objectAsArray($json)
-                : Json::parse($json);
-        } catch (JsonException $ex) {
-            $message = $ex->getMessage();
-            throw new CliInvalidArgumentsException(
-                $filename === '-'
-                    ? sprintf('invalid JSON: %s', $message)
-                    : sprintf("invalid JSON in '%s': %s", $filename, $message)
-            );
-        }
-
-        if (!is_array($json) && ($associative || !is_object($json))) {
-            throw new CliInvalidArgumentsException(
-                $filename === '-'
-                    ? 'invalid payload'
-                    : sprintf('invalid payload: %s', $filename)
-            );
-        }
-
-        return $json;
     }
 }

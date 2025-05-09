@@ -4,7 +4,7 @@ namespace Salient\Http\OAuth2;
 
 use Salient\Contract\Core\Entity\Readable;
 use Salient\Contract\Core\Immutable;
-use Salient\Contract\Http\AccessTokenInterface;
+use Salient\Contract\Http\CredentialInterface;
 use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
 use Salient\Utility\Date;
 use DateTimeImmutable;
@@ -20,7 +20,7 @@ use InvalidArgumentException;
  * @property-read string[] $Scopes
  * @property-read array<string,mixed> $Claims
  */
-final class AccessToken implements AccessTokenInterface, Immutable, Readable
+final class AccessToken implements CredentialInterface, Immutable, Readable
 {
     use ReadableProtectedPropertiesTrait;
 
@@ -67,16 +67,16 @@ final class AccessToken implements AccessTokenInterface, Immutable, Readable
     /**
      * @inheritDoc
      */
-    public function getToken(): string
+    public function getAuthenticationScheme(): string
     {
-        return $this->Token;
+        return $this->Type;
     }
 
     /**
      * @inheritDoc
      */
-    public function getTokenType(): string
+    public function getCredential(): string
     {
-        return $this->Type;
+        return $this->Token;
     }
 }

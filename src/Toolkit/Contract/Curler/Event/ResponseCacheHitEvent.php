@@ -2,8 +2,8 @@
 
 namespace Salient\Contract\Curler\Event;
 
-use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 
 /**
  * Dispatched when a request is resolved from the response cache
@@ -15,10 +15,10 @@ interface ResponseCacheHitEvent extends CurlerEvent
     /**
      * Get the request resolved from the response cache
      */
-    public function getRequest(): RequestInterface;
+    public function getRequest(): PsrRequestInterface;
 
     /**
      * Get the response originally received from the endpoint
      */
-    public function getResponse(): HttpResponseInterface;
+    public function getResponse(): ResponseInterface;
 }

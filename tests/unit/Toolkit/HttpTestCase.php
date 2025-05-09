@@ -2,17 +2,23 @@
 
 namespace Salient\Tests;
 
-use Salient\Contract\Http\HttpHeader as Header;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Contract\HasFileDescriptor;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
-use Salient\Http\HttpHeaders;
+use Salient\Http\Headers;
 use Salient\Utility\File;
 use Salient\Utility\Str;
 use RuntimeException;
 
-abstract class HttpTestCase extends TestCase implements HasFileDescriptor
+abstract class HttpTestCase extends TestCase implements
+    HasFileDescriptor,
+    HasHttpHeader,
+    HasMediaType,
+    HasRequestMethod
 {
     protected const HTTP_SERVER_HOST = 'localhost';
     protected const HTTP_SERVER_PORT = '3007';
@@ -20,9 +26,9 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
     protected const HTTP_SERVER_URI = 'http://' . self::HTTP_SERVER_AUTHORITY;
 
     protected const HTTP_HEADER_IGNORE_LIST = [
-        Header::ACCEPT_ENCODING,
-        Header::CONNECTION,
-        Header::USER_AGENT,
+        HttpTestCase::HEADER_ACCEPT_ENCODING,
+        HttpTestCase::HEADER_CONNECTION,
+        HttpTestCase::HEADER_USER_AGENT,
     ];
 
     private string $ResponseDir;
@@ -71,7 +77,7 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
         );
 
         $actual = explode("\r\n\r\n", $actual, 2);
-        $headers = HttpHeaders::from($actual[0])->except($ignore)->sort();
+        $headers = Headers::from($actual[0])->except($ignore)->sort();
         $actual[0] = implode("\r\n", [
             explode("\r\n", $actual[0], 2)[0],
             ...$headers->getLines(),
@@ -92,23 +98,23 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
     }
 
     /**
-     * @param HttpResponseInterface|string ...$responses
+     * @param ResponseInterface[] $responses
      */
-    protected function startHttpServer(...$responses): Process
+    protected function startHttpServer(array $responses = [], bool $addNewlines = false): Process
     {
         $this->stopHttpServer();
 
-        if ($responses === [] || count($responses) > 1) {
+        if (!$responses) {
             $args[] = '--';
-            if ($responses !== []) {
-                $dir = File::createTempDir();
-                foreach ($responses as $i => $response) {
-                    $file = sprintf('%s/%d.http', $dir, $i);
-                    File::writeContents($file, $this->filterResponse($response));
-                    $args[] = $file;
-                }
-                $this->ResponseDir = $dir;
+        } elseif (count($responses) > 1) {
+            $args[] = '--';
+            $dir = File::createTempDir();
+            foreach ($responses as $i => $response) {
+                $file = sprintf('%s/%d.http', $dir, $i);
+                File::writeContents($file, $this->filterResponse($response));
+                $args[] = $file;
             }
+            $this->ResponseDir = $dir;
         } else {
             $input = $this->filterResponse($responses[0]);
         }
@@ -116,6 +122,7 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
         $process = new Process([
             ...self::PHP_COMMAND,
             __DIR__ . '/http-server.php',
+            ...($addNewlines ? ['--add-newlines'] : []),
             self::HTTP_SERVER_AUTHORITY,
             '300',
             ...($args ?? []),
@@ -163,17 +170,13 @@ abstract class HttpTestCase extends TestCase implements HasFileDescriptor
         }
     }
 
-    /**
-     * @param HttpResponseInterface|string $response
-     */
-    private function filterResponse($response): string
+    private function filterResponse(ResponseInterface $response): string
     {
         if (
-            $response instanceof HttpResponseInterface
-            && !$response->hasHeader(Header::CONTENT_LENGTH)
+            !$response->hasHeader(self::HEADER_CONTENT_LENGTH)
             && ($size = $response->getBody()->getSize()) !== null
         ) {
-            $response = $response->withHeader(Header::CONTENT_LENGTH, (string) $size);
+            $response = $response->withHeader(self::HEADER_CONTENT_LENGTH, (string) $size);
         }
 
         return (string) $response;

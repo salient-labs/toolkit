@@ -4,9 +4,10 @@ namespace Salient\Sync\Command;
 
 use Salient\Cli\Exception\CliInvalidArgumentsException;
 use Salient\Cli\CliOption;
+use Salient\Cli\CliUtil;
 use Salient\Contract\Cli\CliOptionType;
 use Salient\Contract\Cli\CliOptionValueType;
-use Salient\Contract\Http\HttpRequestMethod as Method;
+use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Facade\Console;
 use Salient\Sync\Http\HttpSyncProvider;
 use Salient\Utility\Arr;
@@ -20,7 +21,7 @@ use LogicException;
 /**
  * Sends HTTP requests to HTTP sync providers
  */
-final class SendHttpSyncProviderRequest extends AbstractSyncCommand
+final class SendHttpSyncProviderRequest extends AbstractSyncCommand implements HasRequestMethod
 {
     private string $ProviderBasename = '';
     /** @var class-string<HttpSyncProvider> */
@@ -34,7 +35,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
 
     // --
 
-    /** @var Method::HEAD|Method::GET|Method::POST|Method::PUT|Method::DELETE|Method::PATCH */
+    /** @var self::METHOD_HEAD|self::METHOD_GET|self::METHOD_POST|self::METHOD_PUT|self::METHOD_DELETE|self::METHOD_PATCH */
     private string $Method;
 
     public function getDescription(): string
@@ -81,7 +82,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
                 ->bindTo($this->Query),
         ];
 
-        if (!($method === Method::HEAD || $method === Method::GET)) {
+        if (!($method === self::METHOD_HEAD || $method === self::METHOD_GET)) {
             yield CliOption::build()
                 ->long('data')
                 ->short('J')
@@ -92,7 +93,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
                 ->bindTo($this->Data);
         }
 
-        if ($method === Method::GET || $method === Method::POST) {
+        if ($method === self::METHOD_GET || $method === self::METHOD_POST) {
             yield from [
                 CliOption::build()
                     ->long('paginate')
@@ -149,7 +150,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
         }
 
         $data = $this->Data !== null
-            ? $this->getJson($this->Data, false)
+            ? CliUtil::getJson($this->Data, false)
             : null;
 
         $curler = $provider->getCurler($this->Endpoint);
@@ -161,31 +162,31 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
         }
 
         switch ($this->getMethod()) {
-            case Method::HEAD:
+            case self::METHOD_HEAD:
                 $result = $curler->head($query);
                 break;
 
-            case Method::GET:
+            case self::METHOD_GET:
                 $result = $this->Paginate
                     ? $curler->getP($query)
                     : $curler->get($query);
                 break;
 
-            case Method::POST:
+            case self::METHOD_POST:
                 $result = $this->Paginate
                     ? $curler->postP($data, $query)
                     : $curler->post($data, $query);
                 break;
 
-            case Method::PUT:
+            case self::METHOD_PUT:
                 $result = $curler->put($data, $query);
                 break;
 
-            case Method::DELETE:
+            case self::METHOD_DELETE:
                 $result = $curler->delete($data, $query);
                 break;
 
-            case Method::PATCH:
+            case self::METHOD_PATCH:
                 $result = $curler->patch($data, $query);
                 break;
         }
@@ -227,7 +228,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
     }
 
     /**
-     * @return Method::HEAD|Method::GET|Method::POST|Method::PUT|Method::DELETE|Method::PATCH
+     * @return self::METHOD_HEAD|self::METHOD_GET|self::METHOD_POST|self::METHOD_PUT|self::METHOD_DELETE|self::METHOD_PATCH
      */
     private function getMethod(): string
     {
@@ -237,12 +238,12 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand
 
         $method = Str::upper((string) Arr::last($this->getNameParts()));
         if (!(
-            $method === Method::HEAD
-            || $method === Method::GET
-            || $method === Method::POST
-            || $method === Method::PUT
-            || $method === Method::DELETE
-            || $method === Method::PATCH
+            $method === self::METHOD_HEAD
+            || $method === self::METHOD_GET
+            || $method === self::METHOD_POST
+            || $method === self::METHOD_PUT
+            || $method === self::METHOD_DELETE
+            || $method === self::METHOD_PATCH
         )) {
             throw new LogicException(sprintf('Invalid method: %s', $method));
         }

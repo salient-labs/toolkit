@@ -2,14 +2,13 @@
 
 namespace Salient\Curler\Pager;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeader;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Curler\CurlerPage;
-use Salient\Http\HttpHeaders;
+use Salient\Http\HttpUtil;
 use Salient\Http\Uri;
 use Salient\Utility\Exception\InvalidArgumentTypeException;
 
@@ -34,15 +33,15 @@ final class ODataPager implements CurlerPagerInterface
      * @inheritDoc
      */
     public function getFirstRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
-    ): RequestInterface {
+    ): PsrRequestInterface {
         if ($this->MaxPageSize === null) {
             return $request;
         }
 
-        $prefs = HttpHeaders::from($request)->getPreferences();
+        $prefs = HttpUtil::getPreferences($request);
         if (
             isset($prefs['odata.maxpagesize'])
             && $prefs['odata.maxpagesize']['value'] === (string) $this->MaxPageSize
@@ -53,8 +52,8 @@ final class ODataPager implements CurlerPagerInterface
         $prefs['odata.maxpagesize']['value'] = (string) $this->MaxPageSize;
 
         return $request->withHeader(
-            HttpHeader::PREFER,
-            HttpHeaders::mergePreferences($prefs),
+            self::HEADER_PREFER,
+            HttpUtil::mergePreferences($prefs),
         );
     }
 
@@ -63,8 +62,8 @@ final class ODataPager implements CurlerPagerInterface
      */
     public function getPage(
         $data,
-        RequestInterface $request,
-        HttpResponseInterface $response,
+        PsrRequestInterface $request,
+        ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
         ?array $query = null
@@ -73,7 +72,7 @@ final class ODataPager implements CurlerPagerInterface
             throw new InvalidArgumentTypeException(1, 'data', 'mixed[]', $data);
         }
         /** @var array{'@odata.nextLink'?:string,'@nextLink'?:string,value:list<mixed>,...} $data */
-        if ($response->getHeaderLine(HttpHeader::ODATA_VERSION) === '4.0') {
+        if ($response->getHeaderLine(self::HEADER_ODATA_VERSION) === '4.0') {
             $nextLink = $data['@odata.nextLink'] ?? null;
         } else {
             $nextLink = $data['@nextLink'] ?? $data['@odata.nextLink'] ?? null;

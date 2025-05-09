@@ -3,18 +3,18 @@
 namespace Salient\Tests\Psr7Test;
 
 use Http\Psr7Test\ResponseIntegrationTest;
-use Salient\Http\HttpResponse;
+use Salient\Http\Message\Response;
 
 /**
- * @covers \Salient\Http\HttpResponse
- * @covers \Salient\Http\AbstractHttpMessage
- * @covers \Salient\Http\HasHttpHeaders
- * @covers \Salient\Http\HttpHeaders
+ * @covers \Salient\Http\Message\Response
+ * @covers \Salient\Http\Message\AbstractMessage
+ * @covers \Salient\Http\HasInnerHeadersTrait
+ * @covers \Salient\Http\Headers
  */
 class ResponseTest extends ResponseIntegrationTest
 {
     public function createSubject()
     {
-        return new HttpResponse();
+        return new Response();
     }
 }

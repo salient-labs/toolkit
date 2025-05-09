@@ -3,12 +3,12 @@
 namespace Salient\Tests\Http;
 
 use Salient\Contract\Http\Exception\StreamEncapsulationException;
-use Salient\Contract\Http\FormDataFlag;
 use Salient\Core\Date\DateFormatter;
-use Salient\Http\Exception\StreamDetachedException;
-use Salient\Http\Exception\StreamInvalidRequestException;
-use Salient\Http\HttpMultipartStreamPart;
-use Salient\Http\HttpStream;
+use Salient\Http\Exception\InvalidStreamRequestException;
+use Salient\Http\Exception\StreamClosedException;
+use Salient\Http\Message\Stream;
+use Salient\Http\Message\StreamPart;
+use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use Salient\Utility\File;
 use Salient\Utility\Format;
@@ -21,7 +21,8 @@ use Throwable;
 /**
  * Some tests are derived from similar guzzlehttp/psr7 tests
  *
- * @covers \Salient\Http\HttpStream
+ * @covers \Salient\Http\Message\Stream
+ * @covers \Salient\Http\HttpUtil
  */
 final class HttpStreamTest extends TestCase
 {
@@ -35,7 +36,7 @@ final class HttpStreamTest extends TestCase
             'Argument #1 ($stream) must be of type resource (stream), string given'
         );
         // @phpstan-ignore argument.type
-        new HttpStream(__METHOD__);
+        new Stream(__METHOD__);
     }
 
     /**
@@ -67,7 +68,7 @@ final class HttpStreamTest extends TestCase
 
     public function testFromString(): void
     {
-        $stream = HttpStream::fromString('foo');
+        $stream = Stream::fromString('foo');
         $this->assertSame(3, $stream->getSize());
         $this->assertSame('foo', (string) $stream);
         $stream->close();
@@ -77,25 +78,25 @@ final class HttpStreamTest extends TestCase
      * @dataProvider fromDataProvider
      *
      * @param mixed[]|object $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<Stream::DATA_*> $flags
      */
     public function testFromData(
         ?string $expected,
         $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = Stream::DATA_PRESERVE_NUMERIC_KEYS | Stream::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatter $dateFormatter = null,
         bool $asJson = false
     ): void {
         if ($expected === null) {
             $this->expectException(StreamEncapsulationException::class);
         }
-        $stream = HttpStream::fromData($data, $flags, $dateFormatter, $asJson, 'boundary');
+        $stream = Stream::fromData($data, $flags, $dateFormatter, $asJson, 'boundary');
         $this->assertSame($expected, (string) $stream);
         $stream->close();
     }
 
     /**
-     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<FormDataFlag::*>,3?:DateFormatter|null,4?:bool}>
+     * @return array<array{string|null,mixed[]|object,2?:int-mask-of<Stream::*>,3?:DateFormatter|null,4?:bool}>
      */
     public static function fromDataProvider(): array
     {
@@ -111,7 +112,7 @@ final class HttpStreamTest extends TestCase
 
         $file = self::getFixturesPath(__CLASS__) . '/profile.gif';
         $multipartData = $data;
-        $multipartData['fields']['profile_image'] = HttpMultipartStreamPart::fromFile($file);
+        $multipartData['fields']['profile_image'] = StreamPart::fromFile($file);
         $content = File::getContents($file);
         $multipartBody =
             "--boundary\r\n"
@@ -158,14 +159,14 @@ final class HttpStreamTest extends TestCase
             [
                 '{"user_id":7654,"fields":{"email":"JWilliams432@gmail.com","groups":["staff","editor"],"created":"2021-10-02T17:23:14+10:00"}}',
                 $data,
-                FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+                Stream::DATA_PRESERVE_NUMERIC_KEYS | Stream::DATA_PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],
             [
                 null,
                 $multipartData,
-                FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+                Stream::DATA_PRESERVE_NUMERIC_KEYS | Stream::DATA_PRESERVE_STRING_KEYS,
                 null,
                 true,
             ],
@@ -219,7 +220,7 @@ final class HttpStreamTest extends TestCase
     {
         $size = File::size(__FILE__);
         $handle = File::open(__FILE__, 'r');
-        $stream = new HttpStream($handle);
+        $stream = new Stream($handle);
         $this->assertSame($size, $stream->getSize());
         $this->assertSame($size, $stream->getSize());
         $stream->close();
@@ -266,7 +267,7 @@ final class HttpStreamTest extends TestCase
         $this->assertDetached($stream);
     }
 
-    private function assertDetached(HttpStream $stream): void
+    private function assertDetached(Stream $stream): void
     {
         $this->assertFalse($stream->isReadable());
         $this->assertFalse($stream->isWritable());
@@ -275,9 +276,8 @@ final class HttpStreamTest extends TestCase
         $throws = function (callable $fn): void {
             try {
                 $fn();
-            } catch (Throwable $e) {
-                $this->assertStringContainsString('Stream is detached', $e->getMessage());
-
+            } catch (Throwable $ex) {
+                $this->assertStringContainsString('Stream is closed or detached', $ex->getMessage());
                 return;
             }
 
@@ -298,9 +298,9 @@ final class HttpStreamTest extends TestCase
         ] as $method => $callback) {
             $this->assertCallbackThrowsException(
                 $callback,
-                StreamDetachedException::class,
-                'Stream is detached',
-                sprintf('%s::%s() should throw an exception after stream is detached', HttpStream::class, $method)
+                StreamClosedException::class,
+                'Stream is closed or detached',
+                sprintf('%s::%s() should throw an exception after stream is detached', Stream::class, $method)
             );
         }
     }
@@ -404,7 +404,7 @@ final class HttpStreamTest extends TestCase
     {
         $handle = gzopen('php://temp', $mode);
         $this->assertIsResource($handle);
-        $stream = new HttpStream($handle);
+        $stream = new Stream($handle);
         $this->assertSame($readable, $stream->isReadable());
         $this->assertSame($writable, $stream->isWritable());
         $stream->close();
@@ -427,11 +427,11 @@ final class HttpStreamTest extends TestCase
         $dir = File::createTempDir();
         $file = $dir . '/file';
         $handle = File::open($file, 'w');
-        $stream = new HttpStream($handle);
+        $stream = new Stream($handle);
         $stream->write('foo');
         $stream->seek(0);
-        $this->expectException(StreamInvalidRequestException::class);
-        $this->expectExceptionMessage('Stream is not open for reading');
+        $this->expectException(InvalidStreamRequestException::class);
+        $this->expectExceptionMessage('Stream is not readable');
         try {
             $stream->getContents();
         } finally {
@@ -446,9 +446,9 @@ final class HttpStreamTest extends TestCase
         $file = $dir . '/file';
         touch($file);
         $handle = File::open($file, 'r');
-        $stream = new HttpStream($handle);
-        $this->expectException(StreamInvalidRequestException::class);
-        $this->expectExceptionMessage('Stream is not open for writing');
+        $stream = new Stream($handle);
+        $this->expectException(InvalidStreamRequestException::class);
+        $this->expectExceptionMessage('Stream is not writable');
         try {
             $stream->write('foo');
         } finally {
@@ -460,7 +460,7 @@ final class HttpStreamTest extends TestCase
     public function testUnseekableStream(): void
     {
         $stream = $this->getForwardOnlyStream();
-        $this->expectException(StreamInvalidRequestException::class);
+        $this->expectException(InvalidStreamRequestException::class);
         $this->expectExceptionMessage('Stream is not seekable');
         try {
             $stream->seek(0);
@@ -479,7 +479,7 @@ final class HttpStreamTest extends TestCase
         $from->rewind();
         $to = $this->getStream('r+', null);
         try {
-            HttpStream::copyToStream($from, $to);
+            HttpUtil::copyStream($from, $to);
             $this->assertSame($data, (string) $to);
         } finally {
             $from->close();
@@ -500,21 +500,21 @@ final class HttpStreamTest extends TestCase
         ];
     }
 
-    private function getStream(string $mode = 'r+', ?string $data = 'data', string $filename = 'php://temp'): HttpStream
+    private function getStream(string $mode = 'r+', ?string $data = 'data', string $filename = 'php://temp'): Stream
     {
         $handle = File::open($filename, $mode);
         if ($data !== null) {
             File::write($handle, $data);
         }
         $this->LastHandle = $handle;
-        return new HttpStream($handle);
+        return new Stream($handle);
     }
 
-    private function getForwardOnlyStream(): HttpStream
+    private function getForwardOnlyStream(): Stream
     {
         $command = Sys::escapeCommand([...self::PHP_COMMAND, '-r', "echo 'data';"]);
         $handle = File::openPipe($command, 'r');
         $this->LastHandle = $handle;
-        return new HttpStream($handle);
+        return new Stream($handle);
     }
 }

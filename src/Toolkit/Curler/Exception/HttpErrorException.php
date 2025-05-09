@@ -2,9 +2,9 @@
 
 namespace Salient\Curler\Exception;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\Exception\HttpErrorException as HttpErrorExceptionInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Utility\Arr;
 use Throwable;
 
@@ -17,8 +17,8 @@ class HttpErrorException extends GenericResponseException implements HttpErrorEx
      * @param array<string,mixed> $data
      */
     public function __construct(
-        RequestInterface $request,
-        HttpResponseInterface $response,
+        PsrRequestInterface $request,
+        ResponseInterface $response,
         array $data = [],
         ?Throwable $previous = null
     ) {

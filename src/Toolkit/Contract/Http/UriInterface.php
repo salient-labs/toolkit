@@ -7,6 +7,9 @@ use Salient\Contract\Core\Immutable;
 use JsonSerializable;
 use Stringable;
 
+/**
+ * @api
+ */
 interface UriInterface extends
     PsrUriInterface,
     Stringable,
@@ -14,60 +17,56 @@ interface UriInterface extends
     Immutable
 {
     /**
-     * Parse a URI into its components
+     * Parse a URI and return its components
      *
-     * This method should be used instead of {@see parse_url()} in scenarios
-     * where using multiple URI parsers could introduce inconsistent behaviour
-     * or security vulnerabilities.
+     * This method replaces and must be used instead of {@see parse_url()} to
+     * mitigate risks arising from the use of multiple URI parsers, which
+     * include inconsistent behaviours and security vulnerabilities.
      *
      * @link https://claroty.com/team82/research/white-papers/exploiting-url-parsing-confusion
      * @link https://daniel.haxx.se/blog/2022/01/10/dont-mix-url-parsers/
      *
-     * @template T of \PHP_URL_SCHEME|\PHP_URL_HOST|\PHP_URL_PORT|\PHP_URL_USER|\PHP_URL_PASS|\PHP_URL_PATH|\PHP_URL_QUERY|\PHP_URL_FRAGMENT|-1|null
-     *
-     * @param T $component
+     * @param int $component `PHP_URL_SCHEME`, `PHP_URL_HOST`, `PHP_URL_PORT`,
+     * `PHP_URL_USER`, `PHP_URL_PASS`, `PHP_URL_PATH`, `PHP_URL_QUERY` or
+     * `PHP_URL_FRAGMENT` for the given component, or `-1` for all components.
      * @return (
-     *     T is -1|null
+     *     $component is -1
      *     ? array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|false
-     *     : (T is \PHP_URL_PORT
+     *     : ($component is \PHP_URL_PORT
      *         ? int|null|false
      *         : string|null|false
      *     )
      * )
      */
-    public static function parse(string $uri, ?int $component = null);
+    public static function parse(string $uri, int $component = -1);
 
     /**
-     * Get the URI as an array of components
-     *
-     * Components not present in the URI are not returned.
+     * Get the components of the URI
      *
      * @return array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}
      */
-    public function toParts(): array;
+    public function getComponents(): array;
 
     /**
      * Check if the URI is a relative reference
      */
-    public function isReference(): bool;
+    public function isRelativeReference(): bool;
 
     /**
-     * Get a normalised instance
+     * Remove "/./" and "/../" segments from the path of the URI before
+     * optionally applying scheme- and protocol-based normalisation
      *
-     * Removes "/./" and "/../" segments from the path. \[RFC3986]-compliant
-     * scheme- and protocol-based normalisation may also be performed.
-     *
-     * Scheme, host and percent-encoded octets in the URI are not normalised by
-     * this method because they are always normalised.
+     * It isn't necessary to call this method for scheme, host and
+     * percent-encoded octet normalisation, which are always applied.
      *
      * @return static
      */
     public function normalise(): UriInterface;
 
     /**
-     * Resolve a URI reference to a target URI with the instance as its base URI
+     * Transform a URI reference to a target URI
      *
-     * Implements \[RFC3986] Section 5.2.2 ("Transform References").
+     * The base URI is the one on which this method is called.
      *
      * @param PsrUriInterface|Stringable|string $reference
      * @return static

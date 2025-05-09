@@ -97,30 +97,6 @@ parameters:
 			path: tests/unit/Toolkit/Core/ProcessTest.php
 
 		-
-			message: '#^Cannot call method getOutputAsText\(\) on Salient\\Core\\Process\|null\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: tests/unit/Toolkit/Http/HttpServerTest.php
-
-		-
-			message: '#^Cannot call method wait\(\) on Salient\\Core\\Process\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: tests/unit/Toolkit/Http/HttpServerTest.php
-
-		-
-			message: '#^Method Salient\\Tests\\Http\\HttpServerTest\:\:getServerWithClient\(\) never assigns null to &\$client so it can be removed from the by\-ref type\.$#'
-			identifier: parameterByRef.unusedType
-			count: 1
-			path: tests/unit/Toolkit/Http/HttpServerTest.php
-
-		-
-			message: '#^Parameter \#1 \$command of class Salient\\Core\\Process constructor expects list\<string\>, non\-empty\-array\<int\|string, string\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: tests/unit/Toolkit/Http/HttpServerTest.php
-
-		-
 			message: '#^Method Salient\\Tests\\Iterator\\RecursiveCallbackIteratorTest\:\:getArrayWithNestedObjectsAndArrays\(\) never assigns null to &\$a so it can be removed from the by\-ref type\.$#'
 			identifier: parameterByRef.unusedType
 			count: 1

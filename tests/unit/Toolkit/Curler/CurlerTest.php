@@ -3,7 +3,7 @@
 namespace Salient\Tests\Curler;
 
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Cache\CacheStore;
 use Salient\Contract\Curler\Event\CurlResponseEvent;
 use Salient\Contract\Curler\Exception\CurlErrorException;
@@ -12,19 +12,15 @@ use Salient\Contract\Curler\Exception\TooManyRedirectsException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeader as Header;
-use Salient\Contract\Http\HttpRequestMethod as Method;
-use Salient\Contract\Http\HttpResponseInterface;
-use Salient\Contract\Http\MimeType;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Core\Facade\Console;
 use Salient\Core\Facade\Event;
 use Salient\Core\Process;
 use Salient\Curler\Curler;
 use Salient\Curler\CurlerFile;
 use Salient\Curler\CurlerPage;
-use Salient\Http\HttpHeaders;
-use Salient\Http\HttpResponse;
-use Salient\Http\HttpStream;
+use Salient\Http\Message\Response;
+use Salient\Http\Message\Stream;
 use Salient\Http\HttpUtil;
 use Salient\Tests\HttpTestCase;
 use Salient\Utility\Arr;
@@ -66,7 +62,7 @@ EOF,
     {
         $server = $this->getJsonServer(self::OUTPUT);
         $this->assertSame([
-            'content-type' => [MimeType::JSON],
+            'content-type' => [self::TYPE_JSON],
             'content-length' => ['13'],
         ], $this->getCurler('/foo')->head(self::QUERY)->all());
         $this->assertSameHttpMessage(
@@ -88,20 +84,20 @@ EOF,
 
     public function testPut(): void
     {
-        $this->doTestPost(Method::PUT);
+        $this->doTestPost(self::METHOD_PUT);
     }
 
     public function testPatch(): void
     {
-        $this->doTestPost(Method::PATCH);
+        $this->doTestPost(self::METHOD_PATCH);
     }
 
     public function testDelete(): void
     {
-        $this->doTestPost(Method::DELETE);
+        $this->doTestPost(self::METHOD_DELETE);
     }
 
-    private function doTestPost(string $method = Method::POST): void
+    private function doTestPost(string $method = self::METHOD_POST): void
     {
         $server = $this->getJsonServer(self::OUTPUT, self::OUTPUT, self::OUTPUT);
         $m = Str::lower($method);
@@ -141,7 +137,7 @@ EOF,
         $curler = $this->getCurler('/foo');
         $result = $curler->{$m}($data, self::QUERY);
         $output = $server->getNewOutput();
-        $boundaryParam = HttpHeaders::from($output)->getMultipartBoundary();
+        $boundaryParam = HttpUtil::getMultipartBoundary($output);
         $this->assertNotNull($boundaryParam);
         $boundary = HttpUtil::unquoteString($boundaryParam);
         $content = File::getContents($file);
@@ -178,25 +174,25 @@ EOF,
 
     public function testPostP(): void
     {
-        $this->doTestGetP(Method::POST);
+        $this->doTestGetP(self::METHOD_POST);
     }
 
     public function testPutP(): void
     {
-        $this->doTestGetP(Method::PUT);
+        $this->doTestGetP(self::METHOD_PUT);
     }
 
     public function testPatchP(): void
     {
-        $this->doTestGetP(Method::PATCH);
+        $this->doTestGetP(self::METHOD_PATCH);
     }
 
     public function testDeleteP(): void
     {
-        $this->doTestGetP(Method::DELETE);
+        $this->doTestGetP(self::METHOD_DELETE);
     }
 
-    private function doTestGetP(string $method = Method::GET): void
+    private function doTestGetP(string $method = self::METHOD_GET): void
     {
         $server = $this->getJsonServer(...self::OUT_PAGES);
         $output = [];
@@ -214,8 +210,8 @@ EOF,
             ->willReturnCallback(
                 function (
                     $data,
-                    RequestInterface $request,
-                    HttpResponseInterface $response,
+                    PsrRequestInterface $request,
+                    ResponseInterface $response,
                     CurlerInterface $curler,
                     ?CurlerPageInterface $previousPage = null,
                     ?array $query = null
@@ -226,18 +222,18 @@ EOF,
                         $previousPage
                             ? null
                             : $request
-                                ->withMethod(Method::GET)
+                                ->withMethod(self::METHOD_GET)
                                 ->withUri($curler->replaceQuery($request->getUri(), ['page' => 2]))
-                                ->withBody(HttpStream::fromString(''))
-                                ->withoutHeader(Header::CONTENT_TYPE)
+                                ->withBody(Stream::fromString(''))
+                                ->withoutHeader(self::HEADER_CONTENT_TYPE)
                     );
                 }
             );
 
         $curler = $this->getCurler('/foo')->withPager($pager);
-        $args = $method === Method::GET ? [] : [self::INPUT];
-        $body = $method === Method::GET ? '' : '{"baz":"qux"}';
-        $headers = $method === Method::GET ? '' : <<<EOF
+        $args = $method === self::METHOD_GET ? [] : [self::INPUT];
+        $body = $method === self::METHOD_GET ? '' : '{"baz":"qux"}';
+        $headers = $method === self::METHOD_GET ? '' : <<<EOF
 
 Content-Length: 13
 Content-Type: application/json
@@ -269,20 +265,20 @@ EOF,
 
     public function testPutR(): void
     {
-        $this->doTestPostR(Method::PUT);
+        $this->doTestPostR(self::METHOD_PUT);
     }
 
     public function testPatchR(): void
     {
-        $this->doTestPostR(Method::PATCH);
+        $this->doTestPostR(self::METHOD_PATCH);
     }
 
     public function testDeleteR(): void
     {
-        $this->doTestPostR(Method::DELETE);
+        $this->doTestPostR(self::METHOD_DELETE);
     }
 
-    private function doTestPostR(string $method = Method::POST): void
+    private function doTestPostR(string $method = self::METHOD_POST): void
     {
         $server = $this->getJsonServer(self::OUTPUT);
         $m = Str::lower($method) . 'R';
@@ -394,9 +390,9 @@ EOF,
 
     public function testThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
-        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
-        $server = $this->startHttpServer($bad, $good, $bad);
+        $bad = new Response(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new Response(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $server = $this->startHttpServer([$bad, $good, $bad]);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -437,9 +433,9 @@ EOF;
 
     public function testWithoutThrowHttpErrors(): void
     {
-        $bad = new HttpResponse(502, '502 bad gateway', [Header::CONTENT_TYPE => MimeType::TEXT]);
-        $good = new HttpResponse(200, 'foo', [Header::CONTENT_TYPE => MimeType::TEXT]);
-        $server = $this->startHttpServer($bad, $good, $bad);
+        $bad = new Response(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $good = new Response(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
+        $server = $this->startHttpServer([$bad, $good, $bad]);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -478,12 +474,12 @@ EOF;
     public function testFollowRedirects(): void
     {
         $responses = [
-            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
-            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
-            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar?baz=1']),
-            new HttpResponse(200, Json::encode(self::OUTPUT), [Header::CONTENT_TYPE => MimeType::JSON]),
+            new Response(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new Response(302, '', [self::HEADER_LOCATION => '/foo/bar']),
+            new Response(302, '', [self::HEADER_LOCATION => '/foo/bar?baz=1']),
+            new Response(200, Json::encode(self::OUTPUT), [self::HEADER_CONTENT_TYPE => self::TYPE_JSON]),
         ];
-        $server = $this->startHttpServer(...$responses);
+        $server = $this->startHttpServer($responses);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -538,11 +534,11 @@ EOF,
     public function testTooManyRedirects(): void
     {
         $responses = [
-            new HttpResponse(301, '', [Header::LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
-            new HttpResponse(302, '', [Header::LOCATION => '/foo/bar']),
-            new HttpResponse(302, '', [Header::LOCATION => '/']),
+            new Response(301, '', [self::HEADER_LOCATION => '//' . self::HTTP_SERVER_AUTHORITY . '/foo']),
+            new Response(302, '', [self::HEADER_LOCATION => '/foo/bar']),
+            new Response(302, '', [self::HEADER_LOCATION => '/']),
         ];
-        $server = $this->startHttpServer(...$responses, ...$responses);
+        $server = $this->startHttpServer([...$responses, ...$responses]);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -605,12 +601,12 @@ EOF,
     private function getJsonServer(array ...$data): Process
     {
         foreach ($data as $data) {
-            $responses[] = new HttpResponse(
+            $responses[] = new Response(
                 200,
                 Json::encode($data),
-                [Header::CONTENT_TYPE => MimeType::JSON],
+                [self::HEADER_CONTENT_TYPE => self::TYPE_JSON],
             );
         }
-        return $this->startHttpServer(...($responses ?? []));
+        return $this->startHttpServer(($responses ?? []));
     }
 }

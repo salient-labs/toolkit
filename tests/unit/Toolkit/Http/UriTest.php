@@ -222,7 +222,16 @@ final class UriTest extends TestCase
             [
                 'http://',
                 'http',
-            ]
+            ],
+            [
+                'example.com:80',
+                'example.com',
+                '',
+                '',
+                '',
+                null,
+                '80',
+            ],
         ];
     }
 
@@ -250,21 +259,27 @@ final class UriTest extends TestCase
     }
 
     /**
-     * @dataProvider isReferenceProvider
+     * @dataProvider isRelativeReferenceProvider
      */
-    public function testIsReference(string $uri): void
+    public function testIsRelativeReference(bool $expected, string $uri): void
     {
-        $this->assertTrue((new Uri($uri))->isReference());
+        $this->assertSame($expected, (new Uri($uri))->isRelativeReference());
     }
 
     /**
-     * @return array<array{string}>
+     * @return array<array{bool,string}>
      */
-    public static function isReferenceProvider(): array
+    public static function isRelativeReferenceProvider(): array
     {
         return [
-            ['//'],
-            ['///'],
+            [true, ''],
+            [true, '/'],
+            [true, '//'],
+            [true, '///'],
+            [true, '//example.com'],
+            [true, '//example.com/'],
+            [false, 'http://example.com'],
+            [false, 'http://example.com/'],
         ];
     }
 
@@ -677,7 +692,7 @@ final class UriTest extends TestCase
         // Check the target path matches the output of the remove_dot_segments
         // algorithm given in [RFC3986]
         if (
-            !$reference->isReference()
+            !$reference->isRelativeReference()
             || $reference->getAuthority() !== ''
             || ($reference->getPath()[0] ?? null) === '/'
         ) {
@@ -695,14 +710,6 @@ final class UriTest extends TestCase
             ], '');
         }
         $this->assertSame($this->removeDotSegments($path), $target->getPath());
-    }
-
-    /**
-     * @dataProvider followProvider
-     */
-    public function testResolveReference(string $expected, string $uri, string $reference): void
-    {
-        $this->assertSame($expected, Uri::resolveReference($reference, $uri));
     }
 
     /**
@@ -835,48 +842,14 @@ final class UriTest extends TestCase
      * @dataProvider parseProvider
      *
      * @param array<string,string|int>|string|int|false|null $expected
-     * @param \PHP_URL_SCHEME|\PHP_URL_HOST|\PHP_URL_PORT|\PHP_URL_USER|\PHP_URL_PASS|\PHP_URL_PATH|\PHP_URL_QUERY|\PHP_URL_FRAGMENT|-1|null $component
      */
-    public function testParse($expected, string $uri, ?int $component = null, bool $strict = false): void
+    public function testParse($expected, string $uri, int $component = -1, bool $strict = false): void
     {
         $this->assertSame($expected, Uri::parse($uri, $component, $strict));
     }
 
     /**
-     * @dataProvider unparseProvider
-     *
-     * @param array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string} $parts
-     */
-    public function testUnparse(string $expected, array $parts): void
-    {
-        $this->assertSame($expected, Uri::unparse($parts));
-    }
-
-    /**
-     * @dataProvider unparseProvider
-     */
-    public function testUnparseWithParseUrl(string $uri): void
-    {
-        $parts = parse_url($uri);
-        $this->assertIsArray($parts);
-        $this->assertSame($uri, Uri::unparse($parts));
-    }
-
-    /**
-     * @return Generator<string,array{string,array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}}>
-     */
-    public static function unparseProvider(): Generator
-    {
-        foreach (self::parseProvider() as $test => [$parts, $expected]) {
-            if (!is_array($parts)) {
-                continue;
-            }
-            yield $test => [$expected, $parts];
-        }
-    }
-
-    /**
-     * @return Generator<string,array{array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|string|int|false|null,string,2?:int|null,3?:bool}>
+     * @return Generator<string,array{array{scheme?:string,host?:string,port?:int,user?:string,pass?:string,path?:string,query?:string,fragment?:string}|string|int|false|null,string,2?:int,3?:bool}>
      */
     public static function parseProvider(): Generator
     {
@@ -1070,9 +1043,6 @@ final class UriTest extends TestCase
             '//example.com:-1' => false,
         ];
 
-        $first = array_key_first($data);
-        yield "$first + component -1" => [$data[$first], $first, -1];
-
         $components = [];
         foreach ($data as $uri => $parts) {
             yield $uri => [$parts, $uri];
@@ -1106,34 +1076,37 @@ final class UriTest extends TestCase
         $warnings = 0;
         foreach (self::COMPONENT_MAP as $component => $value) {
             if (!isset($components[$component])) {
-                fprintf(\STDERR, "WARNING: no test with component '%s' in %s()%s", $component, __METHOD__, \PHP_EOL);
+                fprintf(\STDERR, "WARNING: no test with component '%s' in %s()" . \PHP_EOL, $component, __METHOD__);
                 $warnings++;
             }
             if (!isset($components["-$component"])) {
-                fprintf(\STDERR, "WARNING: no test with missing component '%s' in %s()%s", $component, __METHOD__, \PHP_EOL);
+                fprintf(\STDERR, "WARNING: no test with missing component '%s' in %s()" . \PHP_EOL, $component, __METHOD__);
                 $warnings++;
             }
         }
         if ($warnings) {
-            fprintf(\STDERR, '%s', \PHP_EOL);
+            fprintf(\STDERR, \PHP_EOL);
         }
     }
 
     public function testParseWithInvalidComponent(): void
     {
         $component = max(self::COMPONENT_MAP) + 1;
+
+        // `parse_url()` behaviour should be replicated when URI is also invalid
+        $this->assertFalse(Uri::parse('//example.com:-1', $component));
+
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage("Invalid component: $component");
-        // @phpstan-ignore argument.type
         Uri::parse('//', $component);
     }
 
     /**
      * @dataProvider normaliseProvider
      *
-     * @param int-mask-of<Uri::EXPAND_EMPTY_PATH|Uri::COLLAPSE_MULTIPLE_SLASHES> $flags
+     * @param int-mask-of<Uri::NORMALISE_*> $flags
      */
-    public function testNormalise(string $expected, string $uri, int $flags = Uri::EXPAND_EMPTY_PATH): void
+    public function testNormalise(string $expected, string $uri, int $flags = Uri::NORMALISE_EMPTY_PATH): void
     {
         $this->assertSame($expected, (string) (new Uri($uri))->normalise($flags));
     }
@@ -1143,8 +1116,8 @@ final class UriTest extends TestCase
      */
     public static function normaliseProvider(): array
     {
-        $collapse = Uri::COLLAPSE_MULTIPLE_SLASHES;
-        $expandAndCollapse = Uri::EXPAND_EMPTY_PATH | Uri::COLLAPSE_MULTIPLE_SLASHES;
+        $collapse = Uri::NORMALISE_MULTIPLE_SLASHES;
+        $expandAndCollapse = Uri::NORMALISE_EMPTY_PATH | Uri::NORMALISE_MULTIPLE_SLASHES;
 
         return [
             ['urn:', 'urn:'],
@@ -1197,16 +1170,5 @@ final class UriTest extends TestCase
             ['urn:/a/g', 'urn:/a/b/c/./../../g'],
             ['urn:mid/6', 'urn:mid/content=5/../6'],
         ];
-    }
-
-    public function testIsAuthorityForm(): void
-    {
-        $this->assertTrue(Uri::isAuthorityForm('example.com:80'));
-        $this->assertFalse(Uri::isAuthorityForm('example.com'));
-        $this->assertFalse(Uri::isAuthorityForm('example.com:80/path'));
-        $this->assertFalse(Uri::isAuthorityForm('example.com:80?query'));
-        $this->assertFalse(Uri::isAuthorityForm('http://example.com:80'));
-        $this->assertFalse(Uri::isAuthorityForm('http://example.com:80/path'));
-        $this->assertFalse(Uri::isAuthorityForm('http://example.com:80?query'));
     }
 }

@@ -11,8 +11,8 @@ use Salient\Contract\Core\Buildable;
 use Salient\Contract\Curler\Exception\HttpErrorException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
-use Salient\Contract\Http\HttpRequestMethod;
+use Salient\Contract\Http\HasRequestMethod;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Sync\EntitySource;
 use Salient\Contract\Sync\FilterPolicy;
 use Salient\Contract\Sync\SyncContextInterface;
@@ -60,11 +60,11 @@ use UnexpectedValueException;
  *
  * @property-read string[]|string|null $Path Path or paths to the endpoint servicing the entity, e.g. "/v1/user"
  * @property-read mixed[]|null $Query Query parameters applied to the sync operation URL
- * @property-read HttpHeadersInterface|null $Headers HTTP headers applied to the sync operation request
+ * @property-read HeadersInterface|null $Headers HTTP headers applied to the sync operation request
  * @property-read CurlerPagerInterface|null $Pager Pagination handler for the endpoint servicing the entity
  * @property-read bool $AlwaysPaginate Use the pager to process requests even if no pagination is required
  * @property-read int<-1,max>|null $Expiry Seconds before cached responses expire
- * @property-read array<OP::*,HttpRequestMethod::*> $MethodMap Array that maps sync operations to HTTP request methods
+ * @property-read array<OP::*,HttpSyncDefinition::METHOD_*> $MethodMap Array that maps sync operations to HTTP request methods
  * @property-read (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $CurlerCallback Callback applied to the Curler instance created to perform each sync operation
  * @property-read bool $SyncOneEntityPerRequest Perform CREATE_LIST, UPDATE_LIST and DELETE_LIST operations on one entity per HTTP request
  * @property-read (callable(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): HttpSyncDefinition<TEntity,TProvider>)|null $Callback Callback applied to the definition before each sync operation
@@ -76,21 +76,21 @@ use UnexpectedValueException;
  * @extends AbstractSyncDefinition<TEntity,TProvider>
  * @implements Buildable<HttpSyncDefinitionBuilder<TEntity,TProvider>>
  */
-final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildable
+final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildable, HasRequestMethod
 {
     /** @use BuildableTrait<HttpSyncDefinitionBuilder<TEntity,TProvider>> */
     use BuildableTrait;
     use ImmutableTrait;
 
     public const DEFAULT_METHOD_MAP = [
-        OP::CREATE => HttpRequestMethod::POST,
-        OP::READ => HttpRequestMethod::GET,
-        OP::UPDATE => HttpRequestMethod::PUT,
-        OP::DELETE => HttpRequestMethod::DELETE,
-        OP::CREATE_LIST => HttpRequestMethod::POST,
-        OP::READ_LIST => HttpRequestMethod::GET,
-        OP::UPDATE_LIST => HttpRequestMethod::PUT,
-        OP::DELETE_LIST => HttpRequestMethod::DELETE,
+        OP::CREATE => HttpSyncDefinition::METHOD_POST,
+        OP::READ => HttpSyncDefinition::METHOD_GET,
+        OP::UPDATE => HttpSyncDefinition::METHOD_PUT,
+        OP::DELETE => HttpSyncDefinition::METHOD_DELETE,
+        OP::CREATE_LIST => HttpSyncDefinition::METHOD_POST,
+        OP::READ_LIST => HttpSyncDefinition::METHOD_GET,
+        OP::UPDATE_LIST => HttpSyncDefinition::METHOD_PUT,
+        OP::DELETE_LIST => HttpSyncDefinition::METHOD_DELETE,
     ];
 
     /**
@@ -147,7 +147,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * {@see HttpSyncDefinition::withHeaders()} or
      * {@see HttpSyncDefinition::$Callback}.
      */
-    protected ?HttpHeadersInterface $Headers;
+    protected ?HeadersInterface $Headers;
 
     /**
      * Pagination handler for the endpoint servicing the entity
@@ -188,7 +188,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *
      * The default method map is {@see HttpSyncDefinition::DEFAULT_METHOD_MAP}.
      *
-     * @var array<OP::*,HttpRequestMethod::*>
+     * @var array<OP::*,HttpSyncDefinition::METHOD_*>
      */
     protected array $MethodMap;
 
@@ -239,7 +239,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param HttpSyncDefinition::CONFORMITY_* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param int<-1,max>|null $expiry
-     * @param array<OP::*,HttpRequestMethod::*> $methodMap
+     * @param array<OP::*,HttpSyncDefinition::METHOD_*> $methodMap
      * @param (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $curlerCallback
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
      * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
@@ -256,7 +256,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         array $operations = [],
         $path = null,
         ?array $query = null,
-        ?HttpHeadersInterface $headers = null,
+        ?HeadersInterface $headers = null,
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
         ?callable $callback = null,
@@ -332,7 +332,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      *
      * @return static
      */
-    public function withHeaders(?HttpHeadersInterface $headers)
+    public function withHeaders(?HeadersInterface $headers)
     {
         return $this->with('Headers', $headers);
     }
@@ -370,7 +370,7 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * Get an instance that maps sync operations to the given HTTP request
      * methods
      *
-     * @param array<OP::*,HttpRequestMethod::*> $methodMap
+     * @param array<OP::*,HttpSyncDefinition::METHOD_*> $methodMap
      * @return static
      */
     public function withMethodMap(array $methodMap)
@@ -568,41 +568,41 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
         // be safely implemented here, but providers can support pagination with
         // other operations and/or HTTP methods via overrides
         switch ([$operation, $this->MethodMap[$operation] ?? null]) {
-            case [OP::READ_LIST, HttpRequestMethod::GET]:
+            case [OP::READ_LIST, self::METHOD_GET]:
                 /** @var Closure(CurlerInterface, mixed[]|null): iterable<mixed[]> */
                 return fn(CurlerInterface $curler, ?array $query) =>
                     $curler->getPager()
                         ? $curler->getP($query)
                         : $curler->get($query);
 
-            case [OP::READ_LIST, HttpRequestMethod::POST]:
+            case [OP::READ_LIST, self::METHOD_POST]:
                 /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): iterable<mixed[]> */
                 return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                     $curler->getPager()
                         ? $curler->postP($payload, $query)
                         : $curler->post($payload, $query);
 
-            case [$operation, HttpRequestMethod::GET]:
+            case [$operation, self::METHOD_GET]:
                 /** @var Closure(CurlerInterface, mixed[]|null): (iterable<mixed[]>|mixed[]) */
                 return fn(CurlerInterface $curler, ?array $query) =>
                     $curler->get($query);
 
-            case [$operation, HttpRequestMethod::POST]:
+            case [$operation, self::METHOD_POST]:
                 /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
                 return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                     $curler->post($payload, $query);
 
-            case [$operation, HttpRequestMethod::PUT]:
+            case [$operation, self::METHOD_PUT]:
                 /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
                 return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                     $curler->put($payload, $query);
 
-            case [$operation, HttpRequestMethod::PATCH]:
+            case [$operation, self::METHOD_PATCH]:
                 /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
                 return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                     $curler->patch($payload, $query);
 
-            case [$operation, HttpRequestMethod::DELETE]:
+            case [$operation, self::METHOD_DELETE]:
                 /** @var Closure(CurlerInterface, mixed[]|null, mixed[]|null=): (iterable<mixed[]>|mixed[]) */
                 return fn(CurlerInterface $curler, ?array $query, ?array $payload = null) =>
                     $curler->delete($payload, $query);

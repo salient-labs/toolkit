@@ -2,11 +2,11 @@
 
 namespace Salient\Tests\Sync\Provider;
 
-use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPageInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Salient\Curler\CurlerPage;
 use Salient\Curler\CurlerPageRequest;
 use Salient\Utility\Get;
@@ -15,7 +15,7 @@ use Salient\Utility\Str;
 class MockoonPager implements CurlerPagerInterface
 {
     public function getFirstRequest(
-        RequestInterface $request,
+        PsrRequestInterface $request,
         CurlerInterface $curler,
         ?array $query = null
     ) {
@@ -29,8 +29,8 @@ class MockoonPager implements CurlerPagerInterface
 
     public function getPage(
         $data,
-        RequestInterface $request,
-        HttpResponseInterface $response,
+        PsrRequestInterface $request,
+        ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
         ?array $query = null

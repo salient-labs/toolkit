@@ -10,11 +10,13 @@ use IteratorAggregate;
  *
  * @template TValue
  *
- * @implements CollectionInterface<int,TValue>
+ * @implements CollectionInterface<int,TValue,mixed[]>
  * @implements IteratorAggregate<int,TValue>
  */
 class ListCollection implements CollectionInterface, IteratorAggregate
 {
     /** @use ListCollectionTrait<int,TValue,static<TValue>> */
     use ListCollectionTrait;
+    /** @use RecursiveArrayableCollectionTrait<int,TValue> */
+    use RecursiveArrayableCollectionTrait;
 }

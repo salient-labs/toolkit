@@ -6,13 +6,13 @@ use Salient\Contract\Core\DateFormatterInterface;
 use Salient\Contract\Curler\Exception\RequestException;
 use Salient\Contract\Curler\CurlerInterface;
 use Salient\Contract\Curler\CurlerPagerInterface;
-use Salient\Contract\Http\HttpHeadersInterface;
+use Salient\Contract\Http\HeadersInterface;
 use Salient\Contract\Sync\SyncDefinitionInterface;
 use Salient\Contract\Sync\SyncEntityInterface;
 use Salient\Core\Exception\MethodNotImplementedException;
 use Salient\Core\Facade\Cache;
 use Salient\Curler\Curler;
-use Salient\Http\HttpHeaders;
+use Salient\Http\Headers;
 use Salient\Sync\Exception\UnreachableBackendException;
 use Salient\Sync\AbstractSyncProvider;
 use Salient\Utility\Get;
@@ -35,7 +35,7 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
     final public function getCurler(
         string $path,
         ?int $expiry = -1,
-        ?HttpHeadersInterface $headers = null,
+        ?HeadersInterface $headers = null,
         ?CurlerPagerInterface $pager = null,
         bool $alwaysPaginate = false,
         ?DateFormatterInterface $dateFormatter = null
@@ -79,17 +79,17 @@ abstract class HttpSyncProvider extends AbstractSyncProvider
      *
      * @codeCoverageIgnore
      */
-    protected function getHeaders(string $path): ?HttpHeadersInterface
+    protected function getHeaders(string $path): ?HeadersInterface
     {
         return null;
     }
 
     /**
-     * Get a new HttpHeaders instance
+     * Get a new Headers instance
      */
-    final protected function headers(): HttpHeaders
+    final protected function headers(): Headers
     {
-        return new HttpHeaders();
+        return new Headers();
     }
 
     /**

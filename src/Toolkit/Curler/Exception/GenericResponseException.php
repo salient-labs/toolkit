@@ -2,8 +2,8 @@
 
 namespace Salient\Curler\Exception;
 
-use Psr\Http\Message\RequestInterface;
-use Salient\Contract\Http\HttpResponseInterface;
+use Psr\Http\Message\RequestInterface as PsrRequestInterface;
+use Salient\Contract\Http\Message\ResponseInterface;
 use Throwable;
 
 /**
@@ -11,15 +11,15 @@ use Throwable;
  */
 class GenericResponseException extends GenericRequestException
 {
-    protected HttpResponseInterface $Response;
+    protected ResponseInterface $Response;
 
     /**
      * @param array<string,mixed> $data
      */
     public function __construct(
         string $message,
-        RequestInterface $request,
-        HttpResponseInterface $response,
+        PsrRequestInterface $request,
+        ResponseInterface $response,
         array $data = [],
         ?Throwable $previous = null
     ) {
@@ -31,7 +31,7 @@ class GenericResponseException extends GenericRequestException
     /**
      * @inheritDoc
      */
-    public function getResponse(): HttpResponseInterface
+    public function getResponse(): ResponseInterface
     {
         return $this->Response;
     }

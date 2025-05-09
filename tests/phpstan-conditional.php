@@ -123,6 +123,12 @@ return [
                 'path' => "$dir/src/Toolkit/Curler/Curler.php",
             ],
             [
+                'message' => '#^Property Salient\\\\Http\\\\Message\\\\Stream\:\:\$Uri \(string\|null\) is never assigned null so it can be removed from the property type\.$#',
+                'identifier' => 'property.unusedType',
+                'count' => 1,
+                'path' => "$dir/src/Toolkit/Http/Message/Stream.php",
+            ],
+            [
                 'message' => '#^Method Salient\\\\Testing\\\\Core\\\\MockPhpStream\:\:stream_read\(\) never returns false so it can be removed from the return type\.$#',
                 'identifier' => 'return.unusedType',
                 'count' => 1,

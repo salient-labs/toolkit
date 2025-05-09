@@ -314,7 +314,7 @@ final class Get extends AbstractUtility
     /**
      * Get a UUID in raw binary form
      *
-     * If `$uuid` is not given, an \[RFC4122]-compliant UUID is generated.
+     * If `$uuid` is not given, an \[RFC9562]-compliant UUIDv4 is generated.
      *
      * @throws InvalidArgumentException if an invalid UUID is given.
      */
@@ -328,7 +328,7 @@ final class Get extends AbstractUtility
     /**
      * Get a UUID in hexadecimal form
      *
-     * If `$uuid` is not given, an \[RFC4122]-compliant UUID is generated.
+     * If `$uuid` is not given, an \[RFC9562]-compliant UUIDv4 is generated.
      *
      * @throws InvalidArgumentException if an invalid UUID is given.
      */
@@ -342,12 +342,15 @@ final class Get extends AbstractUtility
     private static function getUuid(bool $binary): string
     {
         $uuid = [
+            // random_a (bits 0-31)
             random_bytes(4),
+            // random_a (bits 32-47)
             random_bytes(2),
-            // Version 4 (most significant 4 bits = 0b0100)
+            // ver (bits 48-51 = 0b0100 = 4), random_b (bits 52-63)
             chr(random_int(0, 0xF) | 0x40) . random_bytes(1),
-            // Variant 1 (most significant 2 bits = 0b10)
+            // var (bits 64-65 = 0b10 = 2), random_c (bits 66-79)
             chr(random_int(0, 0x3F) | 0x80) . random_bytes(1),
+            // random_c (bits 80-127)
             random_bytes(6),
         ];
 

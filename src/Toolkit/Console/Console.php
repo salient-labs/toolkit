@@ -2,7 +2,7 @@
 
 namespace Salient\Console;
 
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 use Salient\Console\Target\StreamTarget;
 use Salient\Contract\Console\Target\HasPrefix;
 use Salient\Contract\Console\Target\StreamTargetInterface;
@@ -56,7 +56,7 @@ class Console implements ConsoleInterface, FacadeAwareInterface, Unloadable
     /**
      * @inheritDoc
      */
-    public function logger(): LoggerInterface
+    public function logger(): PsrLoggerInterface
     {
         return $this->State->Logger ??=
             new ConsoleLogger($this->getReturnable());
@@ -748,7 +748,7 @@ final class ConsoleState
     public bool $Msg2HasTags = false;
     public int $Errors = 0;
     public int $Warnings = 0;
-    public LoggerInterface $Logger;
+    public PsrLoggerInterface $Logger;
 
     private function __clone() {}
 }

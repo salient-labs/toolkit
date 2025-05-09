@@ -4,20 +4,57 @@ namespace Salient\Tests\Http;
 
 use Psr\Http\Message\UriInterface as PsrUriInterface;
 use Salient\Contract\Core\DateFormatterInterface;
-use Salient\Contract\Http\FormDataFlag;
-use Salient\Contract\Http\MimeType;
-use Salient\Http\HttpRequest;
+use Salient\Contract\Http\Exception\InvalidHeaderException;
+use Salient\Contract\Http\HasHttpHeader;
+use Salient\Contract\Http\HasMediaType;
+use Salient\Http\Message\Request;
+use Salient\Http\Headers;
 use Salient\Http\HttpUtil;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
-use InvalidArgumentException;
 use Stringable;
 
 /**
  * @covers \Salient\Http\HttpUtil
  */
-final class HttpUtilTest extends TestCase
+final class HttpUtilTest extends TestCase implements HasHttpHeader, HasMediaType
 {
+    public function testGetPreferences(): void
+    {
+        $this->assertSame([], HttpUtil::getPreferences(new Headers()));
+
+        $headers = (new Headers())
+            ->addValue(self::HEADER_PREFER, 'respond-async, WAIT=5; foo=bar, handling=lenient')
+            ->addValue(self::HEADER_PREFER, 'wait=10; baz=qux')
+            ->addValue(self::HEADER_PREFER, 'task_priority=2; baz="foo bar"')
+            ->addValue(self::HEADER_PREFER, 'odata.maxpagesize=100');
+
+        $this->assertSame([
+            'respond-async' => ['value' => '', 'parameters' => []],
+            'wait' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
+            'handling' => ['value' => 'lenient', 'parameters' => []],
+            'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
+            'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
+        ], HttpUtil::getPreferences($headers));
+    }
+
+    public function testMergePreferences(): void
+    {
+        $this->assertSame('', HttpUtil::mergePreferences([]));
+
+        $this->assertSame(
+            'respond-async, WAIT=5; foo=bar, handling=lenient, task_priority=2; baz="foo bar", odata.maxpagesize=100',
+            HttpUtil::mergePreferences([
+                'respond-async' => '',
+                'WAIT' => ['value' => '5', 'parameters' => ['foo' => 'bar']],
+                'wait' => '10',
+                'handling' => ['value' => 'lenient'],
+                'task_priority' => ['value' => '2', 'parameters' => ['baz' => 'foo bar']],
+                'odata.maxpagesize' => ['value' => '100', 'parameters' => []],
+            ]),
+        );
+    }
+
     /**
      * @dataProvider isRequestMethodProvider
      */
@@ -48,6 +85,17 @@ final class HttpUtilTest extends TestCase
         ];
     }
 
+    public function testIsAuthorityForm(): void
+    {
+        $this->assertTrue(HttpUtil::isAuthorityForm('example.com:80'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('example.com'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('example.com:80/path'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('example.com:80?query'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('http://example.com:80'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('http://example.com:80/path'));
+        $this->assertFalse(HttpUtil::isAuthorityForm('http://example.com:80?query'));
+    }
+
     /**
      * @dataProvider mediaTypeIsProvider
      */
@@ -63,14 +111,14 @@ final class HttpUtilTest extends TestCase
     {
         return [
             [true, 'application/jwk-set+json', 'application/jwk-set'],
-            [true, 'application/jwk-set+json', MimeType::JSON],
-            [true, 'application/xml', MimeType::XML],
-            [true, 'APPLICATION/XML', MimeType::XML],
-            [false, 'application/xml-dtd', MimeType::XML],
-            [true, 'application/rss+xml', MimeType::XML],
-            [true, 'text/xml', MimeType::XML],
-            [true, 'Text/HTML;Charset="utf-8"', MimeType::HTML],
-            [false, 'Text/HTML;Charset="utf-8"', MimeType::TEXT],
+            [true, 'application/jwk-set+json', self::TYPE_JSON],
+            [true, 'application/xml', self::TYPE_XML],
+            [true, 'APPLICATION/XML', self::TYPE_XML],
+            [false, 'application/xml-dtd', self::TYPE_XML],
+            [true, 'application/rss+xml', self::TYPE_XML],
+            [true, 'text/xml', self::TYPE_XML],
+            [true, 'Text/HTML;Charset="utf-8"', self::TYPE_HTML],
+            [false, 'Text/HTML;Charset="utf-8"', self::TYPE_TEXT],
         ];
     }
 
@@ -112,7 +160,7 @@ final class HttpUtilTest extends TestCase
                 true,
             ],
             [
-                InvalidArgumentException::class . ',Invalid parameter: ',
+                InvalidHeaderException::class . ',Invalid HTTP header parameter: ',
                 '',
                 true,
                 true,
@@ -152,7 +200,7 @@ final class HttpUtilTest extends TestCase
                 true,
             ],
             [
-                InvalidArgumentException::class . ',Invalid parameter: "Not a token"',
+                InvalidHeaderException::class . ',Invalid HTTP header parameter: "Not a token"',
                 '"Not a token";Foo=bar;Baz=',
                 true,
                 true,
@@ -257,22 +305,22 @@ final class HttpUtilTest extends TestCase
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpUtil::DATA_*> $flags
      */
     public function testMergeQuery(
         string $expected,
         $uri,
         array $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ): void {
         $this->assertSame(
             $expected,
             (string) HttpUtil::mergeQuery($uri, $data, $flags, $dateFormatter),
         );
-        $request = new HttpRequest('GET', $uri);
+        $request = new Request('GET', $uri);
         $request = HttpUtil::mergeQuery($request, $data, $flags, $dateFormatter);
-        $this->assertInstanceOf(HttpRequest::class, $request);
+        $this->assertInstanceOf(Request::class, $request);
         $this->assertSame($expected, (string) $request->getUri());
     }
 
@@ -319,22 +367,22 @@ final class HttpUtilTest extends TestCase
      *
      * @param PsrUriInterface|Stringable|string $uri
      * @param mixed[] $data
-     * @param int-mask-of<FormDataFlag::*> $flags
+     * @param int-mask-of<HttpUtil::DATA_*> $flags
      */
     public function testReplaceQuery(
         string $expected,
         $uri,
         array $data,
-        int $flags = FormDataFlag::PRESERVE_NUMERIC_KEYS | FormDataFlag::PRESERVE_STRING_KEYS,
+        int $flags = HttpUtil::DATA_PRESERVE_NUMERIC_KEYS | HttpUtil::DATA_PRESERVE_STRING_KEYS,
         ?DateFormatterInterface $dateFormatter = null
     ): void {
         $this->assertSame(
             $expected,
             (string) HttpUtil::replaceQuery($uri, $data, $flags, $dateFormatter),
         );
-        $request = new HttpRequest('GET', $uri);
+        $request = new Request('GET', $uri);
         $request = HttpUtil::replaceQuery($request, $data, $flags, $dateFormatter);
-        $this->assertInstanceOf(HttpRequest::class, $request);
+        $this->assertInstanceOf(Request::class, $request);
         $this->assertSame($expected, (string) $request->getUri());
     }
 
