@@ -8,8 +8,8 @@ use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasRequestMethod;
 use Salient\Core\Concern\ImmutableTrait;
-use Salient\Http\Exception\HttpServerException;
 use Salient\Http\Exception\InvalidHeaderException;
+use Salient\Http\Exception\ServerException;
 use Salient\Http\Message\Response;
 use Salient\Http\Message\ServerRequest;
 use Salient\Http\Headers;
@@ -272,7 +272,7 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
         $server = @stream_socket_server($address, $errorCode, $errorMessage);
 
         if ($server === false) {
-            throw new HttpServerException(sprintf(
+            throw new ServerException(sprintf(
                 'Error starting server at %s (%d: %s)',
                 $address,
                 $errorCode,
@@ -283,7 +283,7 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
         $address = @stream_socket_get_name($server, false);
 
         if ($address === false || ($pos = strrpos($address, ':')) === false) {
-            throw new HttpServerException('Error getting server address');
+            throw new ServerException('Error getting server address');
         }
 
         $this->Server = $server;
@@ -351,14 +351,17 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
                     return $response->getReturnValue();
                 }
             } catch (InvalidHeaderExceptionInterface $ex) {
-                $response = new Response(400, $ex->getMessage());
+                $response = new Response(
+                    $ex->getStatusCode() ?? 400,
+                    $ex->getMessage(),
+                );
                 if (!$catchBadRequests) {
                     throw $ex;
                 }
-            } catch (LogicException|HttpServerException $ex) {
+            } catch (LogicException|ServerException $ex) {
                 throw $ex;
             } catch (Throwable $ex) {
-                throw new HttpServerException($ex->getMessage(), $ex);
+                throw new ServerException($ex->getMessage(), $ex);
             } finally {
                 if ($stream) {
                     if ($response) {
@@ -389,14 +392,14 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
 
         if ($handle === false) {
             $error = error_get_last();
-            throw new HttpServerException($error['message'] ?? sprintf(
+            throw new ServerException($error['message'] ?? sprintf(
                 'Error accepting connection at %s',
                 $this->Address,
             ));
         }
 
         if ($client === null) {
-            throw new HttpServerException('No client address');
+            throw new ServerException('No client address');
         }
 
         Regex::match('/(?<addr>.*?)(?::(?<port>[0-9]++))?$/D', $client, $matches);
@@ -425,15 +428,16 @@ class Server implements Immutable, HasHttpHeader, HasRequestMethod
             ? explode(' ', $line, 4)
             : Regex::split('/\s++/', trim($line), 3);
 
+        $invalidMethod = false;
         if (
             count($startLine) !== 3
-            || !HttpUtil::isRequestMethod($startLine[0])
             || !Regex::match('/^HTTP\/([0-9](?:\.[0-9])?)$/D', $startLine[2], $matches)
+            || ($invalidMethod = !HttpUtil::isRequestMethod($startLine[0]))
         ) {
             throw new InvalidHeaderException(sprintf(
                 'Invalid HTTP request line: %s',
                 $line,
-            ));
+            ), null, $invalidMethod ? 501 : null);
         }
 
         $method = $startLine[0];

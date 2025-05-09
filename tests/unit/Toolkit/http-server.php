@@ -9,30 +9,55 @@ use Salient\Http\HttpUtil;
 use Salient\Utility\File;
 use Salient\Utility\Inflect;
 use Salient\Utility\Regex;
-use Salient\Utility\Str;
 use RuntimeException;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
-// Usage: php http-server.php [<host>[:<port>] [<timeout>]] [-- [<filename>...]]
+/*
+ * Usage: php http-server.php [--add-newlines] [<host>[:<port>] [<timeout>]] [-- [<filename>...]]
+ *
+ * Listens for HTTP requests and returns prepared responses in the given order
+ * before exiting.
+ *
+ * If no responses are given, one is read from the standard input before the
+ * server starts.
+ *
+ * If `--` is given with no filename, the server returns empty "HTTP/1.1 200 OK"
+ * responses until it is interrupted.
+ *
+ * Use `--add-newlines` to add one or two newlines after requests with one or
+ * zero trailing newlines respectively.
+ *
+ * Defaults:
+ * - <host>: localhost
+ * - <port>: 3007
+ * - <timeout>: -1 (wait indefinitely)
+ */
 
 /** @var string[] */
 $_args = $_SERVER['argv'];
+/** @var int|false */
 $key = array_search('--', $_args, true);
-/** @var int|false $key */
 $args = $key === false
     ? array_slice($_args, 1)
     : array_slice($_args, 1, $key - 1);
+
+$addNewlines = false;
+if ($args && $args[0] === '--add-newlines') {
+    array_shift($args);
+    $addNewlines = true;
+}
+
 $host = $args[0] ?? 'localhost:3007';
 $timeout = (int) ($args[1] ?? -1);
 
 if ($key === false) {
-    $responses[] = Str::setEol(File::getContents(\STDIN), "\r\n");
+    $responses[] = File::getContents(\STDIN);
 } else {
-    $responses = null;
+    $responses = [];
     $count = count($_args);
     for ($i = $key + 1; $i < $count; $i++) {
-        $responses[] = Str::setEol(File::getContents($_args[$i]), "\r\n");
+        $responses[] = File::getContents($_args[$i]);
     }
 }
 
@@ -55,8 +80,9 @@ if ($server === false) {
 
 fprintf(\STDERR, '==> Server started at http://%s:%d' . \PHP_EOL, $host, $port);
 
-$i = 0;
+$i = -1;
 do {
+    $i++;
     fprintf(\STDERR, ' -> Waiting for client' . \PHP_EOL);
     $stream = @stream_socket_accept($server, $timeout, $client);
     if ($stream === false) {
@@ -81,10 +107,11 @@ do {
         \STDERR,
         ' -> Accepted connection from %s:%s' . \PHP_EOL,
         $remoteHost,
-        $remotePort
+        $remotePort,
     );
 
-    TestUtil::dumpHttpMessage($stream, true, $startLine);
+    $isLastResponse = $responses && $i === count($responses) - 1;
+    TestUtil::dumpHttpMessage($stream, $addNewlines && !$isLastResponse, true, $startLine);
 
     if ($startLine === null) {
         throw new RuntimeException('Invalid or empty request');
@@ -107,11 +134,11 @@ do {
     fprintf(\STDERR, Inflect::format(
         strlen($response),
         ' -> Sending response #%d ({{#}} {{#:byte}})' . \PHP_EOL,
-        $i++ + 1
+        $i + 1,
     ));
 
-    File::writeAll($stream, Str::setEol($response, "\r\n"));
+    File::writeAll($stream, $response);
     File::close($stream);
-} while ($responses === null || $i < count($responses));
+} while (!$isLastResponse);
 
 File::close($server);

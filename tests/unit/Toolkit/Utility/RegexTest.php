@@ -113,10 +113,10 @@ final class RegexTest extends TestCase
     {
         try {
             Regex::match('/(?:\D+|<\d+>)*[!?]/', 'foobar foobar foobar');
-        } catch (PcreErrorException $e) {
+        } catch (PcreErrorException $ex) {
             $this->assertStringEndsWith(
                 "\n\nPattern:\n/(?:\D+|<\d+>)*[!?]/\n\nSubject:\nfoobar foobar foobar",
-                (string) $e,
+                (string) $ex,
             );
         }
     }
@@ -139,10 +139,10 @@ final class RegexTest extends TestCase
     {
         try {
             Regex::replace(['/(?:\D+|<\d+>)*[!?]/', '/\h+/'], ['', ' '], 'foobar foobar foobar');
-        } catch (PcreErrorException $e) {
+        } catch (PcreErrorException $ex) {
             $this->assertStringEndsWith(
                 "\n\nPattern:\n- /(?:\D+|<\d+>)*[!?]/\n- /\h+/\n\nSubject:\nfoobar foobar foobar",
-                (string) $e,
+                (string) $ex,
             );
         }
     }
@@ -165,10 +165,10 @@ final class RegexTest extends TestCase
     {
         try {
             Regex::replaceCallbackArray(['/(?:\D+|<\d+>)*[!?]/' => fn() => ''], 'foobar foobar foobar');
-        } catch (PcreErrorException $e) {
+        } catch (PcreErrorException $ex) {
             $this->assertStringEndsWith(
                 "\n\nPattern:\n/(?:\D+|<\d+>)*[!?]/: <callable>\n\nSubject:\nfoobar foobar foobar",
-                (string) $e,
+                (string) $ex,
             );
         }
     }

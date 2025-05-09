@@ -8,6 +8,7 @@ use Salient\Http\HttpUtil;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Arr;
 use Salient\Utility\File;
+use Salient\Utility\Regex;
 use Salient\Utility\Str;
 use RuntimeException;
 
@@ -22,6 +23,7 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
      */
     public static function dumpHttpMessage(
         $stream,
+        bool $addNewlines = false,
         bool $isRequest = false,
         ?string &$startLine = null,
         ?Headers &$headers = null,
@@ -33,16 +35,22 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
         $contentLength = null;
         $chunked = null;
         $bodyReceived = false;
+        $trailing = '';
         while (!@feof($stream)) {
             if ($contentLength !== null) {
-                echo $body .= File::readAll($stream, $contentLength);
+                $data = File::readAll($stream, $contentLength);
+                $body .= $data;
+                self::dump($data, $trailing, $addNewlines);
+                self::terminate($trailing, $addNewlines);
                 return;
             }
 
             if ($chunked === true) {
-                echo $line = File::readLine($stream);
+                $line = File::readLine($stream);
+                self::dump($line, $trailing, $addNewlines);
                 if ($bodyReceived) {
                     if (rtrim($line, "\r\n") === '') {
+                        self::terminate($trailing, $addNewlines);
                         return;
                     }
                     $headers = $headers->addLine($line);
@@ -58,8 +66,11 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
                     $bodyReceived = true;
                     continue;
                 }
-                echo $body .= File::readAll($stream, $chunkSize);
-                echo $line = File::readLine($stream);
+                $data = File::readAll($stream, $chunkSize);
+                $body .= $data;
+                self::dump($data, $trailing, $addNewlines);
+                $line = File::readLine($stream);
+                self::dump($line, $trailing, $addNewlines);
                 $line = rtrim($line, "\r\n");
                 if ($line !== '') {
                     throw new RuntimeException('Invalid chunk');
@@ -68,11 +79,14 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
             }
 
             if ($chunked === false) {
-                echo $body .= File::getContents($stream);
+                $data = File::getContents($stream);
+                $body .= $data;
+                self::dump($data, $trailing, $addNewlines);
                 continue;
             }
 
-            echo $line = File::readLine($stream);
+            $line = File::readLine($stream);
+            self::dump($line, $trailing, $addNewlines);
             if ($startLine === null) {
                 $startLine = $line;
                 continue;
@@ -92,9 +106,38 @@ final class TestUtil extends AbstractUtility implements HasHttpHeader
                     continue;
                 }
                 if ($isRequest) {
+                    self::terminate($trailing, $addNewlines);
                     return;
                 }
                 $chunked = false;
+            }
+        }
+
+        self::terminate($trailing, $addNewlines);
+    }
+
+    private static function dump(string $data, string &$trailing, bool $addNewlines): void
+    {
+        echo $data;
+
+        if ($addNewlines) {
+            $trimmed = rtrim($data);
+            if ($trimmed === '') {
+                $trailing .= $data;
+            } elseif ($trimmed !== $data) {
+                $trailing = (string) substr($data, strlen($trimmed));
+            } else {
+                $trailing = '';
+            }
+        }
+    }
+
+    private static function terminate(string $trailing, bool $addNewlines): void
+    {
+        if ($addNewlines) {
+            $count = Regex::matchAll('/(?:\r\n|\n|\r)/', $trailing);
+            if ($count < 2) {
+                echo str_repeat("\r\n", 2 - $count);
             }
         }
     }

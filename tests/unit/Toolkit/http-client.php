@@ -4,83 +4,129 @@ namespace Salient\Tests;
 
 use Salient\Contract\Http\HasRequestMethod as Method;
 use Salient\Utility\File;
-use Salient\Utility\Str;
+use Salient\Utility\Inflect;
+use Salient\Utility\Test;
 use RuntimeException;
 
 require dirname(__DIR__, 3) . '/vendor/autoload.php';
 
-// Usage: php http-client.php [<host>[:<port>] [<method> [<target> [<timeout> ["<header>: <value>"...]]]]]
+/*
+ * Usage: php http-client.php [--add-newlines] [<host>[:<port>] [<timeout>] [<method> [<target> ["<header>: <value>"...]]]] [-- [<method> [<target> ["<header>: <value>"...]]]]...
+ *
+ * Sends one or more requests to an HTTP server.
+ *
+ * If a method other than `GET` or `HEAD` is given, a message body is read from
+ * the standard input and reused for subsequent requests as needed.
+ *
+ * Use `--add-newlines` to add one or two newlines after responses with one or
+ * zero trailing newlines respectively.
+ *
+ * Defaults:
+ * - <host>: localhost
+ * - <port>: 80, or 3008 if no host is given
+ * - <timeout>: -1 (wait indefinitely)
+ * - <method>: GET
+ * - <target>: /
+ */
 
 /** @var string[] */
-$args = $_SERVER['argv'];
-$host = $args[1] ?? 'localhost:3008';
-$method = $args[2] ?? 'GET';
-$target = $args[3] ?? '/';
-$timeout = (int) ($args[4] ?? -1);
-$headers = array_slice($args, 5);
+$_args = $_SERVER['argv'];
+/** @var int|false */
+$key = array_search('--', $_args, true);
+[$args, $_args] = $key === false
+    ? [array_slice($_args, 1), []]
+    : [array_slice($_args, 1, $key - 1), array_slice($_args, $key + 1)];
 
-$body = $method === 'GET' || $method === 'HEAD'
-    ? ''
-    : File::getContents(\STDIN);
+$addNewlines = false;
+if ($args && $args[0] === '--add-newlines') {
+    array_shift($args);
+    $addNewlines = true;
+}
+
+$host = array_shift($args) ?? 'localhost:3008';
+$timeout = $args && Test::isInteger($args[0])
+    ? (int) array_shift($args)
+    : -1;
 
 $host = explode(':', $host, 2);
 $port = (int) ($host[1] ?? 80);
 $host = $host[0];
 $socket = "tcp://$host:$port";
 
-array_unshift(
-    $headers,
-    sprintf('%s %s HTTP/1.1', $method, $target),
-    sprintf('Host: %s', $port === 80 ? $host : "$host:$port"),
-    'Accept: */*',
-);
+$i = -1;
+do {
+    $i++;
+    $method = $args[0] ?? 'GET';
+    $target = $args[1] ?? '/';
+    $headers = array_slice($args, 2);
 
-if (
-    $body !== ''
-    || ([
-        Method::METHOD_POST => true,
-        Method::METHOD_PUT => true,
-        Method::METHOD_PATCH => true,
-        Method::METHOD_DELETE => true,
-    ][$method] ?? false)
-) {
-    $headers[] = 'Content-Length: ' . strlen($body);
-}
+    $body = $method === 'GET' || $method === 'HEAD'
+        ? ''
+        : ($stdin ??= File::getContents(\STDIN));
 
-$headers = implode(\PHP_EOL, $headers);
-$request = <<<EOF
-$headers
+    array_unshift(
+        $headers,
+        sprintf('%s %s HTTP/1.1', $method, $target),
+        sprintf('Host: %s', $port === 80 ? $host : "$host:$port"),
+        'Accept: */*',
+    );
 
-$body
-EOF;
+    if (
+        $body !== ''
+        || ([
+            Method::METHOD_POST => true,
+            Method::METHOD_PUT => true,
+            Method::METHOD_PATCH => true,
+            Method::METHOD_DELETE => true,
+        ][$method] ?? false)
+    ) {
+        $headers[] = 'Content-Length: ' . strlen($body);
+    }
 
-$errorCode = null;
-$errorMessage = null;
-$client = @stream_socket_client($socket, $errorCode, $errorMessage, $timeout);
-if ($client === false) {
-    throw new RuntimeException(sprintf(
-        'Error connecting to %s (%d: %s)',
-        $socket,
-        $errorCode,
-        $errorMessage,
-    ));
-}
+    $request = implode("\r\n", $headers) . "\r\n\r\n" . $body;
 
-fprintf(
-    \STDERR,
-    <<<EOF
+    $errorCode = null;
+    $errorMessage = null;
+    $stream = @stream_socket_client($socket, $errorCode, $errorMessage, $timeout);
+    if ($stream === false) {
+        throw new RuntimeException(sprintf(
+            'Error connecting to %s (%d: %s)',
+            $socket,
+            $errorCode,
+            $errorMessage,
+        ));
+    }
+
+    fprintf(
+        \STDERR,
+        <<<EOF
 ==> Connected to %s:%d
+ -> Sending request #%d (%s)
 > %s
 >
 
 EOF,
-    $host,
-    $port,
-    str_replace(\PHP_EOL, \PHP_EOL . '> ', $headers),
-);
+        $host,
+        $port,
+        $i + 1,
+        Inflect::format(strlen($request), '{{#}} {{#:byte}}'),
+        implode(\PHP_EOL . '> ', $headers),
+    );
 
-File::writeAll($client, Str::setEol($request, "\r\n"));
+    File::writeAll($stream, $request);
 
-TestUtil::dumpHttpMessage($client);
+    $isLastRequest = !$_args;
+    TestUtil::dumpHttpMessage($stream, $addNewlines && !$isLastRequest);
 
-File::close($client);
+    File::close($stream);
+
+    if ($isLastRequest) {
+        break;
+    }
+
+    /** @var int|false */
+    $key = array_search('--', $_args, true);
+    [$args, $_args] = $key === false
+        ? [$_args, []]
+        : [array_slice($_args, 0, $key), array_slice($_args, $key + 1)];
+} while (true);

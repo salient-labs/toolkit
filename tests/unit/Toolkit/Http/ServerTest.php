@@ -23,7 +23,7 @@ use Salient\Utility\Str;
  * @covers \Salient\Http\HasInnerHeadersTrait
  * @covers \Salient\Http\Headers
  */
-final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaType, HasRequestMethod
+final class ServerTest extends TestCase implements HasHttpHeader, HasMediaType, HasRequestMethod
 {
     private Server $Server;
 
@@ -87,7 +87,15 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
 
     public function testListen(): void
     {
-        $server = $this->getServerWithClient($client);
+        $server = $this->getServerWithClient(
+            $client,
+            [
+                ['RESET', '/resource/71', self::HEADER_AUTHORIZATION . ': Bearer foo.bar.baz'],
+                [],
+            ],
+            '{}',
+            true,
+        );
         $this->assertTrue($server->isRunning());
 
         /** @var ServerRequestInterface */
@@ -99,6 +107,7 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
                     [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT],
                 ))->withReturnValue($request);
             },
+            2,
         );
         $this->assertSame(0, $client->wait());
         $this->assertInstanceOf(ServerRequestInterface::class, $request);
@@ -111,6 +120,10 @@ final class HttpServerTest extends TestCase implements HasHttpHeader, HasMediaTy
         $this->assertSame('http://localhost:3008/', (string) $request->getUri());
         $this->assertSame('', (string) $request->getBody());
         $this->assertSame(Str::setEol(<<<'EOF'
+HTTP/1.1 501 Not Implemented
+
+Invalid HTTP request line: RESET /resource/71 HTTP/1.1
+
 HTTP/1.1 200 OK
 Content-Type: text/plain
 
@@ -118,6 +131,15 @@ Hello, world!
 EOF, "\r\n"), $client->getOutputAsText());
         $this->assertSame(<<<'EOF'
 ==> Connected to localhost:3008
+ -> Sending request #1 (122 bytes)
+> RESET /resource/71 HTTP/1.1
+> Host: localhost:3008
+> Accept: */*
+> Authorization: Bearer foo.bar.baz
+> Content-Length: 2
+>
+==> Connected to localhost:3008
+ -> Sending request #2 (53 bytes)
 > GET / HTTP/1.1
 > Host: localhost:3008
 > Accept: */*
@@ -125,29 +147,46 @@ EOF, "\r\n"), $client->getOutputAsText());
 EOF, $client->getOutputAsText(Process::STDERR));
     }
 
+    /**
+     * @param array<list<string>> $requests An array of lists with zero or more
+     * of the following values:
+     * - method (default: `"GET"`)
+     * - target (default: `"/"`)
+     * - `"<header>: <value>"`, ...
+     * @param-out Process $client
+     */
     private function getServerWithClient(
         ?Process &$client,
-        string $method = self::METHOD_GET,
-        string $target = '/',
+        array $requests = [],
         string $body = '',
-        string ...$headers
+        bool $addNewlines = false
     ): Server {
         $this->Server ??= new Server('localhost', 3008, 30);
         if (!$this->Server->isRunning()) {
             $this->Server->start();
         }
 
-        $client = (
-            new Process([
-                ...self::PHP_COMMAND,
-                self::getPackagePath() . '/tests/unit/Toolkit/http-client.php',
-                'localhost:3008',
-                $method,
-                $target,
-                '300',
-                ...$headers,
-            ], $body)
-        )->start();
+        $args = [
+            ...self::PHP_COMMAND,
+            dirname(__DIR__) . '/http-client.php',
+            ...($addNewlines ? ['--add-newlines'] : []),
+            'localhost:3008',
+            '300',
+        ];
+
+        $i = 0;
+        foreach ($requests as $request) {
+            if ($i++) {
+                $args[] = '--';
+            }
+            $args[] = array_shift($request) ?? self::METHOD_GET;
+            $args[] = array_shift($request) ?? '/';
+            if ($request) {
+                array_push($args, ...$request);
+            }
+        }
+
+        $client = (new Process($args, $body))->start();
 
         return $this->Server;
     }

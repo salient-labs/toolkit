@@ -392,7 +392,7 @@ EOF,
     {
         $bad = new Response(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
         $good = new Response(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
-        $server = $this->startHttpServer($bad, $good, $bad);
+        $server = $this->startHttpServer([$bad, $good, $bad]);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -435,7 +435,7 @@ EOF;
     {
         $bad = new Response(502, '502 bad gateway', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
         $good = new Response(200, 'foo', [self::HEADER_CONTENT_TYPE => self::TYPE_TEXT]);
-        $server = $this->startHttpServer($bad, $good, $bad);
+        $server = $this->startHttpServer([$bad, $good, $bad]);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -479,7 +479,7 @@ EOF;
             new Response(302, '', [self::HEADER_LOCATION => '/foo/bar?baz=1']),
             new Response(200, Json::encode(self::OUTPUT), [self::HEADER_CONTENT_TYPE => self::TYPE_JSON]),
         ];
-        $server = $this->startHttpServer(...$responses);
+        $server = $this->startHttpServer($responses);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -538,7 +538,7 @@ EOF,
             new Response(302, '', [self::HEADER_LOCATION => '/foo/bar']),
             new Response(302, '', [self::HEADER_LOCATION => '/']),
         ];
-        $server = $this->startHttpServer(...$responses, ...$responses);
+        $server = $this->startHttpServer([...$responses, ...$responses]);
         $output = [];
         $curler = $this
             ->getCurler()
@@ -607,6 +607,6 @@ EOF,
                 [self::HEADER_CONTENT_TYPE => self::TYPE_JSON],
             );
         }
-        return $this->startHttpServer(...($responses ?? []));
+        return $this->startHttpServer(($responses ?? []));
     }
 }

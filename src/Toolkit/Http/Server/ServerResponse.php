@@ -49,16 +49,14 @@ class ServerResponse extends Response
      * @param T $value
      * @return static<T>
      */
-    public function withReturnValue($value)
+    public function withReturnValue($value = null)
     {
         /** @var static<T> */
         // @phpstan-ignore varTag.nativeType
         $response = $this;
-        // @phpstan-ignore salient.property.type
-        $response = $response
+        // @phpstan-ignore salient.property.type, return.type
+        return $response
             ->with('HasReturnValue', true)
             ->with('ReturnValue', $value);
-        // @phpstan-ignore return.type
-        return $response;
     }
 }

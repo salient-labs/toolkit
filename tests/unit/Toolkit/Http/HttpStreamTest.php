@@ -276,9 +276,8 @@ final class HttpStreamTest extends TestCase
         $throws = function (callable $fn): void {
             try {
                 $fn();
-            } catch (Throwable $e) {
-                $this->assertStringContainsString('Stream is closed or detached', $e->getMessage());
-
+            } catch (Throwable $ex) {
+                $this->assertStringContainsString('Stream is closed or detached', $ex->getMessage());
                 return;
             }
 

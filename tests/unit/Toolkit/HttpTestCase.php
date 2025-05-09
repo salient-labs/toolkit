@@ -98,23 +98,23 @@ abstract class HttpTestCase extends TestCase implements
     }
 
     /**
-     * @param ResponseInterface|string ...$responses
+     * @param ResponseInterface[] $responses
      */
-    protected function startHttpServer(...$responses): Process
+    protected function startHttpServer(array $responses = [], bool $addNewlines = false): Process
     {
         $this->stopHttpServer();
 
-        if ($responses === [] || count($responses) > 1) {
+        if (!$responses) {
             $args[] = '--';
-            if ($responses !== []) {
-                $dir = File::createTempDir();
-                foreach ($responses as $i => $response) {
-                    $file = sprintf('%s/%d.http', $dir, $i);
-                    File::writeContents($file, $this->filterResponse($response));
-                    $args[] = $file;
-                }
-                $this->ResponseDir = $dir;
+        } elseif (count($responses) > 1) {
+            $args[] = '--';
+            $dir = File::createTempDir();
+            foreach ($responses as $i => $response) {
+                $file = sprintf('%s/%d.http', $dir, $i);
+                File::writeContents($file, $this->filterResponse($response));
+                $args[] = $file;
             }
+            $this->ResponseDir = $dir;
         } else {
             $input = $this->filterResponse($responses[0]);
         }
@@ -122,6 +122,7 @@ abstract class HttpTestCase extends TestCase implements
         $process = new Process([
             ...self::PHP_COMMAND,
             __DIR__ . '/http-server.php',
+            ...($addNewlines ? ['--add-newlines'] : []),
             self::HTTP_SERVER_AUTHORITY,
             '300',
             ...($args ?? []),
@@ -169,14 +170,10 @@ abstract class HttpTestCase extends TestCase implements
         }
     }
 
-    /**
-     * @param ResponseInterface|string $response
-     */
-    private function filterResponse($response): string
+    private function filterResponse(ResponseInterface $response): string
     {
         if (
-            $response instanceof ResponseInterface
-            && !$response->hasHeader(self::HEADER_CONTENT_LENGTH)
+            !$response->hasHeader(self::HEADER_CONTENT_LENGTH)
             && ($size = $response->getBody()->getSize()) !== null
         ) {
             $response = $response->withHeader(self::HEADER_CONTENT_LENGTH, (string) $size);

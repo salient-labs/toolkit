@@ -5,4 +5,4 @@ namespace Salient\Http\Exception;
 /**
  * @api
  */
-class HttpServerException extends HttpException {}
+class ServerException extends HttpException {}
