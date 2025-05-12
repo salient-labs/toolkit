@@ -10,7 +10,7 @@ use Salient\Contract\Http\Exception\InvalidHeaderException;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasHttpHeaders;
 use Salient\Contract\Http\HasMediaType;
-use Salient\Http\OAuth2\AccessToken;
+use Salient\Http\OAuth2\OAuth2AccessToken;
 use Salient\Http\Headers;
 use Salient\Tests\TestCase;
 use Salient\Utility\Arr;
@@ -664,7 +664,7 @@ final class HeadersTest extends TestCase implements
     public function testFilter(): void
     {
         $index = Arr::toIndex(Arr::lower(self::HEADERS_SENSITIVE));
-        $token = new AccessToken('foo.bar.baz', 'Bearer', time() + 3600);
+        $token = new OAuth2AccessToken('foo.bar.baz', time() + 3600);
         $headers = (new Headers())
             ->authorize($token)
             ->set(self::HEADER_ACCEPT, '*/*')

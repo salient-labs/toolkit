@@ -4,7 +4,7 @@ namespace Salient\Tests\Http\OAuth2\OAuth2Client;
 
 use League\OAuth2\Client\Provider\GenericProvider;
 use Salient\Core\Facade\Console;
-use Salient\Http\OAuth2\AccessToken;
+use Salient\Http\OAuth2\OAuth2AccessToken;
 use Salient\Http\OAuth2\OAuth2Client;
 use Salient\Http\OAuth2\OAuth2Flow;
 use Salient\Http\Server\Server;
@@ -88,7 +88,7 @@ final class OAuth2TestClient extends OAuth2Client
     /**
      * @inheritDoc
      */
-    protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void
+    protected function receiveToken(OAuth2AccessToken $token, ?array $idToken, string $grantType): void
     {
         Console::debug('OAuth 2.0 access token received');
     }

@@ -2,64 +2,59 @@
 
 namespace Salient\Tests\Http\OAuth2;
 
-use Salient\Http\OAuth2\AccessToken;
+use Salient\Http\OAuth2\OAuth2AccessToken;
 use Salient\Tests\TestCase;
 use DateTimeImmutable;
 use InvalidArgumentException;
 
 /**
- * @covers \Salient\Http\OAuth2\AccessToken
+ * @covers \Salient\Http\OAuth2\OAuth2AccessToken
+ * @covers \Salient\Http\GenericToken
+ * @covers \Salient\Http\GenericCredential
  */
-final class AccessTokenTest extends TestCase
+final class OAuth2AccessTokenTest extends TestCase
 {
     private const TOKEN = 'eyJ0eXAiOiJKV1QiLA0KICJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJqb2UiLA0KICJleHAiOjEzMDA4MTkzODAsDQogImh0dHA6Ly9leGFtcGxlLmNvbS9pc19yb290Ijp0cnVlfQ.dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk';
 
-    public function testInterfaceMethods(): void
+    public function testGetCredential(): void
     {
-        $token = new AccessToken(self::TOKEN, 'Bearer', null);
-        $this->assertSame(self::TOKEN, $token->getCredential());
+        $token = new OAuth2AccessToken(self::TOKEN);
         $this->assertSame('Bearer', $token->getAuthenticationScheme());
+        $this->assertSame(self::TOKEN, $token->getCredential());
     }
 
-    public function testToken(): void
+    public function testGetExpires(): void
     {
-        $token = new AccessToken(self::TOKEN, 'Bearer', null);
-        $this->assertSame(self::TOKEN, $token->Token);
-        $this->assertSame('Bearer', $token->Type);
-    }
-
-    public function testExpires(): void
-    {
-        $token = new AccessToken(self::TOKEN, 'Bearer', null);
-        $this->assertNull($token->Expires);
+        $token = new OAuth2AccessToken(self::TOKEN);
+        $this->assertNull($token->getExpires());
 
         $expires = new DateTimeImmutable('+1 hour');
-        $token = new AccessToken(self::TOKEN, 'Bearer', $expires);
-        $this->assertSame($expires, $token->Expires);
+        $token = new OAuth2AccessToken(self::TOKEN, $expires);
+        $this->assertSame($expires, $token->getExpires());
 
         $expires = time() + 3600;
-        $token = new AccessToken(self::TOKEN, 'Bearer', $expires);
-        $this->assertNotNull($token->Expires);
-        $this->assertSame($expires, $token->Expires->getTimestamp());
+        $token = new OAuth2AccessToken(self::TOKEN, $expires);
+        $this->assertNotNull($token->getExpires());
+        $this->assertSame($expires, $token->getExpires()->getTimestamp());
     }
 
-    public function testInvalidExpires(): void
+    public function testInvalidExpiration(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Invalid $expires: -1');
-        $token = new AccessToken(self::TOKEN, 'Bearer', -1);
+        $this->expectExceptionMessage('Invalid timestamp: -1');
+        new OAuth2AccessToken(self::TOKEN, -1);
     }
 
     public function testScopesAndClaims(): void
     {
         $scopes = ['openid', 'profile'];
         $claims = ['aud' => __CLASS__];
-        $token = new AccessToken(self::TOKEN, 'Bearer', null, $scopes, $claims);
-        $this->assertSame($scopes, $token->Scopes);
-        $this->assertSame($claims, $token->Claims);
+        $token = new OAuth2AccessToken(self::TOKEN, null, $scopes, $claims);
+        $this->assertSame($scopes, $token->getScopes());
+        $this->assertSame($claims, $token->getClaims());
 
-        $token = new AccessToken(self::TOKEN, 'Bearer', null, null, null);
-        $this->assertSame([], $token->Scopes);
-        $this->assertSame([], $token->Claims);
+        $token = new OAuth2AccessToken(self::TOKEN);
+        $this->assertSame([], $token->getScopes());
+        $this->assertSame([], $token->getClaims());
     }
 }
