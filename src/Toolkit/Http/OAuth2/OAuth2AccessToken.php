@@ -2,81 +2,53 @@
 
 namespace Salient\Http\OAuth2;
 
-use Salient\Contract\Core\Entity\Readable;
-use Salient\Contract\Core\Immutable;
-use Salient\Contract\Http\CredentialInterface;
-use Salient\Core\Concern\ReadableProtectedPropertiesTrait;
-use Salient\Utility\Date;
-use DateTimeImmutable;
-use DateTimeInterface;
-use InvalidArgumentException;
+use Salient\Http\GenericToken;
 
 /**
- * A token issued by an authorization provider for access to protected resources
- *
- * @property-read string $Token
- * @property-read string $Type
- * @property-read DateTimeImmutable|null $Expires
- * @property-read string[] $Scopes
- * @property-read array<string,mixed> $Claims
+ * @api
  */
-final class AccessToken implements CredentialInterface, Immutable, Readable
+class OAuth2AccessToken extends GenericToken
 {
-    use ReadableProtectedPropertiesTrait;
-
-    protected string $Token;
-    protected string $Type;
-    protected ?DateTimeImmutable $Expires;
     /** @var string[] */
-    protected array $Scopes;
+    private array $Scopes;
     /** @var array<string,mixed> */
-    protected array $Claims;
+    private array $Claims;
 
     /**
-     * @param DateTimeInterface|int|null $expires `null` if the access token's
-     * lifetime is unknown, otherwise a {@see DateTimeInterface} or Unix
-     * timestamp representing its expiration time.
-     * @param string[]|null $scopes
-     * @param array<string,mixed>|null $claims
+     * @api
+     *
+     * @param string[] $scopes
+     * @param array<string,mixed> $claims
      */
     public function __construct(
         string $token,
-        string $type,
-        $expires,
-        ?array $scopes = null,
-        ?array $claims = null
+        $expires = null,
+        array $scopes = [],
+        array $claims = []
     ) {
-        if (is_int($expires) && $expires < 0) {
-            throw new InvalidArgumentException(sprintf(
-                'Invalid $expires: %d',
-                $expires
-            ));
-        }
+        $this->Scopes = $scopes;
+        $this->Claims = $claims;
 
-        $this->Token = $token;
-        $this->Type = $type;
-        $this->Expires = $expires instanceof DateTimeInterface
-            ? Date::immutable($expires)
-            : ($expires === null
-                ? null
-                : new DateTimeImmutable("@$expires"));
-        $this->Scopes = $scopes ?: [];
-        $this->Claims = $claims ?: [];
+        parent::__construct($token, 'Bearer', $expires);
     }
 
     /**
-     * @inheritDoc
+     * Get the token's scopes
+     *
+     * @return string[]
      */
-    public function getAuthenticationScheme(): string
+    public function getScopes(): array
     {
-        return $this->Type;
+        return $this->Scopes;
     }
 
     /**
-     * @inheritDoc
+     * Get the token's claims
+     *
+     * @return array<string,mixed>
      */
-    public function getCredential(): string
+    public function getClaims(): array
     {
-        return $this->Token;
+        return $this->Claims;
     }
 }

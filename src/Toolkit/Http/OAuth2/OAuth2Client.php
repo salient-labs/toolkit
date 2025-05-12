@@ -126,7 +126,7 @@ abstract class OAuth2Client
      * @param array<string,mixed>|null $idToken
      * @param OAuth2GrantType::* $grantType
      */
-    abstract protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void;
+    abstract protected function receiveToken(OAuth2AccessToken $token, ?array $idToken, string $grantType): void;
 
     public function __construct()
     {
@@ -162,9 +162,9 @@ abstract class OAuth2Client
      *
      * @param string[]|null $scopes
      */
-    final public function getAccessToken(?array $scopes = null): AccessToken
+    final public function getAccessToken(?array $scopes = null): OAuth2AccessToken
     {
-        $token = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class);
+        $token = Cache::getInstance()->getInstanceOf($this->TokenKey, OAuth2AccessToken::class);
         if ($token) {
             if ($this->accessTokenHasScopes($token, $scopes)) {
                 return $token;
@@ -197,9 +197,9 @@ abstract class OAuth2Client
      *
      * @param string[]|null $scopes
      */
-    private function accessTokenHasScopes(AccessToken $token, ?array $scopes): bool
+    private function accessTokenHasScopes(OAuth2AccessToken $token, ?array $scopes): bool
     {
-        if ($scopes && array_diff($scopes, $token->Scopes)) {
+        if ($scopes && array_diff($scopes, $token->getScopes())) {
             return false;
         }
         return true;
@@ -209,7 +209,7 @@ abstract class OAuth2Client
      * If an unexpired refresh token is available, use it to get a new access
      * token from the provider if possible
      */
-    final protected function refreshAccessToken(): ?AccessToken
+    final protected function refreshAccessToken(): ?OAuth2AccessToken
     {
         $refreshToken = Cache::getString("{$this->TokenKey}:refresh");
         return $refreshToken === null
@@ -225,7 +225,7 @@ abstract class OAuth2Client
      *
      * @param array<string,mixed> $options
      */
-    final protected function authorize(array $options = []): AccessToken
+    final protected function authorize(array $options = []): OAuth2AccessToken
     {
         if (isset($options['scope'])) {
             $scopes = $this->filterScope($options['scope']);
@@ -237,9 +237,9 @@ abstract class OAuth2Client
                 $cache->has($this->TokenKey)
                 || $cache->has("{$this->TokenKey}:refresh")
             ) {
-                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class);
+                $lastToken = $cache->getInstanceOf($this->TokenKey, OAuth2AccessToken::class);
                 if ($lastToken) {
-                    $scopes = Arr::extend($lastToken->Scopes, ...$scopes);
+                    $scopes = Arr::extend($lastToken->getScopes(), ...$scopes);
                 }
             }
             $cache->close();
@@ -265,7 +265,7 @@ abstract class OAuth2Client
     /**
      * @param array<string,mixed> $options
      */
-    private function authorizeWithClientCredentials(array $options = []): AccessToken
+    private function authorizeWithClientCredentials(array $options = []): OAuth2AccessToken
     {
         // league/oauth2-client doesn't add scopes to client_credentials
         // requests
@@ -290,7 +290,7 @@ abstract class OAuth2Client
     /**
      * @param array<string,mixed> $options
      */
-    private function authorizeWithAuthorizationCode(array $options = []): AccessToken
+    private function authorizeWithAuthorizationCode(array $options = []): OAuth2AccessToken
     {
         if (!$this->Listener) {
             throw new LogicException('Cannot use the Authorization Code flow without a Listener');
@@ -380,7 +380,7 @@ abstract class OAuth2Client
         string $grantType,
         array $options = [],
         $scope = null
-    ): AccessToken {
+    ): OAuth2AccessToken {
         Console::debug('Requesting access token with ' . $grantType);
 
         $_token = $this->Provider->getAccessToken($grantType, $options);
@@ -419,21 +419,20 @@ abstract class OAuth2Client
             ?? $scope);
 
         if (!$scopes && $grantType === OAuth2GrantType::REFRESH_TOKEN) {
-            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class);
+            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, OAuth2AccessToken::class);
             if ($lastToken) {
-                $scopes = $lastToken->Scopes;
+                $scopes = $lastToken->getScopes();
             }
         }
 
-        $token = new AccessToken(
+        $token = new OAuth2AccessToken(
             $accessToken,
-            $tokenType,
             $expires,
             $scopes ?: $this->getDefaultScopes(),
             $claims
         );
 
-        Cache::set($this->TokenKey, $token, $token->Expires);
+        Cache::set($this->TokenKey, $token, $token->getExpires());
 
         if ($idToken !== null) {
             $idToken = $this->getValidJsonWebToken($idToken, true);
