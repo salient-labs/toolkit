@@ -6,7 +6,6 @@ use League\OAuth2\Client\Provider\GenericProvider;
 use Salient\Core\Facade\Console;
 use Salient\Http\OAuth2\OAuth2AccessToken;
 use Salient\Http\OAuth2\OAuth2Client;
-use Salient\Http\OAuth2\OAuth2Flow;
 use Salient\Http\Server\Server;
 use Salient\Utility\Env;
 
@@ -58,6 +57,8 @@ final class OAuth2TestClient extends OAuth2Client
         return new GenericProvider([
             'clientId' => $this->AppId,
             'clientSecret' => $this->Secret,
+            // `redirectUri` can be omitted if support for the Authorization
+            // Code flow is not required
             'redirectUri' => $this->getRedirectUri(),
             'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $this->TenantId),
             'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $this->TenantId),
@@ -72,9 +73,9 @@ final class OAuth2TestClient extends OAuth2Client
     /**
      * @inheritDoc
      */
-    protected function getFlow(): int
+    protected function getFlow(): string
     {
-        return OAuth2Flow::CLIENT_CREDENTIALS;
+        return self::GRANT_CLIENT_CREDENTIALS;
     }
 
     /**

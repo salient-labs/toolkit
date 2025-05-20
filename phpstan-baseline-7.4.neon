@@ -19,24 +19,6 @@ parameters:
 			path: tests/fixtures/Toolkit/Core/Process/cat.php
 
 		-
-			message: '#^Method Salient\\Tests\\Http\\OAuth2\\OAuth2Client\\OAuth2TestClient\:\:getFlow\(\) never returns 1 so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
-
-		-
-			message: '#^Method Salient\\Tests\\Http\\OAuth2\\OAuth2Client\\OAuth2TestClient\:\:getJsonWebKeySetUrl\(\) never returns null so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
-
-		-
-			message: '#^Method Salient\\Tests\\Http\\OAuth2\\OAuth2Client\\OAuth2TestClient\:\:getListener\(\) never returns null so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
-
-		-
 			message: '#^PHPDoc tag @property has invalid value \(\$MyMagicProperty Description of MyBaseClass\:\:\$MyMagicProperty\)\: Unexpected token "\$MyMagicProperty", expected type at offset 46 on line 4$#'
 			identifier: phpDoc.parseError
 			count: 1
