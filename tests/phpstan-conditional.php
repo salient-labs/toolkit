@@ -59,7 +59,7 @@ if (\PHP_VERSION_ID < 80000) {
             ],
             'ignoreErrors' => array_merge([
                 [
-                    'message' => '#^Parameter \#1 \$ch of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects resource, CurlHandle\|resource(?:\|null)? given\.$#',
+                    'message' => '#^Parameter \#1 \$ch of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects resource, CurlHandle\|resource given\.$#',
                 ],
                 [
                     'message' => '#^Call to an undefined method ReflectionClass\<(?:object|\*)\>\:\:(?:isEnum|isReadOnly)\(\)\.$#',
@@ -110,7 +110,7 @@ return [
     'parameters' => [
         'ignoreErrors' => array_merge([
             [
-                'message' => '#^Parameter \#1 \$handle of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects CurlHandle, CurlHandle\|resource(?:\|null)? given\.$#',
+                'message' => '#^Parameter \#1 \$handle of function curl_(?:errno|exec|getinfo|reset|setopt(?:_array)?) expects CurlHandle, CurlHandle\|resource given\.$#',
             ],
             [
                 'message' => "#^Offset 'uri' on array\{timed_out\: bool, blocked\: bool, eof\: bool, unread_bytes\: int, stream_type\: string, wrapper_type\: string, wrapper_data\: mixed, mode\: string, \.\.\.\} on left side of \?\? always exists and is not nullable\.\$#",

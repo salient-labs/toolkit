@@ -24,7 +24,7 @@ use LogicException;
 final class SendHttpSyncProviderRequest extends AbstractSyncCommand implements HasRequestMethod
 {
     private string $ProviderBasename = '';
-    /** @var class-string<HttpSyncProvider> */
+    /** @var class-string */
     private string $Provider = HttpSyncProvider::class;
     private string $Endpoint = '';
     /** @var string[] */
@@ -133,6 +133,7 @@ final class SendHttpSyncProviderRequest extends AbstractSyncCommand implements H
                 ));
             }
 
+            /** @var class-string<HttpSyncProvider> $provider */
             if (!$this->App->has($provider)) {
                 $this->App->singleton($provider);
             }

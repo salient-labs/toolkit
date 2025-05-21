@@ -1209,6 +1209,7 @@ class Curler implements CurlerInterface, Buildable
             self::$Handle = $handle;
             $resetHandle = false;
         } else {
+            $handle = self::$Handle;
             $opt[\CURLOPT_URL] = (string) $uri;
             $resetHandle = true;
         }
@@ -1291,21 +1292,21 @@ class Curler implements CurlerInterface, Buildable
 
                 if ($resetHandle || !$transfer) {
                     if ($resetHandle) {
-                        curl_reset(self::$Handle);
+                        curl_reset($handle);
                         $resetHandle = false;
                     }
                     $opt[\CURLOPT_HTTPHEADER] = $headers->getLines('%s: %s', '%s;');
-                    curl_setopt_array(self::$Handle, $opt);
+                    curl_setopt_array($handle, $opt);
 
                     if ($this->CookiesCacheKey !== null) {
                         // "If the name is an empty string, no cookies are loaded,
                         // but cookie handling is still enabled"
-                        curl_setopt(self::$Handle, \CURLOPT_COOKIEFILE, '');
+                        curl_setopt($handle, \CURLOPT_COOKIEFILE, '');
                         /** @var non-empty-string[] */
                         $cookies = $this->getCacheInstance()->getArray($this->CookiesCacheKey);
                         if ($cookies) {
                             foreach ($cookies as $cookie) {
-                                curl_setopt(self::$Handle, \CURLOPT_COOKIELIST, $cookie);
+                                curl_setopt($handle, \CURLOPT_COOKIELIST, $cookie);
                             }
                         }
                     }
@@ -1313,10 +1314,10 @@ class Curler implements CurlerInterface, Buildable
 
                 $transfer++;
 
-                Event::dispatch(new CurlRequestEvent($this, self::$Handle, $request));
-                $result = curl_exec(self::$Handle);
+                Event::dispatch(new CurlRequestEvent($this, $handle, $request));
+                $result = curl_exec($handle);
                 if ($result === false) {
-                    throw new CurlErrorException(curl_errno(self::$Handle), $request, $this->getCurlInfo());
+                    throw new CurlErrorException(curl_errno($handle), $request, $this->getCurlInfo());
                 }
 
                 if (
@@ -1336,12 +1337,12 @@ class Curler implements CurlerInterface, Buildable
                 $code = (int) $split[1];
                 $reason = $split[2] ?? null;
                 $response = new Response($code, $bodyIn, $headersIn, $reason, $version);
-                Event::dispatch(new CurlResponseEvent($this, self::$Handle, $request, $response));
+                Event::dispatch(new CurlResponseEvent($this, $handle, $request, $response));
 
                 if ($this->CookiesCacheKey !== null) {
                     $this->getCacheInstance()->set(
                         $this->CookiesCacheKey,
-                        curl_getinfo(self::$Handle, \CURLINFO_COOKIELIST)
+                        curl_getinfo($handle, \CURLINFO_COOKIELIST)
                     );
                 }
 
@@ -1397,7 +1398,7 @@ class Curler implements CurlerInterface, Buildable
                     $resetHandle = true;
                 } else {
                     curl_setopt(
-                        self::$Handle,
+                        $handle,
                         \CURLOPT_URL,
                         // @phpstan-ignore argument.type
                         $opt[\CURLOPT_URL] = (string) $uri,

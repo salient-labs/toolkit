@@ -301,6 +301,7 @@ final class Regex extends AbstractUtility
         if ($result === false) {
             throw new PcreErrorException(null, 'preg_split', $pattern, $subject);
         }
+        // @phpstan-ignore return.type
         return $result;
     }
 

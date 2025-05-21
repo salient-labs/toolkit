@@ -608,8 +608,10 @@ class ClassReflection extends ReflectionClass
                 [$this->getChildrenProperty(), Relatable::ONE_TO_MANY],
             ] as [$property, $type]) {
                 $name = $normaliser
+                    // @phpstan-ignore argument.type (PHPStan regression)
                     ? $normaliser($property, false)
                     : $property;
+                // @phpstan-ignore argument.type (PHPStan regression)
                 $relationships[$name] = new PropertyRelationship($property, $type, $target);
             }
             $relationships = array_intersect_key($relationships, $declared);

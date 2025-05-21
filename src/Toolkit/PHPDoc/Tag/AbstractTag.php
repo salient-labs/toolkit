@@ -265,6 +265,7 @@ abstract class AbstractTag implements Immutable, Stringable
      */
     final protected function throw(string $message, ...$args): void
     {
+        // @phpstan-ignore isset.initializedProperty (constructor may be overridden)
         if (isset($this->Tag)) {
             $message .= ' for @%s';
             $args[] = $this->Tag;

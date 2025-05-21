@@ -64,14 +64,6 @@ final class SyncEntityProvider implements SyncEntityProviderInterface
         string $entity,
         ?SyncContextInterface $context = null
     ) {
-        if (!is_a($entity, SyncEntityInterface::class, true)) {
-            throw new LogicException(sprintf(
-                '%s does not implement %s',
-                $entity,
-                SyncEntityInterface::class,
-            ));
-        }
-
         if ($context && $context->getProvider() !== $provider) {
             throw new LogicException(sprintf(
                 'Context has a different provider (%s, expected %s)',

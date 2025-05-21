@@ -613,9 +613,6 @@ class IntrospectionClass
                 if (!in_array($property, $this->NormalisedKeys, true)) {
                     continue;
                 }
-                if (!is_a($target, Relatable::class, true)) {
-                    continue;
-                }
                 switch ($type) {
                     case Relatable::ONE_TO_ONE:
                         $this->OneToOneRelationships[$property] = $target;

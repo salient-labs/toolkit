@@ -17,7 +17,7 @@ final class CheckSyncProviderHeartbeat extends AbstractSyncCommand
 {
     /** @var string[] */
     private array $ProviderBasename = [];
-    /** @var array<class-string<SyncProviderInterface>> */
+    /** @var class-string[] */
     private array $Provider = [];
     private int $Ttl = 0;
     private bool $FailEarly = false;
@@ -105,12 +105,13 @@ EOF;
                 ),
             ));
         } else {
+            /** @var SyncProviderInterface[] */
             $providers = array_values(array_map(
                 function (string $providerClass) {
                     if (is_a(
                         $this->App->getClass($providerClass),
                         SyncProviderInterface::class,
-                        true
+                        true,
                     )) {
                         if (!$this->App->has($providerClass)) {
                             $this->App->singleton($providerClass);
