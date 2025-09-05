@@ -28,11 +28,11 @@ use InvalidArgumentException;
 final class GetSyncEntity extends AbstractSyncCommand
 {
     private string $EntityBasename = '';
-    /** @var class-string<SyncEntityInterface> */
+    /** @var class-string */
     private string $Entity = SyncEntityInterface::class;
     private ?string $EntityId = null;
     private ?string $ProviderBasename = null;
-    /** @var class-string<SyncProviderInterface> */
+    /** @var class-string */
     private string $Provider = SyncProviderInterface::class;
     /** @var string[] */
     private array $Filter = [];
@@ -180,14 +180,13 @@ EOF)
 
             $provider = $this->Providers[$provider];
         } else {
-            /** @var class-string<T> */
             $entity = $this->Entity;
             $provider = $this->Provider;
 
             if (!is_a(
                 $this->App->getClass($entity),
                 SyncEntityInterface::class,
-                true
+                true,
             )) {
                 throw new CliInvalidArgumentsException(sprintf(
                     '%s does not implement %s',
@@ -196,10 +195,11 @@ EOF)
                 ));
             }
 
+            /** @var class-string<T> $entity */
             if (!is_a(
                 $this->App->getClass($provider),
                 SyncProviderInterface::class,
-                true
+                true,
             )) {
                 throw new CliInvalidArgumentsException(sprintf(
                     '%s does not implement %s',
@@ -208,6 +208,7 @@ EOF)
                 ));
             }
 
+            /** @var class-string<SyncProviderInterface> $provider */
             if (!$this->App->has($provider)) {
                 $this->App->singleton($provider);
             }

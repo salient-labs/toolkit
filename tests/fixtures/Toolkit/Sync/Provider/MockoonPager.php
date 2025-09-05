@@ -33,6 +33,7 @@ class MockoonPager implements CurlerPagerInterface
         ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
+        ?int $previousEntities = null,
         ?array $query = null
     ): CurlerPageInterface {
         /** @var array<mixed[]> $data */

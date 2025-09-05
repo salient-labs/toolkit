@@ -73,6 +73,7 @@ final class QueryPager implements CurlerPagerInterface
         ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
+        ?int $previousEntities = null,
         ?array $query = null
     ): CurlerPageInterface {
         $data = ($this->EntitySelector)($data);

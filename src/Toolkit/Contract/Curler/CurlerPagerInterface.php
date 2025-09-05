@@ -35,6 +35,8 @@ interface CurlerPagerInterface extends HasHttpHeader
      *
      * @param mixed $data
      * @param TPage $previousPage
+     * @param int|null $previousEntities The number of entities returned from
+     * the endpoint via previous pages.
      * @param mixed[]|null $query The query applied to `$request` or returned by
      * {@see CurlerPageRequestInterface::getQuery()}, if applicable.
      * @return (TPage is null ? CurlerPageInterface : TPage)
@@ -45,6 +47,7 @@ interface CurlerPagerInterface extends HasHttpHeader
         ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
+        ?int $previousEntities = null,
         ?array $query = null
     ): CurlerPageInterface;
 }
