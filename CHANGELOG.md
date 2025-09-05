@@ -10,6 +10,172 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.80] - 2025-09-05
+
+- Review referenced RFCs for compliance, clarity and currency
+  - Rename `Regex::UUID` to `UUID_V4`
+  - Add `Regex::UUID` to match all UUIDs and adopt in `AbstractSyncProvider::isValidIdentifier()`
+- Normalise exception variable names as `$ex`
+
+### Added
+
+#### `Cli`
+
+- Add `CliUtil` with `getJson()` and consolidate similar methods
+
+#### `Collection`
+
+- Add dictionary interface, class and trait
+
+#### `Http`
+
+- Add `getHeaderLines()` alongside existing `getHeaderLine()` methods
+- Add `HeadersInterface` methods `hasBadWhitespace()` and `hasObsoleteLineFolding()`
+- Add `MultipartStreamInterface::getParts()` for completeness
+
+### Changed
+
+#### `Collection`
+
+- Allow `Arrayable::toArray()` return type variations by adding an optional `TArrayValue` template to `DictionaryInterface` and `CollectionInterface`
+- Move `toArray()` from `ReadOnlyCollectionTrait` to `RecursiveArrayableCollectionTrait`
+- Add non-recursive implementation of `toArray()` to `ArrayableCollectionTrait`
+
+#### `Curler`
+
+- Pass the number of entities returned from the endpoint via previous pages to `CurlerPagerInterface::getPage()`
+- Rename `METHOD_HAS_BODY` to `REQUEST_METHOD_HAS_BODY` (to prevent conflict with other `METHOD_*` constants)
+- Rename methods for consistency with `Http` changes:
+  - `getPublicHttpHeaders()` -> `getPublicHeaders()`
+  - `hasAccessToken()` -> `hasCredential()`
+  - `withAccessToken()` -> `withCredential()`
+
+#### `Http`
+
+<details>
+<summary>Move and rename various interfaces, classes, traits and members</summary>
+
+- Rename:
+  - `AccessTokenInterface` -> `CredentialInterface`
+    - `getTokenType()` -> `getAuthenticationScheme()`
+    - `getToken()` -> `getCredential()`
+  - `HttpHeadersInterface` -> `HeadersInterface`
+    - `hasLastLine()` -> `hasEmptyLine()`
+    - `append()` -> `addValue()`
+    - `canonicalize()` -> `normalise()`
+  - `HasHttpHeaders` (interface) -> `HasInnerHeaders`
+    - `getHttpHeaders()` -> `getInnerHeaders()`
+  - `HttpHeaders` -> `Headers`
+  - `HasHttpHeaders` (trait) -> `HasInnerHeadersTrait`
+  - `HttpServer` -> `Server` and move to separate namespace
+  - `Stream::copyToString()` -> `getStreamContents()` and move to `HttpUtil`
+  - `Stream::copyToStream()` -> `copyStream()` and move to `HttpUtil`
+  - `UriInterface::toParts()` -> `getComponents()`
+  - `UriInterface::isReference()` -> `isRelativeReference()`
+  - `Uri::EXPAND_EMPTY_PATH` -> `NORMALISE_EMPTY_PATH`
+  - `Uri::COLLAPSE_MULTIPLE_SLASHES` -> `NORMALISE_MULTIPLE_SLASHES`
+  - `HttpUtil::escapeQuotedString()` -> `quoteString()`
+  - `HttpUtil::getNameValueGenerator()` -> `getNameValuePairs()`
+  - `HttpServerException` -> `ServerException`
+  - `StreamDetachedException` -> `StreamClosedException`
+  - `StreamInvalidRequestException` -> `InvalidStreamRequestException`
+  - `UploadedFileException` -> `UploadFailedException`
+- Move:
+  - `Headers::getContentLength()` to `HttpUtil`
+  - `Headers::getMultipartBoundary()` to `HttpUtil`
+  - `Headers::getPreferences()` to `HttpUtil`
+  - `Headers::mergePreferences()` to `HttpUtil`
+  - `Headers::getRetryAfter()` to `HttpUtil`
+  - `Uri::isAuthorityForm()` to `HttpUtil`
+- Move message-related interfaces to their own namespace and rename:
+  - `HttpMessageInterface` -> `MessageInterface`
+  - `HttpMultipartStreamInterface` -> `MultipartStreamInterface`
+  - `HttpRequestInterface` -> `RequestInterface`
+  - `HttpResponseInterface` -> `ResponseInterface`
+  - `HttpServerRequestInterface` -> `ServerRequestInterface`
+  - `HttpStreamInterface` -> `StreamInterface`
+  - `HttpMultipartStreamPartInterface` -> `StreamPartInterface`
+    - `getFallbackFilename()` -> `getAsciiFilename()`
+    - `getContent()` -> `getBody()`
+- Move message-related classes to their own namespace and rename:
+  - `AbstractHttpMessage` -> `AbstractMessage`
+  - `AbstractHttpRequest` -> `AbstractRequest`
+  - `HttpFactory` -> `MessageFactory`
+  - `HttpMultipartStream` -> `MultipartStream`
+  - `HttpRequest` -> `Request`
+  - `HttpResponse` -> `Response`
+  - `HttpServerRequest` -> `ServerRequest`
+  - `HttpServerRequestUpload` -> `ServerRequestUpload`
+  - `HttpStream` -> `Stream`
+  - `HttpMultipartStreamPart` -> `StreamPart`
+- Rename `FormDataFlag` to `HasFormDataFlag`, add `DATA_` prefix to the names of its constants and access them via implementations
+- Rename `MimeType` to `HasMediaType`, add `TYPE_` prefix to the names of its constants and access them via implementations
+- Rename `HttpRequestMethod` to `HasRequestMethod`, add `METHOD_` prefix to the names of its constants and access them via implementations
+- Rename `HttpHeader` to `HasHttpHeader`, add `HEADER_` prefix to the names of its constants and access them via implementations
+- Rename `HttpHeaderGroup` to `HasHttpHeaders`, add `HEADERS_` prefix to the names of its constants and access them via implementations
+</details>
+
+- In `HeadersInterface`, extend `DictionaryInterface` (new) instead of `CollectionInterface`
+- In `Headers::addLine()`:
+  - Throw an exception on invalid header field syntax or line folding even if `$strict` is `false`
+  - Throw `LogicException` if called after headers are applied via another method
+  - Throw `InvalidHeaderException` instead of `InvalidArgumentException`
+- In `Headers::map()`, return the same instance if mapped values are equivalent
+- In `HttpUtil::quoteString()`, add double quotes
+- In `UriInterface`, remove nullability from `parse()` parameter `$component`
+- In `Uri::parse()`, replicate `parse_url()` behaviour when URI and component are both invalid (i.e. return `false`)
+- In `AbstractMessage`/`AbstractRequest`:
+  - Don't apply an implicit media type to messages with multipart bodies
+  - Normalise headers when casting messages to strings
+- In `MultipartStream`, do not remain operational after `close()` or `detach()` are called
+- Refactor `Server` for compliance and consistency
+  - Rename:
+    - `getProxyTls()` -> `proxyHasTls()`
+    - `getProxyBasePath()` -> `getProxyPath()`
+    - `getBaseUri()` -> `getUri()` and return `Uri`, not `string`
+  - Add:
+    - `getLocalIpAddress()`
+    - `getLocalPort()` to improve support for dynamic port allocation
+  - Allow `stop()` to be called when the server is not running
+  - In `listen()`:
+    - Replace `$callback` with `$listener`, which returns a `ServerResponse` instead of receiving control variables by reference
+    - Keep listening for requests until a response has a return value unless a non-negative `$limit` is given
+    - Add request target validity checks
+    - Respond to invalid requests with "400 Bad Request" or "501 Not Implemented" and don't throw the underlying exception by default
+  - Throw `LogicException` when:
+    - `getProxy*()` is called on an instance with no proxy, or
+    - an assertion fails (instead of `ServerException`)
+- Adopt terminology and behaviour of \[RFC9112], \[RFC9110] and \[RFC8187], which supercede \[RFC7230], \[RFC7231] and \[RFC5987]
+  - Replace "header line" with "field line" where appropriate
+  - In `Headers::addLine()`, don't throw `InvalidHeaderException` when bad whitespace is received and `$strict = true`
+  - Use `getLastHeaderValue()` when retrieving `Content-Type` headers
+  - Use `getOnlyHeaderValue()` when retrieving `Location` headers
+
+### Removed
+
+#### `Http`
+
+- Remove superfluous `MessageInterface::getHttpPayload()`
+- Remove `$strict` parameter from `HeadersInterface::addLine()` (implementation detail)
+- Remove unused `Uri` methods:
+  - `fromParts()`
+  - `unparse()`
+  - `resolveReference()`
+  - `removeDotSegments()`
+- Remove superfluous `Server::getScheme()`
+- Remove unused `HttpRequestHandlerInterface`
+
+### Fixed
+
+#### `Http`
+
+- Fix issue where message objects cast to strings may have too many empty lines between headers and body
+- Fix `AbstractRequest` issue where request target type `origin-form` may be incorrectly detected when the given URI has an empty path
+- Fix `Headers::addLine()` issue where invalid line folding in the first trailer may not be detected
+- Fix `Headers::getHeaderLine()` issue where headers with unquoted commas may be inadvertently modified
+- Fix `HttpUtil::getRetryAfter()` issue where negative delay seconds are parsed as a timestamp
+- Fix `Server` issue where large responses might not be written in full
+
 ## [v0.99.79] - 2025-03-31
 
 ### Added
@@ -4935,6 +5101,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.80]: https://github.com/salient-labs/toolkit/compare/v0.99.79...v0.99.80
 [v0.99.79]: https://github.com/salient-labs/toolkit/compare/v0.99.78...v0.99.79
 [v0.99.78]: https://github.com/salient-labs/toolkit/compare/v0.99.77...v0.99.78
 [v0.99.77]: https://github.com/salient-labs/toolkit/compare/v0.99.76...v0.99.77
