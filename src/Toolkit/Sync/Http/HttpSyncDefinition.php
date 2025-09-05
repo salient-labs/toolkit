@@ -242,13 +242,13 @@ final class HttpSyncDefinition extends AbstractSyncDefinition implements Buildab
      * @param array<OP::*,HttpSyncDefinition::METHOD_*> $methodMap
      * @param (callable(CurlerInterface, HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): CurlerInterface)|null $curlerCallback
      * @param array<int-mask-of<OP::*>,Closure(HttpSyncDefinition<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
-     * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
      * @param mixed[]|null $args
+     * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      */
     public function __construct(
         string $entity,

@@ -132,6 +132,7 @@ interface DictionaryInterface extends
      * The callback's return values are discarded.
      *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): mixed)|(callable(TKey, TKey|null $next, TKey|null $prev): mixed)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): mixed) $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @phpstan-param (
      *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): mixed)
@@ -140,7 +141,6 @@ interface DictionaryInterface extends
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): mixed)
      *     )
      * ) $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
      * @return $this
      */
     public function forEach(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -152,6 +152,7 @@ interface DictionaryInterface extends
      * @template TReturn of TValue
      *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): TReturn)|(callable(TKey, TKey|null $next, TKey|null $prev): TReturn)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TReturn) $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @phpstan-param (
      *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): TReturn)
@@ -160,7 +161,6 @@ interface DictionaryInterface extends
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): TReturn)
      *     )
      * ) $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
      * @return static<TKey,TReturn,TArrayValue>
      */
     public function map(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -169,6 +169,7 @@ interface DictionaryInterface extends
      * Reduce the collection to items that satisfy a callback
      *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): bool)|(callable(TKey, TKey|null $next, TKey|null $prev): bool)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool) $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @phpstan-param (
      *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool)
@@ -177,7 +178,6 @@ interface DictionaryInterface extends
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): bool)
      *     )
      * ) $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
      * @return static
      */
     public function filter(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE);
@@ -187,6 +187,7 @@ interface DictionaryInterface extends
      * item in the collection
      *
      * @param (callable(TValue, TValue|null $next, TValue|null $prev): bool)|(callable(TKey, TKey|null $next, TKey|null $prev): bool)|(callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool) $callback
+     * @param int-mask-of<CollectionInterface::*> $mode
      * @phpstan-param (
      *     $mode is 3|11|19
      *     ? (callable(array{TKey,TValue}, array{TKey,TValue}|null $next, array{TKey,TValue}|null $prev): bool)
@@ -195,7 +196,6 @@ interface DictionaryInterface extends
      *         : (callable(TValue, TValue|null $next, TValue|null $prev): bool)
      *     )
      * ) $callback
-     * @param int-mask-of<CollectionInterface::*> $mode
      * @return ($mode is 16|17|18|19 ? TKey : TValue)|null
      */
     public function find(callable $callback, int $mode = CollectionInterface::CALLBACK_USE_VALUE | CollectionInterface::FIND_VALUE);

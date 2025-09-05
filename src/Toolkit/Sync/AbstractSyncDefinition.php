@@ -38,13 +38,13 @@ use LogicException;
  * @property-read AbstractSyncDefinition::* $Conformity Conformity level of data returned by the provider for this entity
  * @property-read FilterPolicy::* $FilterPolicy Action to take when filters are not claimed by the provider
  * @property-read array<OP::*,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $Overrides Array that maps sync operations to closures that override other implementations
- * @phpstan-property-read array<OP::*,OverrideClosure> $Overrides
  * @property-read array<array-key,array-key|array-key[]>|null $KeyMap Array that maps keys to properties for entity data returned by the provider
  * @property-read int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $KeyMapFlags Array mapper flags used if a key map is provided
  * @property-read PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $PipelineFromBackend Pipeline that maps provider data to a serialized entity, or `null` if mapping is not required
  * @property-read PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $PipelineToBackend Pipeline that maps a serialized entity to provider data, or `null` if mapping is not required
  * @property-read bool $ReadFromList Perform READ operations by iterating over entities returned by READ_LIST
  * @property-read EntitySource::*|null $ReturnEntitiesFrom Source of entity data for the return value of a successful CREATE, UPDATE or DELETE operation
+ * @phpstan-property-read array<OP::*,OverrideClosure> $Overrides
  *
  * @template TEntity of SyncEntityInterface
  * @template TProvider of SyncProviderInterface
@@ -218,12 +218,12 @@ abstract class AbstractSyncDefinition implements SyncDefinitionInterface, Chaina
      * @param AbstractSyncDefinition::* $conformity
      * @param FilterPolicy::*|null $filterPolicy
      * @param array<int-mask-of<OP::*>,Closure(SyncDefinitionInterface<TEntity,TProvider>, OP::*, SyncContextInterface, mixed...): (iterable<array-key,TEntity>|TEntity)> $overrides
-     * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      * @param array<array-key,array-key|array-key[]>|null $keyMap
      * @param int-mask-of<ArrayMapperInterface::REMOVE_NULL|ArrayMapperInterface::ADD_UNMAPPED|ArrayMapperInterface::ADD_MISSING|ArrayMapperInterface::REQUIRE_MAPPED> $keyMapFlags
      * @param PipelineInterface<mixed[],TEntity,SyncPipelineArgument>|null $pipelineFromBackend
      * @param PipelineInterface<TEntity,mixed[],SyncPipelineArgument>|null $pipelineToBackend
      * @param EntitySource::*|null $returnEntitiesFrom
+     * @phpstan-param array<int-mask-of<OP::*>,OverrideClosure> $overrides
      */
     public function __construct(
         string $entity,

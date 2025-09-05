@@ -307,7 +307,6 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return null;
         }
 
-        // @phpstan-ignore parameterByRef.type
         $uncertainty = array_pop($entry);
         $this->Cache[$name] = [$entry[0], $uncertainty];
         return $entry[0];
