@@ -66,6 +66,7 @@ final class ODataPager implements CurlerPagerInterface
         ResponseInterface $response,
         CurlerInterface $curler,
         ?CurlerPageInterface $previousPage = null,
+        ?int $previousEntities = null,
         ?array $query = null
     ): CurlerPageInterface {
         if (!is_array($data)) {

@@ -214,6 +214,7 @@ EOF,
                     ResponseInterface $response,
                     CurlerInterface $curler,
                     ?CurlerPageInterface $previousPage = null,
+                    ?int $previousEntities = null,
                     ?array $query = null
                 ) use ($server, &$output): CurlerPage {
                     $output[] = $server->getNewOutput();

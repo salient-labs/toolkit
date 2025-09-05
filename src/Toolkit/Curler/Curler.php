@@ -382,7 +382,7 @@ class Curler implements CurlerInterface, Buildable
         }
         $result = $this->getResponseBody($response);
         if ($pager) {
-            $page = $pager->getPage($result, $request, $response, $this, null, $query);
+            $page = $pager->getPage($result, $request, $response, $this, null, null, $query);
             return Arr::unwrap($page->getEntities(), 1);
         }
         return $result;
@@ -444,6 +444,7 @@ class Curler implements CurlerInterface, Buildable
         $request = $this->createRequest($method, $query, $data);
         $request = $pager->getFirstRequest($request, $this, $query);
         $prev = null;
+        $yielded = 0;
         do {
             if ($request instanceof CurlerPageRequestInterface) {
                 $query = $request->getQuery() ?? $query;
@@ -451,9 +452,10 @@ class Curler implements CurlerInterface, Buildable
             }
             $response = $this->doSendRequest($request);
             $result = $this->getResponseBody($response);
-            $page = $pager->getPage($result, $request, $response, $this, $prev, $query);
+            $page = $pager->getPage($result, $request, $response, $this, $prev, $prev ? $yielded : null, $query);
             // Use `yield` instead of `yield from` so entities get unique keys
             foreach ($page->getEntities() as $entity) {
+                $yielded++;
                 yield $entity;
             }
             if (!$page->hasNextRequest()) {
