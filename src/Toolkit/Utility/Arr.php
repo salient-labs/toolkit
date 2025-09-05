@@ -882,7 +882,6 @@ final class Arr extends AbstractUtility
         if ($length === null) {
             $length = count($array);
         }
-        // @phpstan-ignore paramOut.type
         $replaced = array_splice($array, $offset, $length, $replacement);
         return $array;
     }

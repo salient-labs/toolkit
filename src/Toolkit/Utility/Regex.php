@@ -215,6 +215,8 @@ final class Regex extends AbstractUtility
      *
      * @param string[]|string $pattern
      * @param callable(array<array-key,string|null>):string $callback
+     * @param T $subject
+     * @param TFlags $flags
      * @phpstan-param (
      *     TFlags is 256
      *     ? (callable(array<array{string,int}>): string)
@@ -226,8 +228,6 @@ final class Regex extends AbstractUtility
      *         )
      *     )
      * ) $callback
-     * @param T $subject
-     * @param TFlags $flags
      * @param-out int $count
      * @return T
      */
@@ -255,6 +255,8 @@ final class Regex extends AbstractUtility
      * @template TFlags of int-mask-of<\PREG_OFFSET_CAPTURE|\PREG_UNMATCHED_AS_NULL>
      *
      * @param array<string,callable(array<array-key,string|null>):string> $pattern
+     * @param T $subject
+     * @param TFlags $flags
      * @phpstan-param (
      *     TFlags is 256
      *     ? array<string,callable(array<array{string,int}>): string>
@@ -266,8 +268,6 @@ final class Regex extends AbstractUtility
      *         )
      *     )
      * ) $pattern
-     * @param T $subject
-     * @param TFlags $flags
      * @return T
      */
     public static function replaceCallbackArray(

@@ -184,8 +184,8 @@ final class DbConnector implements Readable
      *
      * @param T $result
      * @param string|int|float ...$args
-     * @return (T is false ? never : T)
      * @phpstan-param T|false $result
+     * @return (T is false ? never : T)
      * @phpstan-return ($result is false ? never : T)
      */
     private static function throwOnFailure($result, string $message, ...$args)
