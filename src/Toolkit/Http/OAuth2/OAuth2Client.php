@@ -10,7 +10,6 @@ use Salient\Contract\Http\Message\ServerRequestInterface;
 use Salient\Core\Facade\Cache;
 use Salient\Core\Facade\Console;
 use Salient\Curler\Curler;
-use Salient\Http\Message\Response;
 use Salient\Http\Server\Server;
 use Salient\Http\Server\ServerResponse;
 use Salient\Utility\Arr;
@@ -21,98 +20,34 @@ use LogicException;
 use Throwable;
 use UnexpectedValueException;
 
-/**
- * A headless OAuth 2.0 client that acquires and validates tokens required for
- * access to protected resources
- */
-abstract class OAuth2Client
+abstract class OAuth2Client implements HasGrantType, HasResponseType
 {
     private ?Server $Listener;
     private AbstractProvider $Provider;
-    /** @var OAuth2Flow::* */
-    private int $Flow;
+    /** @var self::GRANT_* */
+    private string $Flow;
     private string $TokenKey;
 
     /**
-     * Return an HTTP listener to receive OAuth 2.0 redirects from the provider,
-     * or null to disable flows that require it
-     *
-     * Reference implementation:
-     *
-     * ```php
-     * <?php
-     * class OAuth2TestClient extends OAuth2Client
-     * {
-     *     protected function getListener(): ?Server
-     *     {
-     *         $listener = new Server(
-     *             Env::get('app_host', 'localhost'),
-     *             Env::getInt('app_port', 27755),
-     *         );
-     *
-     *         $proxyHost = Env::getNullable('app_proxy_host', null);
-     *         $proxyPort = Env::getNullableInt('app_proxy_port', null);
-     *
-     *         if ($proxyHost !== null && $proxyPort !== null) {
-     *             return $listener->withProxy(
-     *                 $proxyHost,
-     *                 $proxyPort,
-     *                 Env::getNullableBool('app_proxy_tls', null),
-     *                 Env::get('app_proxy_base_path', ''),
-     *             );
-     *         }
-     *
-     *         return $listener;
-     *     }
-     * }
-     * ```
+     * Get an in-process HTTP server to receive OAuth 2.0 redirects from the
+     * provider to the client, or null if flows that require it are disabled
      */
     abstract protected function getListener(): ?Server;
 
     /**
-     * Return an OAuth 2.0 provider to request and validate tokens that
-     * authorize access to the resource server
-     *
-     * Example:
-     *
-     * The following provider could be used to authorize access to the Microsoft
-     * Graph API on behalf of a user or application. `redirectUri` can be
-     * omitted if support for the Authorization Code flow is not required.
-     *
-     * > The only scope required for access to the Microsoft Graph API is
-     * > `https://graph.microsoft.com/.default`
-     *
-     * ```php
-     * <?php
-     * class OAuth2TestClient extends OAuth2Client
-     * {
-     *     protected function getProvider(): GenericProvider
-     *     {
-     *         return new GenericProvider([
-     *             'clientId' => $this->AppId,
-     *             'clientSecret' => $this->Secret,
-     *             'redirectUri' => $this->getRedirectUri(),
-     *             'urlAuthorize' => sprintf('https://login.microsoftonline.com/%s/oauth2/authorize', $this->TenantId),
-     *             'urlAccessToken' => sprintf('https://login.microsoftonline.com/%s/oauth2/v2.0/token', $this->TenantId),
-     *             'urlResourceOwnerDetails' => sprintf('https://login.microsoftonline.com/%s/openid/userinfo', $this->TenantId),
-     *             'scopes' => ['openid', 'profile', 'email', 'offline_access', 'https://graph.microsoft.com/.default'],
-     *             'scopeSeparator' => ' ',
-     *         ]);
-     *     }
-     * }
-     * ```
+     * Get an OAuth 2.0 provider for the client
      */
     abstract protected function getProvider(): AbstractProvider;
 
     /**
-     * Return the OAuth 2.0 flow to use
+     * Get the client's OAuth 2.0 flow
      *
-     * @return OAuth2Flow::*
+     * @return OAuth2Client::GRANT_*
      */
-    abstract protected function getFlow(): int;
+    abstract protected function getFlow(): string;
 
     /**
-     * Return the URL of the OAuth 2.0 provider's JSON Web Key Set, or null to
+     * Get the URL of the OAuth 2.0 provider's JSON Web Key Set, or null to
      * disable JWT signature validation and decoding
      *
      * Required for token signature validation. Check the provider's
@@ -124,9 +59,13 @@ abstract class OAuth2Client
      * Called when an access token is received from the OAuth 2.0 provider
      *
      * @param array<string,mixed>|null $idToken
-     * @param OAuth2GrantType::* $grantType
+     * @param OAuth2Client::GRANT_* $grantType
      */
-    abstract protected function receiveToken(AccessToken $token, ?array $idToken, string $grantType): void;
+    abstract protected function receiveToken(
+        OAuth2AccessToken $token,
+        ?array $idToken,
+        string $grantType
+    ): void;
 
     public function __construct()
     {
@@ -162,9 +101,9 @@ abstract class OAuth2Client
      *
      * @param string[]|null $scopes
      */
-    final public function getAccessToken(?array $scopes = null): AccessToken
+    final public function getAccessToken(?array $scopes = null): OAuth2AccessToken
     {
-        $token = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class);
+        $token = Cache::getInstance()->getInstanceOf($this->TokenKey, OAuth2AccessToken::class);
         if ($token) {
             if ($this->accessTokenHasScopes($token, $scopes)) {
                 return $token;
@@ -197,9 +136,9 @@ abstract class OAuth2Client
      *
      * @param string[]|null $scopes
      */
-    private function accessTokenHasScopes(AccessToken $token, ?array $scopes): bool
+    private function accessTokenHasScopes(OAuth2AccessToken $token, ?array $scopes): bool
     {
-        if ($scopes && array_diff($scopes, $token->Scopes)) {
+        if ($scopes && array_diff($scopes, $token->getScopes())) {
             return false;
         }
         return true;
@@ -209,13 +148,13 @@ abstract class OAuth2Client
      * If an unexpired refresh token is available, use it to get a new access
      * token from the provider if possible
      */
-    final protected function refreshAccessToken(): ?AccessToken
+    final protected function refreshAccessToken(): ?OAuth2AccessToken
     {
         $refreshToken = Cache::getString("{$this->TokenKey}:refresh");
         return $refreshToken === null
             ? null
             : $this->requestAccessToken(
-                OAuth2GrantType::REFRESH_TOKEN,
+                self::GRANT_REFRESH_TOKEN,
                 ['refresh_token' => $refreshToken]
             );
     }
@@ -225,7 +164,7 @@ abstract class OAuth2Client
      *
      * @param array<string,mixed> $options
      */
-    final protected function authorize(array $options = []): AccessToken
+    final protected function authorize(array $options = []): OAuth2AccessToken
     {
         if (isset($options['scope'])) {
             $scopes = $this->filterScope($options['scope']);
@@ -237,9 +176,9 @@ abstract class OAuth2Client
                 $cache->has($this->TokenKey)
                 || $cache->has("{$this->TokenKey}:refresh")
             ) {
-                $lastToken = $cache->getInstanceOf($this->TokenKey, AccessToken::class);
+                $lastToken = $cache->getInstanceOf($this->TokenKey, OAuth2AccessToken::class);
                 if ($lastToken) {
-                    $scopes = Arr::extend($lastToken->Scopes, ...$scopes);
+                    $scopes = Arr::extend($lastToken->getScopes(), ...$scopes);
                 }
             }
             $cache->close();
@@ -251,21 +190,21 @@ abstract class OAuth2Client
         $this->flushTokens();
 
         switch ($this->Flow) {
-            case OAuth2Flow::CLIENT_CREDENTIALS:
+            case self::GRANT_CLIENT_CREDENTIALS:
                 return $this->authorizeWithClientCredentials($options);
 
-            case OAuth2Flow::AUTHORIZATION_CODE:
+            case self::GRANT_AUTHORIZATION_CODE:
                 return $this->authorizeWithAuthorizationCode($options);
 
             default:
-                throw new LogicException(sprintf('Invalid OAuth2Flow: %d', $this->Flow));
+                throw new LogicException(sprintf('Invalid flow: %s', $this->Flow));
         }
     }
 
     /**
      * @param array<string,mixed> $options
      */
-    private function authorizeWithClientCredentials(array $options = []): AccessToken
+    private function authorizeWithClientCredentials(array $options = []): OAuth2AccessToken
     {
         // league/oauth2-client doesn't add scopes to client_credentials
         // requests
@@ -282,7 +221,7 @@ abstract class OAuth2Client
         }
 
         return $this->requestAccessToken(
-            OAuth2GrantType::CLIENT_CREDENTIALS,
+            self::GRANT_CLIENT_CREDENTIALS,
             $options
         );
     }
@@ -290,7 +229,7 @@ abstract class OAuth2Client
     /**
      * @param array<string,mixed> $options
      */
-    private function authorizeWithAuthorizationCode(array $options = []): AccessToken
+    private function authorizeWithAuthorizationCode(array $options = []): OAuth2AccessToken
     {
         if (!$this->Listener) {
             throw new LogicException('Cannot use the Authorization Code flow without a Listener');
@@ -327,7 +266,7 @@ abstract class OAuth2Client
         }
 
         return $this->requestAccessToken(
-            OAuth2GrantType::AUTHORIZATION_CODE,
+            self::GRANT_AUTHORIZATION_CODE,
             ['code' => $code],
             $options['scope'] ?? null
         );
@@ -372,7 +311,7 @@ abstract class OAuth2Client
      * Request an access token from the OAuth 2.0 provider, then validate, cache
      * and return it
      *
-     * @param string&OAuth2GrantType::* $grantType
+     * @param self::GRANT_* $grantType
      * @param array<string,mixed> $options
      * @param mixed $scope
      */
@@ -380,7 +319,7 @@ abstract class OAuth2Client
         string $grantType,
         array $options = [],
         $scope = null
-    ): AccessToken {
+    ): OAuth2AccessToken {
         Console::debug('Requesting access token with ' . $grantType);
 
         $_token = $this->Provider->getAccessToken($grantType, $options);
@@ -418,22 +357,21 @@ abstract class OAuth2Client
             ?? $options['scope']
             ?? $scope);
 
-        if (!$scopes && $grantType === OAuth2GrantType::REFRESH_TOKEN) {
-            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, AccessToken::class);
+        if (!$scopes && $grantType === self::GRANT_REFRESH_TOKEN) {
+            $lastToken = Cache::getInstance()->getInstanceOf($this->TokenKey, OAuth2AccessToken::class);
             if ($lastToken) {
-                $scopes = $lastToken->Scopes;
+                $scopes = $lastToken->getScopes();
             }
         }
 
-        $token = new AccessToken(
+        $token = new OAuth2AccessToken(
             $accessToken,
-            $tokenType,
             $expires,
             $scopes ?: $this->getDefaultScopes(),
             $claims
         );
 
-        Cache::set($this->TokenKey, $token, $token->Expires);
+        Cache::set($this->TokenKey, $token, $token->getExpires());
 
         if ($idToken !== null) {
             $idToken = $this->getValidJsonWebToken($idToken, true);

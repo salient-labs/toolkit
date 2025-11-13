@@ -40,6 +40,7 @@ parameters:
 			paths:
 				- src/Toolkit/Core/Facade/*
 				- tests/unit/Toolkit/Core/Facade/*
+				- tests/fixtures/Toolkit/Http/OAuth2/OAuth2Client/OAuth2TestClient.php
 		-
 			identifier: salient.needless.coalesce
 			paths:
