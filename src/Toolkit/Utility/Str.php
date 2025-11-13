@@ -39,6 +39,8 @@ final class Str extends AbstractUtility
      */
     public const DEFAULT_ITEM_REGEX = '/^(?<indent>\h*[-*] )/';
 
+    private const BASE32_INDEX = ['A' => 0, 'B' => 1, 'C' => 2, 'D' => 3, 'E' => 4, 'F' => 5, 'G' => 6, 'H' => 7, 'I' => 8, 'J' => 9, 'K' => 10, 'L' => 11, 'M' => 12, 'N' => 13, 'O' => 14, 'P' => 15, 'Q' => 16, 'R' => 17, 'S' => 18, 'T' => 19, 'U' => 20, 'V' => 21, 'W' => 22, 'X' => 23, 'Y' => 24, 'Z' => 25, '2' => 26, '3' => 27, '4' => 28, '5' => 29, '6' => 30, '7' => 31];
+
     /**
      * Get the first string that is not null or empty, or return the last value
      *
@@ -490,6 +492,54 @@ REGEX,
             $column = 1;
         }
         return $expanded;
+    }
+
+    /**
+     * Decode data encoded with base32
+     *
+     * @param bool $strict If `true`, throw an exception if any characters in
+     * `$string` are not in the \[RFC4648] "base32" alphabet after removing
+     * padding characters ('=') and converting ASCII letters to uppercase:
+     *
+     * ```
+     * ABCDEFGHIJKLMNOPQRSTUVWXYZ234567
+     * ```
+     *
+     * Otherwise, discard invalid characters.
+     */
+    public static function decodeBase32(string $string, bool $strict = false): string
+    {
+        $string = self::upper(rtrim($string, '='));
+
+        $bytes = '';
+        $currentByte = 0;
+        $currentBits = 0;
+        foreach (str_split($string) as $character) {
+            $value = self::BASE32_INDEX[$character] ?? null;
+            if ($value === null) {
+                if ($strict) {
+                    throw new InvalidArgumentException(
+                        sprintf('Character not in base32 alphabet: %s', $character),
+                    );
+                }
+                continue;
+            }
+            // `$value` won't complete a byte without 3 or more existing bits
+            if ($currentBits < 3) {
+                $currentByte <<= 5;
+                $currentByte += $value;
+                $currentBits += 5;
+            } else {
+                $useBits = 8 - $currentBits;
+                $carryBits = 5 - $useBits;
+                $currentByte <<= $useBits;
+                $currentByte += $value >> $carryBits;
+                $bytes .= chr($currentByte);
+                $currentByte = $value & ((1 << $carryBits) - 1);
+                $currentBits = $carryBits;
+            }
+        }
+        return $bytes;
     }
 
     /**

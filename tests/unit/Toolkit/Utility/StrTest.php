@@ -876,6 +876,39 @@ EOF,
     }
 
     /**
+     * @dataProvider decodeBase32provider
+     */
+    public function testDecodeBase32(?string $expected, string $string, bool $strict = false): void
+    {
+        if ($expected === null) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $this->assertSame($expected, Str::decodeBase32($string, $strict));
+    }
+
+    public function decodeBase32provider(): array
+    {
+        return [
+            ['', ''],
+            ['f', 'MY======'],
+            ['fo', 'MZXQ===='],
+            ['foo', 'MZXW6==='],
+            ['foob', 'mzxw6yq='],
+            ['fooba', 'mzxw6ytb'],
+            ['foobar', 'mzxw6ytBOI======'],
+            ['foobar', 'MZXW6YTBOI01===='],
+            ['', '', true],
+            ['f', 'my======', true],
+            ['fo', 'mzxq====', true],
+            ['foo', 'mzxw6===', true],
+            ['foob', 'MZXW6YQ=', true],
+            ['fooba', 'MZXW6YTB', true],
+            ['foobar', 'MZXW6YTboi======', true],
+            [null, 'mzxw6ytboi01====', true],
+        ];
+    }
+
+    /**
      * @dataProvider splitDelimitedProvider
      *
      * @param list<string> $expected
