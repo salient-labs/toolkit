@@ -511,6 +511,12 @@ REGEX,
     {
         $string = self::upper(rtrim($string, '='));
 
+        // Handle different `str_split('')` behaviour between PHP 8.2+ and
+        // earlier versions
+        if ($string === '') {
+            return '';
+        }
+
         $bytes = '';
         $currentByte = 0;
         $currentBits = 0;

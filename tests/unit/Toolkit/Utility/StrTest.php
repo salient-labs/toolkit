@@ -886,6 +886,9 @@ EOF,
         $this->assertSame($expected, Str::decodeBase32($string, $strict));
     }
 
+    /**
+     * @return array<array{string|null,string,2?:bool}>
+     */
     public function decodeBase32provider(): array
     {
         return [
