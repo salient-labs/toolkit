@@ -423,4 +423,58 @@ final class HttpUtilTest extends TestCase implements HasHttpHeader, HasMediaType
             ],
         ];
     }
+
+    /**
+     * @dataProvider getTOTPProvider
+     *
+     * @param HttpUtil::ALGORITHM_* $algorithm
+     */
+    public function testGetTOTP(
+        string $expected,
+        string $key,
+        int $digits = 6,
+        string $algorithm = HttpUtil::ALGORITHM_SHA1,
+        int $timeStep = 30,
+        int $secondsSinceStartTime = 0
+    ): void {
+        $startTime = time() - $secondsSinceStartTime;
+        $this->assertSame(
+            $expected,
+            HttpUtil::getTOTP($key, $digits, $algorithm, $timeStep, $startTime),
+        );
+    }
+
+    /**
+     * @return array<array{string,string,2?:int,3?:HttpUtil::ALGORITHM_*,4?:int,5?:int}>
+     */
+    public static function getTOTPProvider(): array
+    {
+        // 12345678901234567890 (20 bytes)
+        $key1 = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ';
+        // 12345678901234567890123456789012 (32 bytes)
+        $key256 = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZA====';
+        // 1234567890123456789012345678901234567890123456789012345678901234 (64 bytes)
+        $key512 = 'GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQGEZDGNA=';
+
+        return [
+            ['94287082', $key1, 8, HttpUtil::ALGORITHM_SHA1, 30, 59],
+            ['46119246', $key256, 8, HttpUtil::ALGORITHM_SHA256, 30, 59],
+            ['90693936', $key512, 8, HttpUtil::ALGORITHM_SHA512, 30, 59],
+            ['07081804', $key1, 8, HttpUtil::ALGORITHM_SHA1, 30, 1111111109],
+            ['68084774', $key256, 8, HttpUtil::ALGORITHM_SHA256, 30, 1111111109],
+            ['25091201', $key512, 8, HttpUtil::ALGORITHM_SHA512, 30, 1111111109],
+            ['14050471', $key1, 8, HttpUtil::ALGORITHM_SHA1, 30, 1111111111],
+            ['67062674', $key256, 8, HttpUtil::ALGORITHM_SHA256, 30, 1111111111],
+            ['99943326', $key512, 8, HttpUtil::ALGORITHM_SHA512, 30, 1111111111],
+            ['89005924', $key1, 8, HttpUtil::ALGORITHM_SHA1, 30, 1234567890],
+            ['91819424', $key256, 8, HttpUtil::ALGORITHM_SHA256, 30, 1234567890],
+            ['93441116', $key512, 8, HttpUtil::ALGORITHM_SHA512, 30, 1234567890],
+            ['69279037', $key1, 8, HttpUtil::ALGORITHM_SHA1, 30, 2000000000],
+            ['90698825', $key256, 8, HttpUtil::ALGORITHM_SHA256, 30, 2000000000],
+            ['38618901', $key512, 8, HttpUtil::ALGORITHM_SHA512, 30, 2000000000],
+            ['65353130', $key1, 8, HttpUtil::ALGORITHM_SHA1, 30, 20000000000],
+            ['77737706', $key256, 8, HttpUtil::ALGORITHM_SHA256, 30, 20000000000],
+            ['47863826', $key512, 8, HttpUtil::ALGORITHM_SHA512, 30, 20000000000],
+        ];
+    }
 }
