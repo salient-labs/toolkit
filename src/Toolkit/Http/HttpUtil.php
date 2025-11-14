@@ -13,8 +13,10 @@ use Salient\Contract\Http\HasFormDataFlag;
 use Salient\Contract\Http\HasHttpHeader;
 use Salient\Contract\Http\HasMediaType;
 use Salient\Contract\Http\HasRequestMethod;
+use Salient\Contract\HasHmacHashAlgorithm;
 use Salient\Http\Exception\InvalidHeaderException;
 use Salient\Http\Internal\FormDataEncoder;
+use Salient\Http\Internal\TOTPGenerator;
 use Salient\Utility\AbstractUtility;
 use Salient\Utility\Date;
 use Salient\Utility\Package;
@@ -31,6 +33,7 @@ use Stringable;
  */
 final class HttpUtil extends AbstractUtility implements
     HasFormDataFlag,
+    HasHmacHashAlgorithm,
     HasHttpHeader,
     HasHttpRegex,
     HasMediaType,
@@ -431,5 +434,21 @@ final class HttpUtil extends AbstractUtility implements
         foreach ($items as $item) {
             yield $item['name'] => $item['value'];
         }
+    }
+
+    /**
+     * Get a time-based one-time password as per [RFC6238]
+     *
+     * @param string $key Base32-encoded shared key.
+     * @param HttpUtil::ALGORITHM_* $algorithm
+     */
+    public static function getTOTP(
+        string $key,
+        int $digits = 6,
+        string $algorithm = HttpUtil::ALGORITHM_SHA1,
+        int $timeStep = 30,
+        int $startTime = 0
+    ): string {
+        return (new TOTPGenerator($digits, $algorithm, $timeStep, $startTime))->getPassword($key);
     }
 }
