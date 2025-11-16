@@ -106,6 +106,7 @@ $progress = [0, 0, 0];
 $expectedProgress = [0, 0, 0];
 foreach ($components as $dir => $component) {
     $lines = $dirLines[$dir];
+    /** @var string */
     $name = array_shift($component);
     $size = $lines['code'] / $totalLines['code'];
     $totalSize += $size;

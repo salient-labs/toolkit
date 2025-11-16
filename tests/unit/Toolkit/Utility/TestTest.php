@@ -167,7 +167,7 @@ final class TestTest extends TestCase
     /**
      * @dataProvider isNumericKeyProvider
      *
-     * @param mixed $value
+     * @param int|string|float|bool|null $value
      */
     public function testIsNumericKey(bool $expected, $value): void
     {

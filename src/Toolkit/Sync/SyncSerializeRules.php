@@ -383,6 +383,7 @@ final class SyncSerializeRules implements SyncSerializeRulesInterface, Buildable
         $rules = [];
         foreach ([...$classRules, ...$pathRules] as $rule) {
             unset($rule[0]);
+            /** @var string */
             $target = array_shift($rule);
             $rules[$target] = $rule;
         }

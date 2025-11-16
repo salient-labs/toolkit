@@ -1034,7 +1034,7 @@ final class File extends AbstractUtility
     {
         $handle = self::maybeOpen($resource, 'rb', $close, $uri);
         while (($row = @fgetcsv($handle, 0, ',', '"', '')) !== false) {
-            /** @var array{null}|list<string> $row */
+            /** @var array{null}|non-empty-list<string> $row */
             $data[] = $row;
         }
         self::checkEof($handle, $uri);

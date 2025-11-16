@@ -38,6 +38,7 @@ class ImmutableTraitRule implements Rule
             /** @var string */
             $propertyName = $propertyName->getConstantScalarValues()[0];
             $calledOn = $call->CalledOn;
+            // @phpstan-ignore method.deprecated
             $has = $calledOn->hasProperty($propertyName);
             if (!$has->yes()) {
                 return [
@@ -50,6 +51,7 @@ class ImmutableTraitRule implements Rule
                         ->build(),
                 ];
             }
+            // @phpstan-ignore method.deprecated
             $property = $calledOn->getProperty($propertyName, $scope);
             if (
                 $property->isPrivate()

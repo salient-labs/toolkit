@@ -105,7 +105,7 @@ class ConsoleLogger implements PsrLoggerInterface
      */
     public function log($level, $message, array $context = [])
     {
-        if (!isset(self::LOG_LEVEL_MAP[$level])) {
+        if (!is_string($level) || !isset(self::LOG_LEVEL_MAP[$level])) {
             throw new PsrInvalidArgumentException('Invalid log level');
         }
 

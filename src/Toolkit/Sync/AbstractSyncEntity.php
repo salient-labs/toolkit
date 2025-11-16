@@ -587,6 +587,7 @@ abstract class AbstractSyncEntity implements
             if ($child === null || is_scalar($child)) {
                 continue;
             }
+            // @phpstan-ignore booleanNot.alwaysTrue
             if (!$isList) {
                 $_path = $path;
                 $_path[] = (string) $key;
@@ -594,6 +595,7 @@ abstract class AbstractSyncEntity implements
             /** @var self|DeferredEntityInterface<self>|DeferredRelationshipInterface<self>|DateTimeInterface|mixed[] $child */
             $this->_serialize(
                 $child,
+                // @phpstan-ignore nullCoalesce.variable
                 $_path ?? $path,
                 $rules,
                 $store,

@@ -737,7 +737,9 @@ final class PHPDocUtil extends AbstractUtility
             $brackets = false;
             if ($type !== '' && $type[0] === '(' && $type[-1] === ')') {
                 $brackets = true;
-                $type = substr($type, 1, -1);
+                /** @var string */
+                $inner = substr($type, 1, -1);
+                $type = $inner;
             }
             $split = array_unique(self::replaceTypes(explode('&', $type)));
             $type = implode('&', $split);
@@ -759,11 +761,14 @@ final class PHPDocUtil extends AbstractUtility
     }
 
     /**
-     * @param string[]|string $types
-     * @return ($types is string[] ? string[] : string)
+     * @template T of string[]|string
+     *
+     * @param T $types
+     * @return T
      */
     private static function replaceTypes($types)
     {
+        /** @var T */
         return Regex::replace(
             ['/\bclass-string<(?:mixed|object)>/i', '/(?:\bmixed&|&mixed\b)/i'],
             ['class-string', ''],

@@ -1018,6 +1018,7 @@ abstract class CliCommand implements CliCommandInterface
             foreach ($this->Options as $option) {
                 if (
                     $option->Required
+                    // @phpstan-ignore variable.undefined
                     && (!array_key_exists($option->Key, $merged) || $merged[$option->Key] === [])
                 ) {
                     if (!(count($this->Arguments) === 1 && ($this->HasHelpArgument || $this->HasVersionArgument))) {
@@ -1034,6 +1035,7 @@ abstract class CliCommand implements CliCommandInterface
                     ?? ($option->ValueRequired ? $option->DefaultValue : null);
                 try {
                     $value = $option->applyValue($value);
+                    // @phpstan-ignore variable.undefined
                     if ($value !== null || array_key_exists($option->Key, $merged)) {
                         $this->OptionValues[$option->Key] = $value;
                     }

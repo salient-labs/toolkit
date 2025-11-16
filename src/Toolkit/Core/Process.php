@@ -431,6 +431,7 @@ final class Process implements HasFileDescriptor
             'Error starting process: %s',
         );
 
+        /** @var array<self::STDOUT|self::STDERR,resource> $pipes */
         $now = hrtime(true);
         $this->Stats['start_time'] = $this->StartTime / 1000;
         $this->Stats['spawn_interval'] = ($now - $this->StartTime) / 1000;

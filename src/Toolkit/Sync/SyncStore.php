@@ -1146,7 +1146,7 @@ SQL;
         if ($deduplicate) {
             $key = $this->Errors->keyOf($error);
             if ($key !== null) {
-                // @phpstan-ignore offsetAssign.dimType (`$key` is an int)
+                // @phpstan-ignore offsetAccess.notFound, offsetAssign.dimType (`$key` is an int)
                 $this->Errors[$key] = $this->Errors[$key]->count();
                 return $this;
             }

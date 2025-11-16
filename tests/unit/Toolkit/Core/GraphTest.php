@@ -24,10 +24,13 @@ final class GraphTest extends TestCase
         $this->assertSame('bar', $graph['foo']);
 
         $graph['q'] = new stdClass();
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['q']);
         $graph['q']['qux'] = $value2 = new stdClass();
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['q']['qux']);
         /** @var Graph */
+        // @phpstan-ignore varTag.nativeType
         $graph2 = $graph['q']['qux'];
         $this->assertSame($value2, $graph2->getValue());
         $this->assertSame(['q', 'qux'], $graph2->getPath());
@@ -40,6 +43,7 @@ final class GraphTest extends TestCase
         $this->assertFalse(isset($graph['q']['qux']));
 
         $graph['arr'] = ['alpha', 'bravo', 'charlie'];
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['arr']);
         $graph['arr'][] = 'delta';
         /** @disregard P1006 */
@@ -48,6 +52,7 @@ final class GraphTest extends TestCase
         $this->assertSame(['alpha', 'bravo', 'charlie', 'delta'], $value->arr);
 
         $graph['obj'] = new stdClass();
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['obj']);
         $graph['obj']['a'] = 'alpha';
         $graph['obj']['b'] = 'bravo';
@@ -84,10 +89,13 @@ final class GraphTest extends TestCase
         $this->assertSame('bar', $graph['foo']);
 
         $graph['q'] = [];
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['q']);
         $graph['q']['qux'] = [];
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['q']['qux']);
         /** @var Graph */
+        // @phpstan-ignore varTag.nativeType
         $graph2 = $graph['q']['qux'];
         $this->assertSame([], $graph2->getValue());
         $this->assertSame(['q', 'qux'], $graph2->getPath());
@@ -99,6 +107,7 @@ final class GraphTest extends TestCase
         $this->assertFalse(isset($graph['q']['qux']));
 
         $graph['arr'] = ['alpha', 'bravo', 'charlie'];
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['arr']);
         $graph['arr'][] = 'delta';
         $this->assertFalse(is_array($graph['arr']));
@@ -106,6 +115,7 @@ final class GraphTest extends TestCase
         $this->assertSame(['alpha', 'bravo', 'charlie', 'delta'], $value['arr']);
 
         $graph['obj'] = [];
+        // @phpstan-ignore method.impossibleType
         $this->assertInstanceOf(Graph::class, $graph['obj']);
         $graph['obj']['a'] = 'alpha';
         $graph['obj']['b'] = 'bravo';

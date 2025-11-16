@@ -1,22 +1,22 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Parameter \#1 \$filter of method ReflectionClass\<T of object\>\:\:getMethods\(\) expects int, int\|null given\.$#'
-			identifier: argument.type
+			message: '#^Method Salient\\Testing\\Core\\MockPhpStream\:\:stream_read\(\) never returns false so it can be removed from the return type\.$#'
+			identifier: return.unusedType
 			count: 1
-			path: src/Toolkit/Core/Reflection/ClassReflection.php
+			path: src/Toolkit/Testing/Core/MockPhpStream.php
 
 		-
-			message: '#^Method Salient\\Utility\\Regex\:\:matchAll\(\) should return int but returns int\<0, max\>\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Toolkit/Utility/Regex.php
+			message: '#^Array unpacking cannot be used on an array with potential string keys\: array\<int\|string, array\<mixed\>\>$#'
+			identifier: arrayUnpacking.stringOffset
+			count: 2
+			path: src/Toolkit/Utility/Arr.php
 
 		-
-			message: '#^PHPDoc tag @var with type array\<string\> is not subtype of native type non\-empty\-list\<string\>\|false\.$#'
-			identifier: varTag.nativeType
+			message: '#^Strict comparison using \=\=\= between array\<TKey of \(int\|string\), TValue\> and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
-			path: src/Toolkit/Utility/Str.php
+			path: src/Toolkit/Utility/Arr.php
 
 		-
 			message: '#^Cannot access offset 1 on mixed\.$#'
@@ -25,7 +25,7 @@ parameters:
 			path: tests/fixtures/Toolkit/Core/Process/cat.php
 
 		-
-			message: '#^Parameter \#1 \$input of function array_slice expects array, mixed given\.$#'
+			message: '#^Parameter \#1 \$array of function array_slice expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/fixtures/Toolkit/Core/Process/cat.php
@@ -49,7 +49,7 @@ parameters:
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
 
 		-
-			message: '#^Parameter \#1 \$str of function rawurlencode expects string, int\|string\|null given\.$#'
+			message: '#^Parameter \#1 \$string of function rawurlencode expects string, int\|string\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
@@ -89,6 +89,12 @@ parameters:
 			identifier: offsetAccess.notFound
 			count: 2
 			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: '#^Array unpacking cannot be used on an array with potential string keys\: array\<int\|string, Salient\\Contract\\Http\\Message\\StreamPartInterface\>$#'
+			identifier: arrayUnpacking.stringOffset
+			count: 1
+			path: tests/unit/Toolkit/Http/HttpMultipartStreamTest.php
 
 		-
 			message: '#^Method Salient\\Tests\\Iterator\\RecursiveCallbackIteratorTest\:\:getArrayWithNestedObjectsAndArrays\(\) never assigns null to &\$a so it can be removed from the by\-ref type\.$#'
@@ -179,3 +185,4 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: tests/unit/Toolkit/Utility/RegexTest.php
+
