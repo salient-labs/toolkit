@@ -27,18 +27,32 @@ function run_with_php_versions() {
         shift
     done
     for php in "${versions[@]-php}"; do
-        run "$php" "$@" || return
+        run "$php" "$@" || failed[${#failed[@]}]="$* on $php"
     done
+}
+
+function on_exit() {
+    run scripts/stop-mockoon.sh || true
+
+    if [[ ${failed+1} ]]; then
+        printf '==> FAILED:\n'
+        printf -- '- %s\n' "${failed[@]}"
+        printf '\n'
+    fi >&2
 }
 
 [[ ${BASH_SOURCE[0]} -ef scripts/run-tests.sh ]] ||
     die "must run from root of package folder"
 
+failed=()
+
 run scripts/generate.php --check
 run php84 tools/php-cs-fixer check --diff --verbose
 run tools/pretty-php --diff
-run_with_php_versions '' 74 vendor/bin/phpstan
+run_with_php_versions 84 74 83 82 81 80 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
 run scripts/start-mockoon.sh >/dev/null
-trap 'run scripts/stop-mockoon.sh' EXIT
+trap on_exit EXIT
 run_with_php_versions 84 74 83 82 81 80 vendor/bin/phpunit
+
+[[ -z ${failed+1} ]]
