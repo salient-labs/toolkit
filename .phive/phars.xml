@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phive xmlns="https://phar.io/phive">
   <phar name="lkrms/pretty-php" version="^0.4.48" installed="0.4.94" location="./tools/pretty-php" copy="true"/>
-  <phar name="php-cs-fixer" version="^3.46.0" installed="3.87.1" location="./tools/php-cs-fixer" copy="true"/>
+  <phar name="php-cs-fixer" version="^3.46.0" installed="3.89.2" location="./tools/php-cs-fixer" copy="true"/>
   <phar name="salient-labs/changelog" version="^1.0.5" installed="1.0.8" location="./tools/changelog" copy="true"/>
-  <phar name="composer-require-checker" version="^4.16.1" installed="4.16.1" location="./tools/composer-require-checker" copy="true"/>
+  <phar name="composer-require-checker" version="^4.16.1" installed="4.18.0" location="./tools/composer-require-checker" copy="true"/>
 </phive>

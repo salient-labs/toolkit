@@ -35,7 +35,7 @@ function run_with_php_versions() {
     die "must run from root of package folder"
 
 run scripts/generate.php --check
-run php83 tools/php-cs-fixer check --diff --verbose
+run php84 tools/php-cs-fixer check --diff --verbose
 run tools/pretty-php --diff
 run_with_php_versions '' 74 vendor/bin/phpstan
 run scripts/stop-mockoon.sh || (($? == 1)) || die 'error stopping mockoon'
