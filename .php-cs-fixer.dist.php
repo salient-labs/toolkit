@@ -40,6 +40,7 @@ $finder = (new PhpCsFixer\Finder())
 
 /** @disregard P1009 */
 return (new PhpCsFixer\Config())
+    ->setParallelConfig(PhpCsFixer\Runner\Parallel\ParallelConfigFactory::detect())
     ->setRules([
         'fully_qualified_strict_types' => true,
         'is_null' => true,
