@@ -16,6 +16,7 @@
 /phpstan-baseline-8.2.neon linguist-generated
 /phpstan-baseline-8.3.neon linguist-generated
 /phpstan-baseline-8.4.neon linguist-generated
+/phpstan-baseline-8.5.neon linguist-generated
 /phpunit* export-ignore
 /scripts export-ignore
 /src/Toolkit/Cli/CliOptionBuilder.php linguist-generated

@@ -105,6 +105,7 @@ jobs:
           - "8.1"
           - "8.0"
           - "7.4"
+          - "8.5"
 
     runs-on: ubuntu-24.04
 
@@ -172,6 +173,8 @@ jobs:
             php-version: "7.4"
           - os: windows-latest
             php-version: "7.4"
+          - os: ubuntu-24.04
+            php-version: "8.5"
 
     runs-on: ${{ matrix.os }}
 

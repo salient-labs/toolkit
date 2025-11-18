@@ -1,0 +1,188 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method Salient\\Testing\\Core\\MockPhpStream\:\:stream_read\(\) never returns false so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: src/Toolkit/Testing/Core/MockPhpStream.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between array\<TKey of \(int\|string\), TValue\> and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Toolkit/Utility/Arr.php
+
+		-
+			message: '#^Cannot access offset 1 on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: tests/fixtures/Toolkit/Core/Process/cat.php
+
+		-
+			message: '#^Parameter \#1 \$array of function array_slice expects array, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/fixtures/Toolkit/Core/Process/cat.php
+
+		-
+			message: '#^Parameter \#4 \.\.\.\$values of function fprintf expects bool\|float\|int\|string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/fixtures/Toolkit/Core/Process/cat.php
+
+		-
+			message: '#^PHPDoc tag @property has invalid value \(\$MyMagicProperty Description of MyBaseClass\:\:\$MyMagicProperty\)\: Unexpected token "\$MyMagicProperty", expected type at offset 46 on line 4$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: tests/fixtures/Toolkit/Sli/Command/AnalyseClass/MyBaseClass.php
+
+		-
+			message: '#^Parameter \#1 \$data of static method Salient\\Sync\\AbstractSyncEntity\:\:provide\(\) expects array\<mixed\>, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
+
+		-
+			message: '#^Parameter \#1 \$string of function rawurlencode expects string, int\|string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/fixtures/Toolkit/Sync/Provider/JsonPlaceholderApi.php
+
+		-
+			message: '#^Parameter \#1 \$entities of class Salient\\Curler\\CurlerPage constructor expects list\<mixed\>, array\<array\<mixed\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/fixtures/Toolkit/Sync/Provider/MockoonPager.php
+
+		-
+			message: '#^Cannot access property \$Foo on mixed\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: tests/unit/Toolkit/Cache/CacheStoreTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertInstanceOf\(\) with ''Salient\\\\Tests\\\\Cli\\\\Command\\\\TestOptions'' and null will always evaluate to false\.$#'
+			identifier: method.impossibleType
+			count: 1
+			path: tests/unit/Toolkit/Cli/CliApplicationTest.php
+
+		-
+			message: '#^Call to method PHPUnit\\Framework\\Assert\:\:assertSame\(\) with array\{array\{onClose\: ''Salient\\\\Tests\\\\Core\\\\Event\\\\NamedLoggableEvent''\}\} and array\<array\{string, string\}\|string\> will always evaluate to false\.$#'
+			identifier: method.impossibleType
+			count: 1
+			path: tests/unit/Toolkit/Core/Event/EventDispatcherTest.php
+
+		-
+			message: '#^Method Salient\\Tests\\Core\\ProcessTest\:\:getCallback\(\) never assigns null to &\$output so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: '#^Offset 1 might not exist on array\<1\|2, string\>\|null\.$#'
+			identifier: offsetAccess.notFound
+			count: 2
+			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: '#^Parameter \#1 \$command of class Salient\\Core\\Process constructor expects list\<string\>, non\-empty\-array\<string\> given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/unit/Toolkit/Core/ProcessTest.php
+
+		-
+			message: '#^Method Salient\\Tests\\Iterator\\RecursiveCallbackIteratorTest\:\:getArrayWithNestedObjectsAndArrays\(\) never assigns null to &\$a so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: '#^Method Salient\\Tests\\Iterator\\RecursiveCallbackIteratorTest\:\:getArrayWithNestedObjectsAndArrays\(\) never assigns null to &\$d1 so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: '#^Method Salient\\Tests\\Iterator\\RecursiveCallbackIteratorTest\:\:getArrayWithNestedObjectsAndArrays\(\) never assigns null to &\$d2 so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: '#^Method Salient\\Tests\\Iterator\\RecursiveCallbackIteratorTest\:\:getArrayWithNestedObjectsAndArrays\(\) never assigns null to &\$e so it can be removed from the by\-ref type\.$#'
+			identifier: parameterByRef.unusedType
+			count: 1
+			path: tests/unit/Toolkit/Iterator/RecursiveCallbackIteratorTest.php
+
+		-
+			message: '#^Parameter &\$actualCode @param\-out type of method Salient\\Tests\\Sli\\SliTestCase\:\:serializeTokens\(\) expects array\<array\{int, string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\>, non\-empty\-array\<array\{int, int\|non\-falsy\-string, string, array\{int\|null, int\|null\}, array\{int\|null, int\|null\}, int\|null, array\{int\|null, int\|null\}\}\> given\.$#'
+			identifier: paramOut.type
+			count: 1
+			path: tests/unit/Toolkit/Sli/SliTestCase.php
+
+		-
+			message: '#^Parameter \#1 \$data of static method Salient\\Sync\\AbstractSyncEntity\:\:provide\(\) expects array\<mixed\>, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: tests/unit/Toolkit/Sync/Support/DeferredEntityTest.php
+
+		-
+			message: '#^Cannot access offset 0 on array\<Salient\\Sync\\Support\\DeferredEntity\<Salient\\Tests\\Sync\\Entity\\Post\>\|Salient\\Tests\\Sync\\Entity\\Post\>\|Salient\\Sync\\Support\\DeferredRelationship\<Salient\\Tests\\Sync\\Entity\\Post\>\|null\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: tests/unit/Toolkit/Sync/Support/DeferredRelationshipTest.php
+
+		-
+			message: '#^Cannot access property \$Albums on Salient\\Sync\\Support\\DeferredEntity\<Salient\\Tests\\Sync\\Entity\\User\>\|Salient\\Tests\\Sync\\Entity\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: tests/unit/Toolkit/Sync/Support/DeferredRelationshipTest.php
+
+		-
+			message: '#^Cannot access property \$Posts on Salient\\Sync\\Support\\DeferredEntity\<Salient\\Tests\\Sync\\Entity\\User\>\|Salient\\Tests\\Sync\\Entity\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: tests/unit/Toolkit/Sync/Support/DeferredRelationshipTest.php
+
+		-
+			message: '#^PHPDoc tag @var with type Salient\\Sync\\Support\\SyncContext is not subtype of native type \$this\(Salient\\Tests\\Sync\\Support\\SyncContextTest\)\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: tests/unit/Toolkit/Sync/Support/SyncContextTest.php
+
+		-
+			message: '#^Cannot access property \$Id on Salient\\Sync\\Support\\DeferredEntity\<Salient\\Tests\\Sync\\Entity\\User\>\|Salient\\Tests\\Sync\\Entity\\User\|null\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: tests/unit/Toolkit/Sync/Support/SyncEntityProviderTest.php
+
+		-
+			message: '#^PHPDoc tag @var with type Salient\\Sync\\SyncSerializeRules\<T of Salient\\Contract\\Sync\\SyncEntityInterface\> is not subtype of native type \$this\(Salient\\Tests\\Sync\\SyncSerializeRulesTest\)\.$#'
+			identifier: varTag.nativeType
+			count: 1
+			path: tests/unit/Toolkit/Sync/SyncSerializeRulesTest.php
+
+		-
+			message: '#^Parameter \#1 \$exception of method PHPUnit\\Framework\\TestCase\:\:expectException\(\) expects class\-string\<Throwable\>, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/unit/Toolkit/Utility/EnvTest.php
+
+		-
+			message: '#^Method Salient\\Tests\\Utility\\InflectTest\:\:formatRangeProvider\(\) should return array\<array\{string, string, float\|int, float\|int, string\}\> but returns array\{array\{''on line 71'', ''from lines 71 to 83'', 71, 83, ''\{\{\#\:on\:from\}\} \{\{\#…''\}, array\{''on line 71'', ''on lines between 71…'', 71, 83, ''on \{\{\#\:line\}\} \{\{\#\:…''\}, array\{''on line 71 in\:…'', ''on lines between 71…'', 71, 83, ''on \{\{\#\:line\}\} \{\{\#\:…'', ''Salient\\\\Tests…''\}, array\{''at value 3\.14'', ''between values 3\.14…'', 3\.14, 6\.626E\-34, ''\{\{\#\:at\:between\}\} \{\{…''\}, array\{''No consecutive days…'', null, 0, 0, ''\{\{\#\:No\}\}…''\}, array\{''1 consecutive day…'', ''1 to 7 consecutive…'', 1, 7, ''\{\{\#\:No\}\}…''\}, array\{''No ensuites are…'', null, 0, 0, ''\{\{\#\:An\}\} \{\{\#…''\}, array\{''An ensuite is…'', ''1 to 3 ensuites are…'', 1, 3, ''\{\{\#\:An\}\} \{\{\#…''\}\}\.$#'
+			identifier: return.type
+			count: 1
+			path: tests/unit/Toolkit/Utility/InflectTest.php
+
+		-
+			message: '#^Parameter \#3 \$flags of static method Salient\\Utility\\Regex\:\:grep\(\) expects int\<0, 1\>, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: tests/unit/Toolkit/Utility/RegexTest.php
+
+		-
+			message: '#^Possibly invalid array key type bool\|float\|int\|string\|null\.$#'
+			identifier: array.invalidKey
+			count: 1
+			path: tests/unit/Toolkit/Utility/TestTest.php
+
