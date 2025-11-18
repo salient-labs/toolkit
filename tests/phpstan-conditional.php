@@ -33,6 +33,12 @@ $excludePaths = [
 ];
 
 $ignoreErrors = [
+    ...(\PHP_VERSION_ID < 80500 ? [] : [
+        [
+            'message' => '#^Call to deprecated method setAccessible\(\) of class ReflectionProperty\.$#',
+            'identifier' => 'method.deprecated',
+        ],
+    ]),
     ...(\PHP_VERSION_ID < 80400 ? [] : [
         [
             'identifier' => 'unset.possiblyHookedProperty',

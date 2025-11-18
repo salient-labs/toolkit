@@ -783,7 +783,7 @@ abstract class CliCommand implements CliCommandInterface
                 $name = $option->Name;
             }
             $_value = $option->applyValue($value, $normalise, $expand);
-            $_values[$name] = $_value;
+            $_values[(string) $name] = $_value;
             $this->OptionValues[$option->Key] = $_value;
             if ($asArguments) {
                 // If the option has an optional value and no value was given,
@@ -825,7 +825,7 @@ abstract class CliCommand implements CliCommandInterface
             if (!$schema) {
                 $name = $option->Name;
             }
-            $_values[$name] = $option->normaliseValue($value, $expand);
+            $_values[(string) $name] = $option->normaliseValue($value, $expand);
         }
 
         return $_values ?? [];
@@ -901,7 +901,7 @@ abstract class CliCommand implements CliCommandInterface
             } else {
                 $value = $this->OptionValues[$option->Key] ?? null;
             }
-            $values[$name] = $value;
+            $values[(string) $name] = $value;
         }
 
         /** @var array<array<string|int|bool|float>|string|int|bool|float|null> */
@@ -926,7 +926,7 @@ abstract class CliCommand implements CliCommandInterface
                 continue;
             }
             $name = $schema ? $key : $option->Name;
-            $values[$name] = $option->OriginalDefaultValue;
+            $values[(string) $name] = $option->OriginalDefaultValue;
         }
 
         /** @var array<array<string|int|bool|float>|string|int|bool|float|null> */
@@ -1122,7 +1122,7 @@ abstract class CliCommand implements CliCommandInterface
                 continue;
             }
 
-            $option = $this->OptionsByName[$name] ?? null;
+            $option = $this->OptionsByName[(string) $name] ?? null;
             if (!$option || $option->IsPositional) {
                 $this->optionError(sprintf("unknown option '%s'", $name));
                 continue;
