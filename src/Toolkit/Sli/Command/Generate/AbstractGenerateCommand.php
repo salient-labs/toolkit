@@ -545,7 +545,7 @@ abstract class AbstractGenerateCommand extends AbstractCommand
             return strpos($t, '\\') !== false
                 ? $this->getTypeAlias($t)
                 : $this->getTypeAlias(
-                    $this->InputFileUseMaps[$filename][Str::lower($t)]
+                    $this->InputFileUseMaps[(string) $filename][Str::lower($t)]
                         ?? $this->applyNamespace($t, $namespace),
                     $filename,
                 );

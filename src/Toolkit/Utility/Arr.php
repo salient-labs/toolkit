@@ -46,7 +46,7 @@ final class Arr extends AbstractUtility
             } elseif ($key === true) {
                 $itemKey = self::getKey($itemKey, $i);
             } else {
-                $itemKey = self::get($item, $key);
+                $itemKey = self::getKey(self::get($item, $key), $i);
             }
             $plucked[$itemKey] = $itemValue;
         }

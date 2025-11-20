@@ -260,7 +260,7 @@ class TestOptions extends CliCommand
                     /** @var string */
                     $name = $option->Name;
                     if ($this->optionHasArgument($name)) {
-                        $hasArg[$option->Name] = true;
+                        $hasArg[$name] = true;
                     }
                 }
                 return $this->removeHidden($hasArg ?? []);

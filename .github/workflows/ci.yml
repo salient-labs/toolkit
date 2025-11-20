@@ -57,12 +57,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # PHP 8.3 is needed to parse DNF types in test fixtures, and
-      # php-cs-fixer doesn't support PHP 8.4
+      # PHP 8.3+ is needed to parse DNF types in test fixtures
       - name: Setup PHP and Composer
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.3"
+          php-version: "8.4"
           coverage: none
 
       - name: Get Composer cache directory
@@ -101,7 +100,12 @@ jobs:
       matrix:
         php-version:
           - "8.4"
+          - "8.3"
+          - "8.2"
+          - "8.1"
+          - "8.0"
           - "7.4"
+          - "8.5"
 
     runs-on: ubuntu-24.04
 
@@ -169,6 +173,8 @@ jobs:
             php-version: "7.4"
           - os: windows-latest
             php-version: "7.4"
+          - os: ubuntu-24.04
+            php-version: "8.5"
 
     runs-on: ${{ matrix.os }}
 

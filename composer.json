@@ -16,7 +16,7 @@
     "require": {
         "php": ">=7.4",
         "composer-runtime-api": "^2.2",
-        "lkrms/dice": "^4.1.11",
+        "lkrms/dice": "^4.1.12",
         "psr/container": "^2",
         "psr/event-dispatcher": "^1",
         "psr/http-client": "^1",
@@ -26,7 +26,7 @@
         "psr/simple-cache": "^1 || ^2"
     },
     "require-dev": {
-        "adodb/adodb-php": "^5",
+        "adodb/adodb-php": "dev-master",
         "analog/analog": "^1",
         "ergebnis/phpunit-slow-test-detector": "^2",
         "firebase/php-jwt": "^6",

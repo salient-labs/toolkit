@@ -429,6 +429,7 @@ final class CliOption implements Buildable, HasJsonSchema, Immutable, Readable
         $this->Visibility = $hide ? CliOptionVisibility::NONE : $visibility;
 
         if ($inSchema) {
+            // @phpstan-ignore assign.propertyType
             $this->Visibility |= CliOptionVisibility::SCHEMA;
         }
 

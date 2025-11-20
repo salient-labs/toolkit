@@ -720,11 +720,17 @@ final class PHPDocUtilTest extends TestCase
             MyClass::class => "/**\n     * MyClass::MY_CONSTANT\n     */",
             MyBaseClass::class => "/**\n     * MyBaseClass::MY_CONSTANT\n     */",
         ];
+        $expected1_85 = [
+            MyTraitWithConstants::class => "/**\n     * MyTraitWithConstants::MY_CONSTANT\n     */",
+        ] + $expected1;
 
         $expected1c = [
             MyClass::class => "/**\n * MyClass\n */",
             MyBaseClass::class => "/**\n * MyBaseClass\n */",
         ];
+        $expected1c_85 = [
+            MyTraitWithConstants::class => "/**\n * MyTraitWithConstants\n */",
+        ] + $expected1c;
 
         $expected2 = [
             MyClass::class => "/**\n     * MyClass::MY_CONSTANT\n     */",
@@ -782,13 +788,13 @@ final class PHPDocUtilTest extends TestCase
         if (\PHP_VERSION_ID >= 80200) {
             yield from [
                 [
-                    $expected1,
+                    \PHP_VERSION_ID >= 80500 ? $expected1_85 : $expected1,
                     null,
                     new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_CONSTANT'),
                 ],
                 [
-                    $expected1,
-                    $expected1c,
+                    \PHP_VERSION_ID >= 80500 ? $expected1_85 : $expected1,
+                    \PHP_VERSION_ID >= 80500 ? $expected1c_85 : $expected1c,
                     new ReflectionClassConstant(MyClassWithTraitWithConstants::class, 'MY_CONSTANT'),
                 ],
                 [

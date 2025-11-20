@@ -55,21 +55,27 @@ class CliApplication extends Application implements CliApplicationInterface
             // @codeCoverageIgnoreEnd
         }
 
-        if (!ini_get('register_argc_argv')) {
+        // In PHP 8.5:
+        // - `register_argc_argv` is deprecated
+        // - `-d register_argc_argv=0` is ignored
+        //
+        // In previous versions:
+        // - `php.ini` directive `register_argc_argv = 0` is ignored
+        // - `register_argc_argv = 1` applies unless `-d register_argc_argv=0`
+        //   is given on the command line
+        if (\PHP_VERSION_ID < 80500 && !ini_get('register_argc_argv')) {
             // @codeCoverageIgnoreStart
             throw new InvalidRuntimeConfigurationException('register_argc_argv must be enabled');
             // @codeCoverageIgnoreEnd
         }
 
-        // Keep running, even if:
-        // - the TTY disconnects
-        // - `max_execution_time` is non-zero
-        // - the configured `memory_limit` is exceeded
+        // Keep running if the TTY disconnects
         ignore_user_abort(true);
-        set_time_limit(0);
+
+        // Use all available memory
         ini_set('memory_limit', '-1');
 
-        // Exit cleanly if interrupted
+        // Run shutdown functions if the script is terminated early
         Sys::handleExitSignals();
     }
 

@@ -167,11 +167,11 @@ final class TestTest extends TestCase
     /**
      * @dataProvider isNumericKeyProvider
      *
-     * @param mixed $value
+     * @param int|string|float|bool|null $value
      */
     public function testIsNumericKey(bool $expected, $value): void
     {
-        if (is_float($value)) {
+        if (is_float($value) || $value === null) {
             $level = error_reporting();
             error_reporting($level & ~\E_DEPRECATED);
         }

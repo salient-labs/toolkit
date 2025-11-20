@@ -307,7 +307,9 @@ final class SyncEntityFuzzyResolver implements SyncEntityResolverInterface
             return null;
         }
 
-        $uncertainty = array_pop($entry);
+        /** @var float */
+        $last = array_pop($entry);
+        $uncertainty = $last;
         $this->Cache[$name] = [$entry[0], $uncertainty];
         return $entry[0];
     }

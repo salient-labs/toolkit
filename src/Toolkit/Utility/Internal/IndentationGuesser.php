@@ -138,7 +138,9 @@ final class IndentationGuesser
                     continue;
                 }
             } elseif ($diffSpaces % $diffTabs === 0) {
-                $diffSpaces /= $diffTabs;
+                /** @var int */
+                // @phpstan-ignore varTag.nativeType
+                $diffSpaces = $diffSpaces / $diffTabs;
             } else {
                 continue;
             }

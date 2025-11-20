@@ -106,6 +106,7 @@ abstract class Facade implements FacadeInterface
     {
         $instance = self::$Instances[static::class] ??= self::doLoad();
         $result = $instance->$name(...$arguments);
+        // @phpstan-ignore nullCoalesce.offset
         return $result === (self::$Instances[static::class] ?? null)
             && $result instanceof FacadeAwareInterface
                 ? $result->withoutFacade(static::class, false)

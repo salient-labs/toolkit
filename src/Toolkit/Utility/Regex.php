@@ -187,11 +187,13 @@ final class Regex extends AbstractUtility
     /**
      * A wrapper for preg_replace()
      *
+     * @template T of string[]|string
+     *
      * @param string[]|string $pattern
      * @param string[]|string $replacement
-     * @param string[]|string $subject
+     * @param T $subject
      * @param-out int $count
-     * @return ($subject is string[] ? string[] : string)
+     * @return (T is non-empty-string[] ? T|string[] : (T is non-empty-string ? T|string : T))
      */
     public static function replace(
         $pattern,

@@ -7,6 +7,7 @@ use Salient\Contract\Core\Pipeline\PipelineInterface;
 use Salient\Contract\Core\Pipeline\StreamPipelineInterface;
 use Salient\Core\Concern\ChainableTrait;
 use Salient\Core\Concern\ImmutableTrait;
+use Salient\Utility\Get;
 use Closure;
 use LogicException;
 
@@ -332,6 +333,12 @@ final class Pipeline implements
             }
 
             if ($this->CollectThen) {
+                if (!is_int($key) && !is_string($key)) {
+                    throw new LogicException(sprintf(
+                        'Key must be of type int|string, %s given',
+                        Get::type($key),
+                    ));
+                }
                 $results[$key] = $result;
                 continue;
             }

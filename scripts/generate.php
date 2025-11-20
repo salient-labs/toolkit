@@ -188,8 +188,10 @@ foreach ($facades as $facade => $class) {
     $aliases = [];
     // if (is_array($class)) {
     $facadeArgs = $class;
+    /** @var string */
     $class = array_shift($facadeArgs);
     if (is_array($facadeArgs[0])) {
+        /** @var string[] */
         $aliases = array_shift($facadeArgs);
     }
     // }
