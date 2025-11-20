@@ -17,6 +17,10 @@ defined('T_PROTECTED_SET') || define('T_PROTECTED_SET', 10012);
 defined('T_PUBLIC_SET') || define('T_PUBLIC_SET', 10013);
 defined('T_PROPERTY_C') || define('T_PROPERTY_C', 10014);
 
+// PHP 8.5 tokens
+defined('T_VOID_CAST') || define('T_VOID_CAST', 10015);
+defined('T_PIPE') || define('T_PIPE', 10016);
+
 // Single-character tokens
 defined('T_OPEN_BRACE') || define('T_OPEN_BRACE', ord('{'));
 defined('T_OPEN_BRACKET') || define('T_OPEN_BRACKET', ord('['));
