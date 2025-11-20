@@ -10,6 +10,34 @@ The format is based on [Keep a Changelog][], and this project adheres to [Semant
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
+## [v0.99.81] - 2025-11-20
+
+### Added
+
+- **Add PHP 8.5 support**
+
+#### `Http`
+
+- **Add `HttpUtil::getTOTP()`** for \[RFC6238]-compliant one-time password creation
+- Add `HasResponseType` for values passed to OAuth 2.0 authorization endpoints, including for OpenID Connect flows
+
+#### `Utility`
+
+- Add `Str::decodeBase32()`
+
+### Changed
+
+#### `Http`
+
+- Split `AccessToken` into `GenericCredential`, `GenericToken` and `OAuth2AccessToken`, replacing public properties with getters
+- Rename `OAuth2GrantType` to `HasGrantType`, add `GRANT_` prefix to its constants and access them via implementations, and add missing OAuth 2.0 grants
+
+### Removed
+
+#### `Http`
+
+- Remove redundant `OAuth2Flow` (grants and flows are equivalent)
+
 ## [v0.99.80] - 2025-09-05
 
 - Review referenced RFCs for compliance, clarity and currency
@@ -5101,6 +5129,7 @@ This is the final release of `lkrms/util`. It is moving to [Salient](https://git
 
 - Allow `CliOption` value names to contain arbitrary characters
 
+[v0.99.81]: https://github.com/salient-labs/toolkit/compare/v0.99.80...v0.99.81
 [v0.99.80]: https://github.com/salient-labs/toolkit/compare/v0.99.79...v0.99.80
 [v0.99.79]: https://github.com/salient-labs/toolkit/compare/v0.99.78...v0.99.79
 [v0.99.78]: https://github.com/salient-labs/toolkit/compare/v0.99.77...v0.99.78
