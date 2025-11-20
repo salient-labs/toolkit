@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "90f51bbd41fd433ea509ba1bbd93cd29",
+    "content-hash": "8ebf953c436aa48eda3269344d83f72e",
     "packages": [
         {
             "name": "lkrms/dice",
@@ -417,24 +417,25 @@
     "packages-dev": [
         {
             "name": "adodb/adodb-php",
-            "version": "v5.22.10",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ADOdb/ADOdb.git",
-                "reference": "38ce257600e67b1e854f2e9054166569cff4bf6b"
+                "reference": "e66802d19633230d85c26f19fdb497f528e88783"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ADOdb/ADOdb/zipball/38ce257600e67b1e854f2e9054166569cff4bf6b",
-                "reference": "38ce257600e67b1e854f2e9054166569cff4bf6b",
+                "url": "https://api.github.com/repos/ADOdb/ADOdb/zipball/e66802d19633230d85c26f19fdb497f528e88783",
+                "reference": "e66802d19633230d85c26f19fdb497f528e88783",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.0 || ^8.0"
+                "php": "^7.4 || ^8.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^8.5"
+                "phpunit/phpunit": "^9.5"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "files": [
@@ -474,7 +475,21 @@
                 "issues": "https://github.com/ADOdb/ADOdb/issues",
                 "source": "https://github.com/ADOdb/ADOdb"
             },
-            "time": "2025-08-03T16:20:39+00:00"
+            "funding": [
+                {
+                    "url": "https://github.com/ADOdb",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/dregad",
+                    "type": "github"
+                },
+                {
+                    "url": "https://thanks.dev/u/gh/adodb",
+                    "type": "thanks_dev"
+                }
+            ],
+            "time": "2025-10-30T23:41:25+00:00"
         },
         {
             "name": "analog/analog",
@@ -3338,7 +3353,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "adodb/adodb-php": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

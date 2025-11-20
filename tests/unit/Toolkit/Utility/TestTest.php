@@ -171,7 +171,7 @@ final class TestTest extends TestCase
      */
     public function testIsNumericKey(bool $expected, $value): void
     {
-        if (is_float($value)) {
+        if (is_float($value) || $value === null) {
             $level = error_reporting();
             error_reporting($level & ~\E_DEPRECATED);
         }

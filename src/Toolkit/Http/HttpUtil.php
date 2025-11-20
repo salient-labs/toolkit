@@ -277,7 +277,7 @@ final class HttpUtil extends AbstractUtility implements
     {
         return Date::immutable($date)
             ->setTimezone(new DateTimeZone('UTC'))
-            ->format(DateTimeInterface::RFC7231);
+            ->format('D, d M Y H:i:s \G\M\T');
     }
 
     /**
